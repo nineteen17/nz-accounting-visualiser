@@ -1,5 +1,7 @@
+import { Suspense } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { PageSkeleton } from "@/components/learn/PageSkeleton";
 import type { Metadata } from "next";
 import { NZ_TOPICS } from "@/data/topics";
 import * as P from "@/components/nz/Payroll";
@@ -34,7 +36,17 @@ export async function generateMetadata({ params }: { params: Promise<{ topic: st
   return { title: `${NZ_TOPICS.find((t) => t.slug === topic)?.title ?? "NZ"} – Kōwhai Café` };
 }
 
-export default async function Page({ params }: { params: Promise<{ topic: string }> }) {
+// The page reads its slug from the URL, so that part sits inside <Suspense>
+// (Next.js instant navigation: URL data must not block the route's shell).
+export default function Page({ params }: { params: Promise<{ topic: string }> }) {
+  return (
+    <Suspense fallback={<PageSkeleton />}>
+      <Content params={params} />
+    </Suspense>
+  );
+}
+
+async function Content({ params }: { params: Promise<{ topic: string }> }) {
   const { topic } = await params;
   const t = NZ_TOPICS.find((x) => x.slug === topic);
   if (!t || !PAGES[topic]) notFound();

@@ -1,5 +1,7 @@
+import { Suspense } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { PageSkeleton } from "@/components/learn/PageSkeleton";
 import * as X from "@/components/explore/Tools";
 import { PageHeader } from "@/components/learn/bits";
 import { EXPLORE_TOOLS } from "../tools";
@@ -18,7 +20,17 @@ export function generateStaticParams() {
   return EXPLORE_TOOLS.map((t) => ({ tool: t.slug }));
 }
 
-export default async function Page({ params }: { params: Promise<{ tool: string }> }) {
+// The page reads its slug from the URL, so that part sits inside <Suspense>
+// (Next.js instant navigation: URL data must not block the route's shell).
+export default function Page({ params }: { params: Promise<{ tool: string }> }) {
+  return (
+    <Suspense fallback={<PageSkeleton />}>
+      <Content params={params} />
+    </Suspense>
+  );
+}
+
+async function Content({ params }: { params: Promise<{ tool: string }> }) {
   const { tool } = await params;
   const t = EXPLORE_TOOLS.find((x) => x.slug === tool);
   if (!t || !TOOLS[tool]) notFound();

@@ -1,5 +1,7 @@
+import { Suspense } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { PageSkeleton } from "@/components/learn/PageSkeleton";
 import type { Metadata } from "next";
 import { FOUNDATIONS } from "@/data/topics";
 import * as L from "@/components/foundations/Lessons";
@@ -30,7 +32,17 @@ export async function generateMetadata({ params }: { params: Promise<{ topic: st
   return { title: `${FOUNDATIONS.find((f) => f.slug === topic)?.title ?? "Foundations"} – Kōwhai Café` };
 }
 
-export default async function Page({ params }: { params: Promise<{ topic: string }> }) {
+// The page reads its slug from the URL, so that part sits inside <Suspense>
+// (Next.js instant navigation: URL data must not block the route's shell).
+export default function Page({ params }: { params: Promise<{ topic: string }> }) {
+  return (
+    <Suspense fallback={<PageSkeleton />}>
+      <Content params={params} />
+    </Suspense>
+  );
+}
+
+async function Content({ params }: { params: Promise<{ topic: string }> }) {
   const { topic } = await params;
   const i = FOUNDATIONS.findIndex((f) => f.slug === topic);
   if (i < 0 || !LESSONS[topic]) notFound();

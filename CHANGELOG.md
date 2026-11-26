@@ -13,6 +13,12 @@ Dates are when the change was made. Rates and rules are for the 2026–27 NZ inc
 
 ## 2026-11-26
 
+### Instant navigation (Next.js)
+- Fixed the dev-tools insight "Next.js encountered URL data outside of Suspense" on the four dynamic routes (`/explore/[tool]`, `/foundations/[topic]`, `/nz/[topic]`, `/cycle/[step]`). Following the Next.js 16 docs (instant navigation / optimizing prefetching), the part of each page that reads `params` is now an async `Content` component inside `<Suspense>`, with a light `PageSkeleton` fallback. All pages are still pre-generated, so the fallback is rarely seen.
+- **Real 404s kept** with a new `proxy.ts` (Next 16's replacement for middleware). With the slug read inside `<Suspense>`, a page streams with status 200 before it can call `notFound()`, and the docs' alternative (checking before the boundary) brings the warning back. The proxy checks the slug against the lesson / topic / step / tool lists *before* rendering and returns a real 404 for unknown or extra path segments. It only runs on `/foundations/*`, `/nz/*`, `/cycle/*` and `/explore/*`, and it reads the same data lists, so new pages are covered automatically.
+- Tests (now 22): every real lesson/topic/step/tool passes the proxy; unknown slugs get 404.
+- Verified: tsc, eslint, vitest, production build (59 pages + proxy), all real pages 200 and mistyped ones 404 on the dev server, no console errors on the dynamic pages.
+
 ### Mobile layout
 - **Every page now fits a phone screen.** Checked all 52 pages at 390px (phone) and 768px (tablet) with phone emulation in headless Chrome: no page scrolls sideways. Before the fix, 10 pages were wider than the screen.
 - **Menu button**: below laptop width (1024px), the six header links are replaced by a "☰ Menu" button that opens the full list (with Home). The café name now shows on phones too.
