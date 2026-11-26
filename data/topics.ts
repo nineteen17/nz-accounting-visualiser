@@ -1,0 +1,30 @@
+export const FOUNDATIONS = [
+  { slug: "what-is-accounting", short: "What is accounting", title: "What is accounting?", blurb: "Why businesses keep accounts, who reads them, and the café we'll follow." },
+  { slug: "five-elements", short: "Five elements", title: "The five elements", blurb: "Assets, liabilities, equity, income, expenses: every account is one of these." },
+  { slug: "accounting-equation", short: "The equation", title: "The accounting equation", blurb: "Assets = Liabilities + Equity. Try the interactive sandbox." },
+  { slug: "double-entry", short: "Double entry", title: "Double-entry bookkeeping", blurb: "Every transaction has two sides, and debits always equal credits." },
+  { slug: "debits-credits", short: "Debits & credits", title: "Debits & credits", blurb: "Left and right, demystified, with endless practice questions." },
+  { slug: "t-accounts", short: "T-accounts", title: "T-accounts", blurb: "The simplest picture of an account. Explore Kōwhai's April accounts." },
+  { slug: "chart-of-accounts", short: "Chart of accounts", title: "The chart of accounts", blurb: "Every account the café uses, with codes, types and GST treatment." },
+  { slug: "source-documents", short: "Source documents", title: "Source documents", blurb: "Invoices, receipts, payslips… and NZ's taxable supply information rules." },
+  { slug: "cash-vs-accrual", short: "Cash vs accrual", title: "Cash vs accrual", blurb: "When does income or an expense count? Why it matters so much." },
+  { slug: "us-vs-nz", short: "US vs NZ", title: "Learned from a US source? US GAAP vs NZ", blurb: "Every difference in one place: words, statements, tax, payroll and assets, with impact ratings and worked examples." },
+  { slug: "business-structures", short: "Business structures", title: "Business structures in NZ", blurb: "Sole trader, partnership, company, LTC: how each is taxed and recorded." },
+];
+
+export const NZ_TOPICS = [
+  { slug: "gst", short: "GST", title: "GST", group: "GST", blurb: "15%, registration, invoice vs payments basis, zero-rated vs exempt, bad debts, TSI rules." },
+  { slug: "gst-return", short: "GST return", title: "The GST return, box by box", group: "GST", blurb: "Kōwhai's six real GST101A returns, built from its ledger." },
+  { slug: "paye", short: "PAYE", title: "PAYE, tax codes & payday filing", group: "Payroll", blurb: "How a payslip is calculated, with a live calculator." },
+  { slug: "kiwisaver", short: "KiwiSaver", title: "KiwiSaver & ESCT", group: "Payroll", blurb: "Employee and employer contributions and the tax on them." },
+  { slug: "holidays", short: "Holidays", title: "Holidays Act & leave", group: "Payroll", blurb: "Annual leave, public holidays, sick leave, 8% pay-as-you-go, accruals." },
+  { slug: "employment", short: "Employment", title: "Minimum wage & employment basics", group: "Payroll", blurb: "Minimum wage, employment agreements, wage records: the accounting bits." },
+  { slug: "acc", short: "ACC", title: "ACC levies", group: "Payroll", blurb: "Earners' levy (in PAYE) and the work levy invoice." },
+  { slug: "income-tax", short: "Income tax", title: "Company income tax & the IR4", group: "Income tax", blurb: "Accounting profit to taxable income, the 50% entertainment rule, rates." },
+  { slug: "provisional-tax", short: "Provisional tax", title: "Provisional & terminal tax", group: "Income tax", blurb: "When tax is paid: instalments, methods, UOMI, terminal tax." },
+  { slug: "shareholders", short: "Shareholders", title: "Shareholders: salaries, current accounts, dividends & imputation", group: "Income tax", blurb: "How company owners get paid, and how tax is credited." },
+  { slug: "depreciation", short: "Depreciation", title: "Depreciation & Investment Boost", group: "Assets", blurb: "DV vs SL, IRD rates, low-value assets, Investment Boost, selling assets." },
+  { slug: "inventory", short: "Inventory", title: "Inventory & trading stock", group: "Assets", blurb: "Periodic vs perpetual, FIFO vs weighted average, IRD stock rules." },
+  { slug: "other-taxes", short: "Other taxes", title: "RWT, FBT & withholding tax", group: "Other", blurb: "Other taxes a small business meets." },
+  { slug: "compliance", short: "Compliance", title: "Record keeping, reporting & the compliance calendar", group: "Other", blurb: "7-year records, financial statement rules, Companies Office, every due date." },
+];
