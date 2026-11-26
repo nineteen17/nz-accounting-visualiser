@@ -2,6 +2,7 @@ import Link from "next/link";
 import { CYCLE_STEPS } from "@/data/cycle";
 import { CycleWheel } from "@/components/cycle/CycleWheel";
 import { PageHeader } from "@/components/learn/bits";
+import { SystemFlow } from "@/components/job/SystemFlow";
 
 export const metadata = { title: "The accounting cycle – Kōwhai Café" };
 
@@ -19,6 +20,11 @@ export default function CyclePage() {
         </span>
         <span className="rounded-xl bg-kowhai-400 px-4 py-2 font-bold text-ink group-hover:bg-kowhai-300">Start →</span>
       </Link>
+      <section className="mb-10 rounded-2xl border border-stone-200 bg-white p-5">
+        <h2 className="text-xl font-bold">🗺️ How it all fits together</h2>
+        <p className="mb-4 mt-1 text-sm text-stone-600">Every step below is one part of this system. Documents become journal entries, entries are posted to the ledger, and at balance date the ledger becomes the financial statements. The checks and IRD filings read the books along the way.</p>
+        <SystemFlow linked note="Click any box to open the step or topic that explains it." />
+      </section>
       <h2 className="mb-4 text-xl font-bold">Or study one step at a time</h2>
       <div className="grid items-start gap-10 lg:grid-cols-[auto_1fr]">
         <CycleWheel size={520} />

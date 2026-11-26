@@ -2,6 +2,7 @@ import Link from "next/link";
 import { BUSINESS, EMPLOYEES, SHAREHOLDERS } from "@/data/business";
 import { ALL, NET_PROFIT } from "@/data/books";
 import { CycleWheel } from "@/components/cycle/CycleWheel";
+import { SystemFlow } from "@/components/job/SystemFlow";
 import { money } from "@/lib/money";
 import { RATES_AS_AT } from "@/lib/nz/rates";
 
@@ -44,6 +45,12 @@ export default function Home() {
             </Link>
           ))}
         </div>
+      </section>
+
+      <section className="mx-auto max-w-7xl px-4 pb-12">
+        <h2 className="text-2xl font-bold">The big picture</h2>
+        <p className="mb-5 mt-1 max-w-3xl text-stone-600">All of accounting in one diagram. Each box is a page in this tool, so you can start anywhere and always see where you are.</p>
+        <SystemFlow linked note="Click any box to jump to it." />
       </section>
 
       <section className="border-y border-stone-200 bg-white">

@@ -3,29 +3,12 @@
 import { JOB_STEPS, type JobStep } from "@/data/job/steps";
 import { nzDate } from "@/lib/money";
 import { cx } from "@/lib/ui";
+import { SystemFlow, type FlowNode } from "@/components/job/SystemFlow";
 
 /* ───────────── 1. The flow: where each job sits in the system ───────────── */
 
-type Node = "doc" | "journal" | "ledger" | "tb" | "adjust" | "statements" | "close" | "bankrec" | "gst" | "payday" | "tax";
-
-const MAIN: { id: Node; icon: string; label: string; sub: string }[] = [
-  { id: "doc", icon: "📄", label: "Source documents", sub: "invoices, Z-reports, payslips" },
-  { id: "journal", icon: "✍️", label: "Journal", sub: "debits = credits" },
-  { id: "ledger", icon: "📒", label: "Ledger", sub: "one account each" },
-  { id: "tb", icon: "⚖️", label: "Trial balance", sub: "does it balance?" },
-  { id: "adjust", icon: "🔧", label: "Adjustments", sub: "accrual basis at 31 Mar" },
-  { id: "statements", icon: "📊", label: "Statements", sub: "P&L, balance sheet" },
-  { id: "close", icon: "🔒", label: "Close the year", sub: "profit → retained earnings" },
-];
-const SIDE: { id: Node; icon: string; label: string; from: string; when: string }[] = [
-  { id: "bankrec", icon: "🏦", label: "Bank reconciliation", from: "checks the ledger's bank account against the statement", when: "every month end" },
-  { id: "payday", icon: "🧾", label: "Payday filing & PAYE", from: "from each pay run; deductions paid to IRD on the 20th", when: "each payday" },
-  { id: "gst", icon: "🇳🇿", label: "GST return", from: "from the GST account in the ledger", when: "every 2 months" },
-  { id: "tax", icon: "🏛️", label: "Income tax (IR4)", from: "from the profit in the statements", when: "after year end" },
-];
-
-function nodesFor(s: JobStep): Set<Node> {
-  const n = new Set<Node>();
+function nodesFor(s: JobStep): Set<FlowNode> {
+  const n = new Set<FlowNode>();
   const id = s.id;
   if (s.txns.length) { n.add("journal"); n.add("ledger"); }
   if (s.txns.some((t) => t.doc)) n.add("doc");
@@ -42,44 +25,8 @@ function nodesFor(s: JobStep): Set<Node> {
   return n;
 }
 
-function Box({ on, icon, label, sub }: { on: boolean; icon: string; label: string; sub: string }) {
-  return (
-    <div className={cx("rounded-xl border px-3 py-2 transition-colors duration-300", on ? "border-kowhai-500 bg-kowhai-100 shadow-sm" : "border-stone-200 bg-white")}>
-      <div className={cx("text-sm font-semibold", on ? "text-ink" : "text-stone-600")}><span className="mr-1">{icon}</span>{label}</div>
-      <div className="text-[11px] leading-tight text-stone-500">{sub}</div>
-    </div>
-  );
-}
-
 function Flow({ step }: { step: JobStep }) {
-  const on = nodesFor(step);
-  return (
-    <div>
-      <div className="flex flex-wrap items-stretch gap-x-1 gap-y-2">
-        {MAIN.map((m, i) => (
-          <div key={m.id} className="flex items-center gap-1">
-            <Box on={on.has(m.id)} icon={m.icon} label={m.label} sub={m.sub} />
-            {i < MAIN.length - 1 && <span className="px-0.5 text-stone-400">→</span>}
-          </div>
-        ))}
-        <div className="flex items-center gap-1"><span className="px-0.5 text-stone-400">↺</span><span className="text-xs text-stone-500">new year</span></div>
-      </div>
-      <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
-        {SIDE.map((s) => (
-          <div key={s.id} className={cx("rounded-xl border border-dashed px-3 py-2 transition-colors duration-300", on.has(s.id) ? "border-kowhai-500 bg-kowhai-100" : "border-stone-300 bg-stone-50")}>
-            <div className="flex items-baseline justify-between gap-2">
-              <span className={cx("text-sm font-semibold", on.has(s.id) ? "text-ink" : "text-stone-600")}><span className="mr-1">{s.icon}</span>{s.label}</span>
-              <span className="shrink-0 text-[10px] font-semibold uppercase tracking-wider text-stone-400">{s.when}</span>
-            </div>
-            <div className="text-[11px] leading-tight text-stone-500">{s.from}</div>
-          </div>
-        ))}
-      </div>
-      <p className="mt-2 text-xs text-stone-500">
-        Solid boxes are the books themselves. Dashed boxes are checks and filings that <em>read</em> the books. The parts lit up in yellow are what this task touches.
-      </p>
-    </div>
-  );
+  return <SystemFlow on={nodesFor(step)} note="The parts lit up in yellow are what this task touches." />;
 }
 
 /* ───────────── 2. The year: every task on one timeline ───────────── */
@@ -108,9 +55,9 @@ function laneOf(s: JobStep): Lane {
 }
 
 const W = 1000, LABEL = 150, TOP = 22, ROW = 22;
-const X_DURING = [LABEL + 6, 730] as const;
-const X_YE = [748, 932] as const;
-const X_AFTER = [948, 990] as const;
+const X_DURING = [LABEL + 6, 655] as const;
+const X_YE = [672, 938] as const;
+const X_AFTER = [952, 992] as const;
 const H = TOP + LANES.length * ROW + 8;
 
 const START = Date.UTC(2026, 3, 1), END = Date.UTC(2027, 2, 31);

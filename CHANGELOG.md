@@ -13,6 +13,12 @@ Dates are when the change was made. Rates and rules are for the 2026–27 NZ inc
 
 ## 2026-11-26
 
+### The big picture diagram
+- The "How it all fits together" flow diagram is now a shared component (`components/job/SystemFlow.tsx`) with two modes: **live** in "A year on the job" (boxes light up for the current task, as before) and **linked**, where every box links to the step or topic that explains it and shows its cycle step number (e.g. Journal = Step 3, Bank reconciliation = Step 6, GST return = NZ topic).
+- Added to the **cycle overview** (between the "Work the whole year" banner and the step list) and the **home page** (a "The big picture" section under "Choose a path").
+- **Year timeline**: the year-end region is about 45% wider (dots about 13px apart instead of 9px), so the adjustment and closing dots no longer run together. The months take slightly less width.
+- Verified: tsc, eslint, vitest (22), screenshots (desktop and phone), no sideways scrolling at 390px on /, /cycle and /cycle/year.
+
 ### Instant navigation (Next.js)
 - Fixed the dev-tools insight "Next.js encountered URL data outside of Suspense" on the four dynamic routes (`/explore/[tool]`, `/foundations/[topic]`, `/nz/[topic]`, `/cycle/[step]`). Following the Next.js 16 docs (instant navigation / optimizing prefetching), the part of each page that reads `params` is now an async `Content` component inside `<Suspense>`, with a light `PageSkeleton` fallback. All pages are still pre-generated, so the fallback is rarely seen.
 - **Real 404s kept** with a new `proxy.ts` (Next 16's replacement for middleware). With the slug read inside `<Suspense>`, a page streams with status 200 before it can call `notFound()`, and the docs' alternative (checking before the boundary) brings the warning back. The proxy checks the slug against the lesson / topic / step / tool lists *before* rendering and returns a real 404 for unknown or extra path segments. It only runs on `/foundations/*`, `/nz/*`, `/cycle/*` and `/explore/*`, and it reads the same data lists, so new pages are covered automatically.
