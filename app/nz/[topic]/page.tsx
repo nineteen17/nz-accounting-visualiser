@@ -27,6 +27,9 @@ const PAGES: Record<string, () => React.ReactNode> = {
   compliance: () => <T.ComplianceTopic />,
 };
 
+// Only the slugs below exist: any other address gets the built-in 404 page (app/not-found.tsx).
+export const dynamicParams = false;
+
 export function generateStaticParams() {
   return NZ_TOPICS.map((t) => ({ topic: t.slug }));
 }

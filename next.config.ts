@@ -1,13 +1,15 @@
 import type { NextConfig } from "next";
 
+// The whole site is pre-built to plain files in out/, so any static host can serve it
+// (GitHub Pages, Vercel, Netlify...). On GitHub Pages the site lives under /<repo-name>,
+// so the deploy workflow sets PAGES_BASE_PATH; locally and on Vercel it's empty.
+const basePath = process.env.PAGES_BASE_PATH ?? "";
+
 const nextConfig: NextConfig = {
-  /* config options here */
-  cacheComponents: true,
-  partialPrefetching: true,
-  // "A year on the job" moved out of the accounting cycle to its own section (query strings carry through)
-  redirects() {
-    return [{ source: "/cycle/year", destination: "/on-the-job", permanent: true }];
-  },
+  // static export for builds only: in `next dev` it turns unknown slugs into errors instead of 404s
+  output: process.env.NODE_ENV === "production" ? "export" : undefined,
+  basePath,
+  trailingSlash: true,
   turbopack: {
     root: process.cwd(),
     rules: {

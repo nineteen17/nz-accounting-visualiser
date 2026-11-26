@@ -13,6 +13,17 @@ Dates are when the change was made. Rates and rules are for the 2026–27 NZ inc
 
 ## 2026-11-27
 
+### Hosting: a fully static site (GitHub Pages or Vercel)
+- **The site now builds to plain files** (`output: "export"` → `out/`), so any static host can serve it for free. A new workflow, `.github/workflows/pages.yml`, runs the tests, builds the site under `/<repo-name>` (`PAGES_BASE_PATH`) and publishes it to GitHub Pages on every push to `master`. Vercel's free plan also works with no changes: import the repo and keep the defaults.
+- **404s now use Next.js's built-in handling** instead of `proxy.ts`, which is removed along with its test. Each dynamic route (`/foundations/[topic]`, `/nz/[topic]`, `/cycle/[step]`, `/explore/[tool]`) sets `dynamicParams = false`, so only the listed slugs exist and anything else gets the new `app/not-found.tsx`. That page is written for beginners and links to every section. Static hosts serve it as `404.html`.
+- `cacheComponents` and `partialPrefetching` are off. They don't allow `dynamicParams` and add nothing to a site where every page is pre-built.
+- Addresses now end in a slash (`trailingSlash: true`), so `/cycle/` is served from `/cycle/index.html`; the version without the slash still works. Static export is only switched on for builds, so `npm run dev` still returns 404s for unknown slugs instead of an error.
+- **Removed**: the `/cycle/year` → `/on-the-job` redirect. Static hosts can't do server redirects.
+- Verified:
+  - The build under `/nz-accounting-visualiser/`, served locally: every link and asset carries the prefix, `/on-the-job/?year=2&step=B17` opens the right task, and a missing page returns 404.
+  - In dev, real pages return 200 and unknown or extra segments return 404.
+  - tsc, eslint and vitest (40 tests) pass.
+
 ### Home page: what each section is for
 - "Choose a path" is replaced by **"What's in this tool"**, which explains all six menu sections for a complete beginner. Each card gives:
   - the exact name it has in the menu

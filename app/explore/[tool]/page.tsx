@@ -16,6 +16,9 @@ const TOOLS: Record<string, () => React.ReactNode> = {
   "break-even": () => <X.BreakEvenTool />,
 };
 
+// Only the slugs below exist: any other address gets the built-in 404 page (app/not-found.tsx).
+export const dynamicParams = false;
+
 export function generateStaticParams() {
   return EXPLORE_TOOLS.map((t) => ({ tool: t.slug }));
 }

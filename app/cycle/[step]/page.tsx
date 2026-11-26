@@ -23,6 +23,9 @@ const STEPS: Record<string, () => React.ReactNode> = {
   "post-closing": () => <PostClosingStep />,
 };
 
+// Only the slugs below exist: any other address gets the built-in 404 page (app/not-found.tsx).
+export const dynamicParams = false;
+
 export function generateStaticParams() {
   return CYCLE_STEPS.map((s) => ({ step: s.slug }));
 }

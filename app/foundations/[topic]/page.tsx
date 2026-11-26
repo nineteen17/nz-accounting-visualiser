@@ -23,6 +23,9 @@ const LESSONS: Record<string, () => React.ReactNode> = {
   "us-vs-nz": () => <UsVsNz />,
 };
 
+// Only the slugs below exist: any other address gets the built-in 404 page (app/not-found.tsx).
+export const dynamicParams = false;
+
 export function generateStaticParams() {
   return FOUNDATIONS.map((f) => ({ topic: f.slug }));
 }
