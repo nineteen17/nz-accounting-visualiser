@@ -16,6 +16,7 @@ import { Callout, Card, Quiz, UsNote } from "@/components/learn/bits";
 import { Term } from "@/components/learn/Term";
 import { Explain } from "@/components/learn/Overlay";
 import type { AccountType } from "@/lib/engine/types";
+import { MemoryAid } from "@/components/learn/MemoryAid";
 
 /* ─────────────────────────── 1. What is accounting ─────────────────────────── */
 
@@ -203,6 +204,7 @@ export function AccountingEquation() {
       </Card>
       <Quiz q="The café buys a $2,000 laptop with cash. What happens to total assets?" options={["Up $2,000", "Down $2,000", "No change"]} answer={2} explain="Laptop (asset) up $2,000, bank (asset) down $2,000. Total assets stay the same." />
       <Quiz q="The café receives a $500 power bill, to be paid next month. What happens?" options={["Assets ↓, Equity ↓", "Liabilities ↑, Equity ↓", "Liabilities ↑, Assets ↑"]} answer={1} explain="An expense (reducing equity) and a new liability (creditors). No cash has moved yet." />
+      <MemoryAid k="equation" link={false} />
     </div>
   );
 }
@@ -297,6 +299,8 @@ export function DebitsCredits() {
           )}
         </Card>
       </div>
+      <MemoryAid k="dead-clic" link={false} />
+      <MemoryAid k="credit-right" />
     </div>
   );
 }
@@ -454,6 +458,7 @@ export function CashVsAccrual() {
       <p className="text-xs text-stone-500">(Machine depreciation simplified to $400 a month for this comparison.)</p>
       <Callout kind="why" title="Why accrual wins">On a cash basis, April looks like a disaster and May looks odd. That says nothing about how the café is actually trading. The accrual basis matches each cost to the period it helps earn income in, so each month&apos;s result is meaningful. That&apos;s why companies, banks and IRD use it, and it&apos;s why year-end <strong>adjusting entries</strong> exist.</Callout>
       <Callout kind="nz" title="GST has its own basis">Separately from the accounts, a business picks a GST accounting basis: <Term k="invoice-basis">invoice</Term>, <Term k="payments-basis">payments</Term> or hybrid. Kōwhai uses the invoice basis, which lines up with accrual accounting.</Callout>
+      <MemoryAid k="profit-cash" link={false} />
     </div>
   );
 }

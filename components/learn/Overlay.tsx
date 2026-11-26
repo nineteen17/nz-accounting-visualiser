@@ -5,6 +5,8 @@ import { createContext, useCallback, useContext, useEffect, useState, type React
 import { AnimatePresence, motion } from "motion/react";
 import { GLOSSARY_MAP } from "@/data/glossary";
 import { RichText } from "./RichText";
+import { MemoryAid } from "./MemoryAid";
+import { aidsForTerm } from "@/data/memoryAids";
 
 type Panel = { kind: "term"; key: string } | { kind: "custom"; title: string; content: ReactNode };
 
@@ -110,6 +112,7 @@ function TermPanel({ k, onNavigate }: { k: string; onNavigate: () => void }) {
           <div className="text-sm leading-relaxed"><RichText text={e.mistake} /></div>
         </div>
       )}
+      {aidsForTerm(k).map((a) => <MemoryAid key={a.key} k={a.key} compact link={false} className="mt-3" />)}
       {e.href && (
         <Link href={e.href} onClick={onNavigate} className="mt-6 inline-flex items-center gap-2 rounded-lg bg-ink px-4 py-2 text-sm font-medium text-white hover:bg-ink/85">
           {e.category === "us" ? "All US vs NZ differences →" : "Go deeper: full page →"}

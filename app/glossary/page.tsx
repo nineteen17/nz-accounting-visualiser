@@ -1,5 +1,6 @@
 import { PageHeader } from "@/components/learn/bits";
 import { GlossaryList } from "@/components/GlossaryList";
+import { GlossaryTabs } from "@/components/learn/GlossaryTabs";
 
 export const metadata = { title: "Glossary – Kōwhai Café" };
 
@@ -9,6 +10,7 @@ export default function GlossaryPage() {
       <PageHeader eyebrow="Reference" title="Glossary">
         Every term used in this tool, in plain English. Click any term for the full explanation, a café example and the common mistakes.
       </PageHeader>
+      <GlossaryTabs current="terms" />
       <GlossaryList />
     </div>
   );

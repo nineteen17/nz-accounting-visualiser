@@ -13,6 +13,7 @@ import { JournalEntry } from "@/components/visual/JournalEntry";
 import { Callout, Card, UsNote } from "@/components/learn/bits";
 import { Term } from "@/components/learn/Term";
 import { DURING_YEAR } from "@/data/books";
+import { MemoryAid } from "@/components/learn/MemoryAid";
 
 const Field = ({ label, children }: { label: string; children: React.ReactNode }) => (
   <label className="block text-sm"><span className="mb-1 block font-medium text-stone-600">{label}</span>{children}</label>
@@ -135,6 +136,7 @@ export function PayeTopic() {
           <JournalEntry txn={first} />
         </div>
       </div>
+      <MemoryAid k="paye-20th" link={false} />
     </div>
   );
 }

@@ -22,6 +22,7 @@ import { RichText } from "@/components/learn/RichText";
 import { Callout, Card, DeepDives, Tabs, UsNote } from "@/components/learn/bits";
 import { Term } from "@/components/learn/Term";
 import { Explain } from "@/components/learn/Overlay";
+import { MemoryAid } from "@/components/learn/MemoryAid";
 
 const UNADJ = DURING_YEAR.filter((t) => !t.foundInBankRec);
 const BANK_FOUND = DURING_YEAR.filter((t) => t.foundInBankRec);
@@ -65,6 +66,7 @@ export function UnadjustedTBStep() {
           <p className="mt-3 text-xs text-stone-500">If a TB doesn&apos;t balance and you can&apos;t find why, old-school bookkeepers parked the difference in a <em>suspense account</em> until it was found. Modern software won&apos;t let you post an unbalanced entry, so most errors now are the &quot;TB misses&quot; kind, which is why reviews and reconciliations matter.</p>
         </Card>
       </div>
+      <MemoryAid k="cropoc" link={false} />
     </div>
   );
 }
@@ -155,6 +157,7 @@ export function BankRecStep() {
           </motion.div>
         )}
       </AnimatePresence>
+      <MemoryAid k="bank-side" link={false} />
     </div>
   );
 }
@@ -244,6 +247,8 @@ export function AdjustmentsStep() {
         <button disabled={i === 0} onClick={() => setI(i - 1)} className="rounded-lg border border-stone-300 px-4 py-2 text-sm disabled:opacity-30">← Previous adjustment</button>
         <button disabled={i === ADJUSTMENTS.length - 1} onClick={() => setI(i + 1)} className="rounded-lg bg-kowhai-400 px-4 py-2 text-sm font-bold disabled:opacity-30">Next adjustment →</button>
       </div>
+      <MemoryAid k="accrued-prepaid" link={false} />
+      <MemoryAid k="never-bank" link={false} />
     </div>
   );
 }
@@ -394,6 +399,9 @@ export function StatementsStep() {
       {tab === "tax" && <TaxRecView />}
       {tab === "notes" && <NotesView />}
       {tab === "links" && <LinksView />}
+      <MemoryAid k="movie-photo" link={false} />
+      <MemoryAid k="profit-cash" />
+      <MemoryAid k="current-12" link={false} />
     </div>
   );
 }
@@ -562,6 +570,7 @@ export function ClosingStep() {
           )}
         </div>
       </div>
+      <MemoryAid k="trip-meter" link={false} />
     </div>
   );
 }

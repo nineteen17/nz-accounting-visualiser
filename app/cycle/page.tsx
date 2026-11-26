@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { CYCLE_STEPS } from "@/data/cycle";
 import { CycleWheel } from "@/components/cycle/CycleWheel";
+import { MemoryAid } from "@/components/learn/MemoryAid";
 import { PageHeader } from "@/components/learn/bits";
 import { SystemFlow } from "@/components/job/SystemFlow";
 
@@ -12,6 +13,7 @@ export default function CyclePage() {
       <PageHeader eyebrow="Part 2" title="The accounting cycle, step by step">
         Follow Kōwhai Café through a full financial year, from the first share issue on 1 April 2026 to the closing entries on 31 March 2027. Every number comes from the café&apos;s real journal, so you can trace any figure all the way back to its source document.
       </PageHeader>
+      <MemoryAid k="cycle-order" link={false} className="mb-8" />
       <section className="mb-10 rounded-2xl border border-stone-200 bg-white p-5">
         <h2 className="text-xl font-bold">🗺️ How it all fits together</h2>
         <p className="mb-4 mt-1 text-sm text-stone-600">Every step below is one part of this system. Documents become journal entries, entries are posted to the ledger, and at balance date the ledger becomes the financial statements. The checks and IRD filings read the books along the way.</p>

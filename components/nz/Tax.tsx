@@ -15,6 +15,7 @@ import { Term } from "@/components/learn/Term";
 import { useOverlay } from "@/components/learn/Overlay";
 import { TxnDetail } from "@/components/cycle/steps/TheYear";
 import { TaxRecView } from "@/components/cycle/steps/End";
+import { MemoryAid } from "@/components/learn/MemoryAid";
 
 const input = "w-full rounded-lg border border-stone-300 bg-white px-2 py-1.5 text-sm";
 const Field = ({ label, children }: { label: string; children: React.ReactNode }) => (
@@ -117,6 +118,7 @@ export function GstTopic() {
           <p>What a GST invoice must show depends on its value: see <Term k="taxable-supply-information">taxable supply information</Term>.</p>
         </div>
       </div>
+      <MemoryAid k="gst-3-23" link={false} />
     </div>
   );
 }
@@ -189,6 +191,7 @@ export function GstReturnTopic() {
           <Callout kind="why" title="Check: does it match the ledger?">The GST control account&apos;s movement for the period (excluding payments to and from IRD) equals box 15. In Explore → Ledger, pick account 210 to see it.</Callout>
         </div>
       </div>
+      <MemoryAid k="gst-due" link={false} />
     </div>
   );
 }
@@ -307,6 +310,7 @@ export function ProvisionalTaxTopic() {
           </div>
         </Card>
       </div>
+      <MemoryAid k="provisional-dates" link={false} />
     </div>
   );
 }
@@ -388,6 +392,7 @@ export function ShareholdersTopic() {
           </dl>
         </Card>
       </div>
+      <MemoryAid k="imputation-28-72" link={false} />
     </div>
   );
 }
@@ -482,6 +487,7 @@ export function DepreciationTopic() {
           </dl>
         </Card>
       </div>
+      <MemoryAid k="dv-sl" link={false} />
     </div>
   );
 }

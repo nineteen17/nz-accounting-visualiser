@@ -18,6 +18,8 @@ import { RichText } from "@/components/learn/RichText";
 import { Tabs } from "@/components/learn/bits";
 import { TaxRecView } from "@/components/cycle/steps/End";
 import { YearMap } from "@/components/job/YearMap";
+import { MemoryAid } from "@/components/learn/MemoryAid";
+import { aidsForStep } from "@/data/memoryAids";
 
 const weekday = (iso: string) => new Date(`${iso}T00:00:00Z`).toLocaleDateString("en-NZ", { weekday: "long", timeZone: "UTC" });
 
@@ -172,6 +174,11 @@ export function JobYear({ year = 1 }: { year?: YearNo }) {
   }, [playing, idx, speed, N]);
 
   const step = D.steps[idx];
+  // memory aids: each one shows on the first task of the year that uses it
+  const aidsAt = useMemo(() => {
+    const seen = new Set<string>();
+    return D.steps.map((st) => aidsForStep(st.id, st.title).filter((k) => !seen.has(k) && !!seen.add(k)));
+  }, [D]);
   const posted = useMemo(() => [...D.base, ...D.posted.slice(0, D.cum[idx])], [D, idx]);
   const before = useMemo(() => [...D.base, ...D.posted.slice(0, idx ? D.cum[idx - 1] : 0)], [D, idx]);
   const b = useMemo(() => balances(posted), [posted]);
@@ -252,6 +259,7 @@ export function JobYear({ year = 1 }: { year?: YearNo }) {
                   <div className="p-3"><SourceDoc doc={docTxn.doc} /></div>
                 </details>
               )}
+              {aidsAt[idx].map((k) => <MemoryAid key={k} k={k} compact className="my-0" />)}
               {step.deep && <Link href={step.deep.href} className="inline-block text-sm font-semibold text-kowhai-700 underline">Go deeper: {step.deep.label} →</Link>}
             </div>
 

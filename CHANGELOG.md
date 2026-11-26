@@ -13,6 +13,20 @@ Dates are when the change was made. Rates and rules are for the 2026–27 NZ inc
 
 ## 2026-11-27
 
+### Memory aids
+- **18 memory aids**, each with what it stands for, **why it works** (so it builds understanding rather than replacing it) and a Kōwhai Café example. All in `data/memoryAids.ts`:
+  - **Debits, credits & the equation**: "What you own = what you owe + what's yours"; **DEAD CLIC**; "cRedit has an R for Right".
+  - **The statements**: "The P&L is a movie, the balance sheet is a photo"; trip meter vs odometer (what closing resets); "Profit is an opinion, cash is a fact"; "Current means within 12 months".
+  - **The process**: "**D**id **J**ack **L**eave **T**he **A**ccounts **S**itting **C**losed?" (the cycle in order); "Accrued: used it, not billed yet. Prepaid: paid it, not used yet."; "Adjustments never touch the bank"; **CROPOC** (the six errors a trial balance can't catch); why bank statements look backwards; diminishing value vs straight line.
+  - **NZ numbers & dates**: GST inside a price × 3/23 (add × 1.15, remove ÷ 1.15); GST due the 28th except 7 May and 15 January; payday filing within 2 working days, PAYE paid by the 20th; provisional tax 28 Aug / 15 Jan / 7 May (all GST due dates too); imputation 28/72. GST and PAYE dates checked against IRD ([GST](https://www.ird.govt.nz/gst/filing-and-paying-gst-and-refunds), [PAYE](https://www.ird.govt.nz/employing-staff/payday-filing/paying-deductions-to-inland-revenue)).
+- **Where they appear**:
+  - A new **🧠 "Remember it" card** where each idea is taught: the equation, debits & credits and cash vs accrual lessons; the cycle overview; the trial balance, bank rec, adjustments, statements and closing steps; and the GST, GST return, PAYE, provisional tax, shareholders and depreciation topics. The old one-off DEAD CLIC callout now uses the card.
+  - A **cheat sheet** at `/glossary/memory-aids`, with a "Terms A–Z / Memory aids" tab switch on the Glossary.
+  - In the **glossary panel** for related terms (e.g. opening "GST" shows the 3/23 aid), folded so it's short.
+  - On **tasks in A year on the job**, the first time each one is useful in a year (e.g. the first GST return shows × 3/23 and the due dates). "Why it works" is folded away there.
+- Checked: "adjustments never touch the bank" holds for every adjustment in both years. The tax-credit adjustments use two balance sheet accounts, so the card says "almost every one" pairs a P&L account with a balance sheet account.
+- **Tests (now 44)**: aid keys are unique; their glossary terms, `[[links]]` and "learn it in full" pages exist; tasks only point to real aids; the café figures match the books (dividend imputation, the three instalments and their dates, the 3/23 example); and no adjustment touches the bank or the till.
+
 ### Hosting: a fully static site (GitHub Pages or Vercel)
 - **The site now builds to plain files** (`output: "export"` → `out/`), so any static host can serve it for free. A new workflow, `.github/workflows/pages.yml`, runs the tests, builds the site under `/<repo-name>` (`PAGES_BASE_PATH`) and publishes it to GitHub Pages on every push to `master`. Vercel's free plan also works with no changes: import the repo and keep the defaults.
 - **404s now use Next.js's built-in handling** instead of `proxy.ts`, which is removed along with its test. Each dynamic route (`/foundations/[topic]`, `/nz/[topic]`, `/cycle/[step]`, `/explore/[tool]`) sets `dynamicParams = false`, so only the listed slugs exist and anything else gets the new `app/not-found.tsx`. That page is written for beginners and links to every section. Static hosts serve it as `404.html`.

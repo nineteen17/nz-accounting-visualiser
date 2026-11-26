@@ -10,6 +10,7 @@ import { TAccount } from "@/components/visual/TAccount";
 import { ledger, parties } from "@/lib/engine/ledger";
 import { money, nzDate, num } from "@/lib/money";
 import { cx } from "@/lib/ui";
+import { MemoryAid } from "@/components/learn/MemoryAid";
 
 const EVENTS = [
   { e: "Aroha signs a 6-year lease and pays a $6,000 bond", yes: true, why: "Money leaves the bank and the café gains a refundable bond (an asset)." },
@@ -126,9 +127,7 @@ export function AnalyseStep() {
               ))}
             </tbody>
           </table>
-          <Callout kind="tip" title="Memory aid: DEAD CLIC">
-            <strong>D</strong>ebits increase <strong>E</strong>xpenses, <strong>A</strong>ssets, <strong>D</strong>rawings · <strong>C</strong>redits increase <strong>L</strong>iabilities, <strong>I</strong>ncome, <strong>C</strong>apital.
-          </Callout>
+          <MemoryAid k="dead-clic" />
         </Card>
       </div>
       <Callout kind="warn" title="Debit doesn't mean 'bad' and credit doesn't mean 'good'">
