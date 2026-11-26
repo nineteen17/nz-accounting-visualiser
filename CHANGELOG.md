@@ -11,6 +11,63 @@ Dates are when the change was made. Rates and rules are for the 2026–27 NZ inc
 
 ---
 
+## 2026-11-27
+
+### Home page: what each section is for
+- "Choose a path" is replaced by **"What's in this tool"**, which explains all six menu sections for a complete beginner. Each card gives:
+  - the exact name it has in the menu
+  - what the section is, in plain words
+  - what you do there
+  - what's inside
+  - when to go there
+  - how big it is (lessons, steps, topics, tasks, tools or terms, counted live from the data)
+- The sections are split into **the course** (Parts 1–4, in order, with a suggested-order strip) and **tools to use any time** (Explore the books, Glossary).
+- A callout explains the difference between Part 2 (one step at a time) and Part 4 (everything in date order, as real work happens).
+- The hero's second button is now "I know the basics: start the job" (Part 4).
+
+### Navigation: "A year on the job" is its own section
+- **"4 · A year on the job"** is now a top-level nav item and section at `/on-the-job` (was `/cycle/year`, nested in the accounting cycle). Both years and the year 2 statements page (`/on-the-job/year-2-statements`) live there.
+- The old address redirects permanently (308) with the year and step kept, e.g. `/cycle/year?year=2&step=B17` → `/on-the-job?year=2&step=B17`.
+- The cycle overview no longer has the big "Work the whole year" banner or the year 2 card: it's just the steps, with one line at the end pointing to Part 4.
+- Home: "Choose a path" card 4 is now "A year on the job"; Explore the books moves to a line under the cards.
+- **US vs NZ** is no longer in the nav. The page stays at `/us-vs-nz`, linked from the glossary, the foundations lesson and every US-note callout.
+- The header switches to the ☰ Menu button below 1280px (was 1024px), so the six links never wrap onto two lines.
+
+### The café's second year (1 April 2027 – 31 March 2028)
+- **A full second year of books**: 199 journal entries built on year 1's closing balances. Every routine entry is included, as in year 1: 26 pay runs, PAYE, monthly sales, banking, purchases, power, rent, the loan, drawings, supplier payments and six GST returns.
+- **New in year 2**:
+  - Reversing entries on 1 April for year 1's accrued catering income, accrued power, prepaid insurance and accrued wages. Then the real March power bill arrives (the estimate's $18 error lands this year), the school is invoiced, and the wedding deposit becomes income.
+  - Year 1's loose ends: the final GST return (Feb–Mar 2027) is paid 7 May 2027, and year 1's terminal tax ($13,742, due 7 April 2028) stays in income tax payable.
+  - Provisional tax: year 1's RIT was over $5,000, so the standard option applies: $16,742 × 105% = $17,579, paid 28 Aug, 15 Jan and 7 May. Explains the safe harbour (no use-of-money interest when RIT is under $60,000). Year 1's IR4 is filed early (July 2027).
+  - Annual leave: Mia takes 4 weeks. The leave pay comes out of year 1's holiday pay accrual, and the part above the accrual (she's now on a higher rate) is expensed. For tax, last year's add-back is deducted once it's paid.
+  - Selling an asset: the old POS system is depreciated to the date of sale and sold for $900 + GST: a $150 accounting gain, $100 of depreciation recovery for tax (no tax depreciation in the year of sale, IR260) and GST on the sale. A new POS system is bought, with Investment Boost.
+  - A $20,000 fully imputed dividend: directors' solvency certificate (Companies Act s 4 and s 52), imputation credits of $7,778 checked against the imputation credit account, 33% dividend RWT ($1,389, paid 20 March), and what each shareholder's IR3 looks like. Includes a US vs NZ note on imputation vs double taxation.
+  - Pay rises (Mia $27, Leo $25.50), the ACC earners' levy at 1.83% (2027–28), sales up about 6%, a dearer insurance renewal, and higher shareholder salaries.
+  - Year end: entertainment GST adjustment, accrued power and wages (11 days), prepaid insurance, holiday pay, depreciation on opening book values, the first stocktake with **opening stock**, shareholder salaries, income tax and closing.
+- **"A year on the job" has a Year 1 / Year 2 switch** (`/on-the-job?year=2`): 226 year-2 tasks, starting with "the books carry forward" and the opening trial balance. Routine tasks link back to their full explanation in year 1, so **⏩ Skip routine** jumps between the new jobs. The final step of year 1 has an "On to year 2 →" button. After year end: last year's terminal tax, the final GST return, the third instalment, the annual return and the 2028 IR4.
+- **New page `/on-the-job/year-2-statements`**: the year-2 statements with **comparatives** (2028 beside 2027) for the profit & loss, balance sheet and cash flows; changes in equity from last year's closing balance, with the dividend; the year-2 tax reconciliation; the imputation credit account; and selling an asset, accounts vs tax. Linked from the year 2 tasks.
+- **Glossary**: added comparatives, imputation credit account, solvency test and depreciation recovery; reversing entry now has a café example.
+- **Under the hood**:
+  - Year 1's routine entries now come from a shared generator (`data/books/generator.ts`) that both years use. A snapshot comparison confirmed all 211 year-1 entries and 236 steps are unchanged.
+  - New accounts: 216 Dividend RWT payable, 460 Gain on sale of assets, 518 Opening stock.
+  - The statements engine handles opening stock, the loan's current portion in any year, gains on sale in the indirect cash flow, and dividends in the cash flow.
+  - Bank reconciliations now include fees found in an earlier month's reconciliation.
+- **Rates for 2027–28**:
+  - Verified: ACC earners' levy $1.83 per $100 with maximum liable earnings of $160,244 ([IRD](https://www.ird.govt.nz/income-tax/income-tax-for-individuals/acc-clients-and-carers/acc-earners-levy-rates)); the provisional tax standard option and dates ([IRD](https://www.ird.govt.nz/income-tax/provisional-tax/provisional-tax-options/standard-option)); dividend RWT ([IR284](https://www.ird.govt.nz/-/media/project/ir/home/documents/forms-and-guides/ir200---ir299/ir284/ir284.pdf)); depreciation on disposal ([IR260](https://www.ird.govt.nz/-/media/project/ir/home/documents/forms-and-guides/ir200---ir299/ir260/ir260.pdf)).
+  - Assumed: the minimum wage from 1 April 2027 (not yet announced; both staff are paid above $23.95); individual tax brackets and the student loan threshold ($24,128) unchanged; the student loan rate stays at 12% (a cut to 10% has been proposed, but isn't law).
+- **Tests (now 42)**:
+  - Opening balances equal year 1's closing balances, and only permanent accounts carry forward.
+  - Every entry balances, ids are unique across both years, and every entry is dated inside the year.
+  - The trial balance, the equation and the balance sheet all balance.
+  - Closing zeroes every temporary account, and the reversals clear last year's accruals.
+  - GST owed at year end equals the final return.
+  - Income tax payable = last year's terminal tax + this year's tax − the instalments paid.
+  - The dividend is fully imputed and within the imputation credit account, with 33% RWT.
+  - The bank reconciles every month, and the direct and indirect cash flows agree.
+  - "A year on the job", for both years: every entry is posted once, the year ends with the full books, and step ids, repeats, glossary links and date order are all valid.
+
+---
+
 ## 2026-11-26
 
 ### The big picture diagram

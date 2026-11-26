@@ -55,6 +55,20 @@ export function assetYearOne(a: FixedAsset) {
   return { months, accounting, boost, taxBase, taxDep, closingBookValue: r2(a.cost - accounting), closingTaxValue: r2(taxBase - taxDep) };
 }
 
+/**
+ * One asset for any year, carrying values forward.
+ * - accounting: diminishing value on opening book value, for the months held (to the month of sale if sold)
+ * - tax: no depreciation in the year of disposal (IR260); Investment Boost only in the year bought
+ */
+export function assetYear(a: FixedAsset, opts: { openingBook: number; openingTax: number; firstYear: boolean; yearEnd: string; soldMonths?: number }) {
+  const months = opts.soldMonths ?? monthsOwned(a.acquired, opts.yearEnd);
+  const accounting = dvDepreciation(opts.openingBook, a.dvRate, months);
+  const boost = opts.firstYear && a.investmentBoost ? r2(a.cost * DEPRECIATION.investmentBoostRate) : 0;
+  const taxBase = r2(opts.openingTax - boost);
+  const taxDep = opts.soldMonths !== undefined ? 0 : dvDepreciation(taxBase, a.dvRate, months);
+  return { months, accounting, boost, taxBase, taxDep, closingBookValue: r2(opts.openingBook - accounting), closingTaxValue: r2(taxBase - taxDep) };
+}
+
 /** Selling an asset: compare sale price to tax book value */
 export function disposal(cost: number, taxBookValue: number, salePrice: number) {
   if (salePrice > taxBookValue) {

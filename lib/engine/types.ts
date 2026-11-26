@@ -29,6 +29,7 @@ export type CashFlowTag =
   | "shares"
   | "borrowings"
   | "shareholders"
+  | "dividends"
   | "none";
 
 export type GstTreatment = "standard" | "zero" | "exempt" | "none";
@@ -75,7 +76,7 @@ export type JournalBook =
   | "cash-payments"
   | "payroll";
 
-export type TxnKind = "featured" | "routine" | "adjustment" | "closing";
+export type TxnKind = "featured" | "routine" | "adjustment" | "closing" | "opening";
 
 export interface DocItem {
   desc: string;

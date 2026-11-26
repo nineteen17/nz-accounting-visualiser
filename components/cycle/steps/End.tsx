@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { AnimatePresence, motion } from "motion/react";
 import { ADJUSTMENTS, ALL, BEFORE_CLOSING, CLOSING, DURING_YEAR, NET_PROFIT, PROFIT_BEFORE_TAX, TAX } from "@/data/books";
+import * as Y2 from "@/data/books/year2";
 import { ACCOUNTS, account } from "@/data/chartOfAccounts";
 import { BUSINESS } from "@/data/business";
 import { balances, equation, natural, trialBalance } from "@/lib/engine/ledger";
@@ -397,14 +398,17 @@ export function StatementsStep() {
   );
 }
 
-export function TaxRecView() {
+export function TaxRecView({ year = 1 }: { year?: 1 | 2 }) {
+  const y2 = year === 2;
+  const tax = y2 ? Y2.TAX : TAX;
+  const pbt = y2 ? Y2.PROFIT_BEFORE_TAX : PROFIT_BEFORE_TAX;
   return (
     <div className="grid gap-6 xl:grid-cols-[1.4fr_1fr]">
       <div className="doc-paper rounded-sm px-6 py-5">
-        <h3 className="mb-3 text-center text-lg font-bold">Income tax reconciliation: 2027 income year (IR4)</h3>
+        <h3 className="mb-3 text-center text-lg font-bold">Income tax reconciliation: {y2 ? "2028" : "2027"} income year (IR4)</h3>
         <div className="space-y-1 text-sm">
-          <div className="flex justify-between font-semibold"><span>Net profit before tax (per accounts)</span><span className="num">{money(PROFIT_BEFORE_TAX)}</span></div>
-          {TAX.items.map((i) => (
+          <div className="flex justify-between font-semibold"><span>Net profit before tax (per accounts)</span><span className="num">{money(pbt)}</span></div>
+          {tax.items.map((i) => (
             <div key={i.label} className="flex items-start justify-between gap-3 pl-4">
               <span>
                 {i.label}{" "}
@@ -415,12 +419,12 @@ export function TaxRecView() {
               <span className="num">{money(i.amount)}</span>
             </div>
           ))}
-          <div className="flex justify-between border-t border-stone-400 pt-1 font-bold"><span>Taxable income</span><span className="num">{money(TAX.taxableIncome)}</span></div>
-          <div className="flex justify-between font-semibold"><span>Tax at 28%</span><span className="num">{money(TAX.tax)}</span></div>
-          <div className="flex justify-between pl-4"><span>Less RWT deducted by the bank</span><span className="num">{money(-TAX.rwt)}</span></div>
-          <div className="flex justify-between border-t border-stone-300 pt-1"><span>Residual income tax (RIT)</span><span className="num">{money(TAX.residual)}</span></div>
-          <div className="flex justify-between pl-4"><span>Less provisional tax paid</span><span className="num">{money(-TAX.provisional)}</span></div>
-          <div className="flex justify-between border-b-4 border-double border-stone-500 pt-1 font-bold"><span>Terminal tax to pay (due 7 April 2028)</span><span className="num">{money(TAX.terminal)}</span></div>
+          <div className="flex justify-between border-t border-stone-400 pt-1 font-bold"><span>Taxable income</span><span className="num">{money(tax.taxableIncome)}</span></div>
+          <div className="flex justify-between font-semibold"><span>Tax at 28%</span><span className="num">{money(tax.tax)}</span></div>
+          {!y2 && <div className="flex justify-between pl-4"><span>Less RWT deducted by the bank</span><span className="num">{money(-tax.rwt)}</span></div>}
+          <div className="flex justify-between border-t border-stone-300 pt-1"><span>Residual income tax (RIT)</span><span className="num">{money(tax.residual)}</span></div>
+          <div className="flex justify-between pl-4"><span>{y2 ? "Less provisional tax (3 instalments: 2 paid, 1 due 7 May 2028)" : "Less provisional tax paid"}</span><span className="num">{money(-tax.provisional)}</span></div>
+          <div className="flex justify-between border-b-4 border-double border-stone-500 pt-1 font-bold"><span>{tax.terminal >= 0 ? "Terminal tax to pay" : "Refund due"} (due 7 April {y2 ? "2029" : "2028"})</span><span className="num">{money(Math.abs(tax.terminal))}</span></div>
         </div>
       </div>
       <div className="space-y-3">
@@ -430,9 +434,9 @@ export function TaxRecView() {
           <table className="w-full text-xs">
             <thead><tr className="text-left text-stone-500"><th>Asset</th><th className="text-right">Cost</th><th className="text-right">Acctg dep</th><th className="text-right">Boost</th><th className="text-right">Tax dep</th></tr></thead>
             <tbody>
-              {TAX.assets.map((x) => (
+              {tax.assets.map((x) => (
                 <tr key={x.asset.id} className="border-t border-stone-100">
-                  <td className="py-1">{x.asset.name}</td>
+                  <td className="py-1">{x.asset.name}{"note" in x && x.note && <span className="block text-[10px] text-stone-500">{x.note}</span>}</td>
                   <td className="num text-right">{num(x.asset.cost)}</td>
                   <td className="num text-right">{num(x.accounting)}</td>
                   <td className="num text-right">{num(x.boost)}</td>
@@ -442,7 +446,11 @@ export function TaxRecView() {
             </tbody>
           </table>
         </Card>
-        <Callout kind="nz" title="Next year: provisional tax">RIT is {money(TAX.residual, { dp: 0 })}, which is over the {money(PROVISIONAL_TAX.ritThreshold, { dp: 0 })} threshold. So for the 2028 year the company becomes a <Term k="provisional-tax">provisional taxpayer</Term>. Standard method: {money(TAX.residual * 1.05, { dp: 0 })} (RIT + 5%) in 3 instalments.</Callout>
+        {y2 ? (
+          <Callout kind="nz" title="Provisional tax: the safe harbour">This year&apos;s tax was worked out on last year&apos;s RIT + 5% ({money(Y2.PROVISIONAL.total, { dp: 0 })}). The real tax turned out {money(Y2.TAX.residual - Y2.PROVISIONAL.total, { dp: 0 })} higher. Because RIT is under {money(PROVISIONAL_TAX.safeHarbourRit, { dp: 0 })} and every instalment was paid on time, there&apos;s no <Term k="uomi">use-of-money interest</Term>: the difference is simply paid as terminal tax.</Callout>
+        ) : (
+          <Callout kind="nz" title="Next year: provisional tax">RIT is {money(TAX.residual, { dp: 0 })}, which is over the {money(PROVISIONAL_TAX.ritThreshold, { dp: 0 })} threshold. So for the 2028 year the company becomes a <Term k="provisional-tax">provisional taxpayer</Term>. Standard method: {money(TAX.residual * 1.05, { dp: 0 })} (RIT + 5%) in 3 instalments.</Callout>
+        )}
       </div>
     </div>
   );

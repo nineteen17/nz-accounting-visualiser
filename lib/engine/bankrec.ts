@@ -25,7 +25,8 @@ export function bankItems(txns: Transaction[]): BankItem[] {
 export function bankReconciliation(txns: Transaction[], from: string, to: string) {
   const items = bankItems(txns);
   // Cashbook = what the café had recorded BEFORE looking at the statement
-  const cashbookItems = items.filter((i) => !i.txn.foundInBankRec);
+  // (items found in an EARLIER month's reconciliation were recorded then, so they're in the cashbook now)
+  const cashbookItems = items.filter((i) => !i.txn.foundInBankRec || i.bookDate < from);
   const cashbookOpening = d(cashbookItems.filter((i) => i.bookDate < from).reduce((s, i) => s + c(i.amount), 0));
   const cashbookMonth = cashbookItems.filter((i) => i.bookDate >= from && i.bookDate <= to);
   const cashbookClosing = d(c(cashbookOpening) + cashbookMonth.reduce((s, i) => s + c(i.amount), 0));

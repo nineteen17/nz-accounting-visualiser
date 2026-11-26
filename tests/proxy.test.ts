@@ -14,7 +14,9 @@ describe("proxy: real 404s for unknown slugs", () => {
       ...NZ_TOPICS.map((t) => `/nz/${t.slug}`),
       ...CYCLE_STEPS.map((s) => `/cycle/${s.slug}`),
       ...EXPLORE_TOOLS.map((t) => `/explore/${t.slug}`),
-      "/cycle/year",
+      "/on-the-job",
+      "/on-the-job?year=2",
+      "/on-the-job/year-2-statements",
       "/nz/gst-return?period=P3",
     ];
     for (const p of real) expect(status(p), p).toBe(200);

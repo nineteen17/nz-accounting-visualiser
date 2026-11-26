@@ -9,53 +9,24 @@ import { taxComputation } from "@/lib/nz/incomeTax";
 import { BUSINESS, CLOSING_STOCK, CUSTOMERS, EMPLOYEES, FIXED_ASSETS, SHAREHOLDERS } from "../business";
 import { APRIL } from "./april";
 import { LATER_EVENTS, LEO_HOURS, MIA_HOURS, PAY_RUNS, ROUTINE_AND_PAYROLL, supplierPayments } from "./year";
-import { addDays, money2 } from "./helpers";
+import { money2 } from "./helpers";
+import { closingEntries, gstSettlement } from "./generator";
 
 /* 1. Everything that happened during the year */
 const base = [...APRIL, ...LATER_EVENTS, ...ROUTINE_AND_PAYROLL].sort(byDate);
 const withAp = [...base, ...supplierPayments(base)].sort(byDate);
 
 /* 2. GST returns P1–P5 are filed & paid during the year (P6 is due 7 May, after year end) */
-const gstSettlements: Transaction[] = GST_PERIODS.slice(0, 5).map((p, i) => {
-  const r = gstReturn(withAp, p);
-  const refund = r.box15 < 0;
-  const amt = Math.abs(r.box15);
-  const date = refund ? addDays(p.to, 19) : p.due;
-  return {
+const gstSettlements: Transaction[] = GST_PERIODS.slice(0, 5).map((p, i) =>
+  gstSettlement(p, gstReturn(withAp, p), {
     id: `GST-${p.id}`,
-    date,
-    title: refund ? `GST refund received – ${p.label}` : `Pay GST – ${p.label}`,
-    kind: i < 2 ? "featured" : "routine",
-    book: refund ? "cash-receipts" : "cash-payments",
-    month: date.slice(0, 7),
-    story: refund
-      ? `The first GST return covers April–May. Because the café bought so much equipment, the GST it paid (${money2(r.box14)}) is MORE than the GST it collected on sales (${money2(r.box10)}). So IRD refunds the difference, ${money2(amt)}. Ben files the return online in early June and the refund arrives about two weeks later.`
-      : `GST return for ${p.label}: GST collected ${money2(r.box10)} − GST claimed ${money2(r.box14)} = ${money2(amt)} to pay, due ${p.due}. Paying it clears the GST liability; GST is never an expense or income for a registered business.`,
-    doc: {
-      kind: "ird",
-      title: `GST return ${p.label}`,
-      issuer: "Inland Revenue",
-      recipient: BUSINESS.name,
-      ref: `GST ${BUSINESS.gstNumber}`,
-      date,
-      rows: [
-        { label: "Total GST collected (box 10)", value: money2(r.box10) },
-        { label: "Total GST credit (box 14)", value: money2(r.box14) },
-        { label: refund ? "Refund due to you (box 15)" : "GST to pay (box 15)", value: money2(amt), strong: true },
-      ],
-    },
-    lines: refund
-      ? [
-          { account: "100", debit: amt, why: "Refund received from IRD." },
-          { account: "210", credit: amt, gst: "settlement", why: "Clears the debit balance (refund owed to us) in the GST account." },
-        ]
-      : [
-          { account: "210", debit: amt, gst: "settlement", why: "Clears the GST owed to IRD for the period." },
-          { account: "100", credit: amt, why: "Paid from the bank." },
-        ],
-    deepDives: [{ href: `/nz/gst-return?period=${p.id}`, label: "See this GST return box by box" }],
-  } satisfies Transaction;
-});
+    featured: i < 2,
+    story: (r, amt, refund) =>
+      refund
+        ? `The first GST return covers April–May. Because the café bought so much equipment, the GST it paid (${money2(r.box14)}) is MORE than the GST it collected on sales (${money2(r.box10)}). So IRD refunds the difference, ${money2(amt)}. Ben files the return online in early June and the refund arrives about two weeks later.`
+        : `GST return for ${p.label}: GST collected ${money2(r.box10)} − GST claimed ${money2(r.box14)} = ${money2(amt)} to pay, due ${p.due}. Paying it clears the GST liability; GST is never an expense or income for a registered business.`,
+  }),
+);
 
 export const DURING_YEAR: Transaction[] = [...withAp, ...gstSettlements].sort(byDate);
 
@@ -250,43 +221,9 @@ export const ADJUSTMENTS = [...ADJ_BEFORE_TAX, ...ADJ_TAX];
 export const BEFORE_CLOSING = [...DURING_YEAR, ...ADJUSTMENTS];
 
 /* 5. Closing entries */
-const fin = balances(BEFORE_CLOSING);
-const incomeAccts = ACCOUNTS.filter((a) => a.type === "income" && Math.abs(fin[a.code]) > 0.004);
-const expenseAccts = ACCOUNTS.filter((a) => a.type === "expense" && Math.abs(fin[a.code]) > 0.004);
-const incomeSum = r2(incomeAccts.reduce((s, a) => s - fin[a.code], 0));
-const expenseSum = r2(expenseAccts.reduce((s, a) => s + fin[a.code], 0));
-export const NET_PROFIT = r2(incomeSum - expenseSum);
-
-const close = (t: Omit<Transaction, "date" | "kind" | "book">): Transaction => ({ date: YE, kind: "closing", book: "general", ...t });
-export const CLOSING: Transaction[] = [
-  close({
-    id: "CL01",
-    title: "Close income accounts to the income summary",
-    story: "Every income account is debited by exactly its balance, which brings it to zero. The total goes to the income summary as a credit.",
-    lines: [
-      ...incomeAccts.map((a) => ({ account: a.code, debit: r2(-fin[a.code]), why: `Empties ${a.name}.` })),
-      { account: "320", credit: incomeSum, why: "All the year's income collected in one place." },
-    ],
-  }),
-  close({
-    id: "CL02",
-    title: "Close expense accounts to the income summary",
-    story: "Every expense account is credited by its balance (bringing it to zero). The total is debited to the income summary.",
-    lines: [
-      { account: "320", debit: expenseSum, why: "All the year's expenses collected in one place." },
-      ...expenseAccts.map((a) => ({ account: a.code, credit: r2(fin[a.code]), why: `Empties ${a.name}.` })),
-    ],
-  }),
-  close({
-    id: "CL03",
-    title: "Transfer the profit to retained earnings",
-    story: `The income summary now holds the net profit after tax: ${money2(NET_PROFIT)}. It moves to [[retained-earnings]], the permanent equity account, and the income summary goes back to zero. The new year starts with all income and expense accounts at $0.`,
-    lines: [
-      { account: "320", debit: NET_PROFIT },
-      { account: "310", credit: NET_PROFIT },
-    ],
-  }),
-];
+const closed = closingEntries(balances(BEFORE_CLOSING), YE);
+export const NET_PROFIT = closed.netProfit;
+export const CLOSING: Transaction[] = closed.entries;
 
 export const ALL = [...BEFORE_CLOSING, ...CLOSING];
 

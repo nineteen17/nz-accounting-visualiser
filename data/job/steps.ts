@@ -7,7 +7,7 @@
  * filing GST returns, reviewing trial balances, preparing statements, filing tax returns.
  */
 import { ADJUSTMENTS, CLOSING, DURING_YEAR, TAX } from "@/data/books";
-import { GST_PERIODS } from "@/lib/engine/gst";
+import { GST_PERIODS, type GstPeriod } from "@/lib/engine/gst";
 import { money, nzDate } from "@/lib/money";
 import type { Transaction } from "@/lib/engine/types";
 
@@ -18,7 +18,7 @@ export type Phase = "during" | "year-end" | "after";
 export type JobPanel =
   | { kind: "bankrec"; from: string; to: string; month: string }
   | { kind: "gst"; period: string }
-  | { kind: "tb"; stage: "unadjusted" | "adjusted" | "post-closing" }
+  | { kind: "tb"; stage: "opening" | "unadjusted" | "adjusted" | "post-closing" }
   | { kind: "statements" }
   | { kind: "tax" }
   | { kind: "checklist"; items: string[] };
@@ -136,9 +136,9 @@ const KIND: Record<string, KindInfo> = {
 const featuredWho = (t: Transaction): Who => (["A01", "A02"].includes(t.id) ? "Aroha & Ben (owners)" : "Ben (bookkeeper)");
 const bookCategory: Record<string, Category> = { sales: "sales", purchases: "purchases", "cash-receipts": "banking", "cash-payments": "payments", payroll: "payroll", general: "event" };
 
-function kindKey(t: Transaction): string | null {
+export function kindKey(t: Transaction): string | null {
   if (t.id === "A21") return "PAY";
-  if (/^[AF]\d\d$/.test(t.id) || t.id.startsWith("NIGHTSAFE") || t.id.startsWith("GST-")) return null; // one-off, explained by its own story
+  if (/^[A-Z]\d\d$/.test(t.id) || t.id.startsWith("NIGHTSAFE") || t.id.startsWith("GST-")) return null; // one-off, explained by its own story
   const p = t.id.split("-")[0];
   if (p === "RENT") return /prepaid/i.test(t.title) ? "RENT-PREPAID" : "RENT-PAID";
   if (p === "APPAY" && t.id === "APPAY-2026-04") return "APPAY";
@@ -147,58 +147,79 @@ function kindKey(t: Transaction): string | null {
 
 /* ───────────── Build the steps ───────────── */
 
-const lastDayOf = (ym: string) => {
+export const lastDayOf = (ym: string) => {
   const [y, m] = ym.split("-").map(Number);
   const d = new Date(Date.UTC(y, m, 0)).getUTCDate();
   return `${ym}-${String(d).padStart(2, "0")}`;
 };
-const monthLabel = (ym: string) => nzDate(`${ym}-01`).replace(/^1 /, "");
+export const monthLabel = (ym: string) => nzDate(`${ym}-01`).replace(/^1 /, "");
+const nextYm = (ym: string) => {
+  const [y, m] = ym.split("-").map(Number);
+  return m === 12 ? `${y + 1}-01` : `${y}-${String(m + 1).padStart(2, "0")}`;
+};
 
-function build(): JobStep[] {
+/** Settings for building one year's "during the year" steps */
+export interface DuringConfig {
+  during: Transaction[];
+  firstMonth: string;
+  lastMonth: string;
+  /** when the balance-date bank reconciliation is done (the statement arrives in April) */
+  lastRecDate: string;
+  periods: GstPeriod[];
+  /** year 1 teaches each kind of job in full the first time; later years point back to it */
+  teach: boolean;
+  gstIntro: (pid: string, p: GstPeriod) => string;
+  gstDeep: (pid: string) => string;
+  recIntro: (ym: string, kind: "first" | "repeat" | "last") => string;
+  overrides?: Record<string, { who?: Who; category?: Category }>;
+  /** jobs with no entry, slotted in by date */
+  extras?: JobStep[];
+  /** where each kind of routine job is explained in full (for years that don't teach) */
+  kindHome?: Record<string, string>;
+}
+
+export function duringSteps(cfg: DuringConfig): JobStep[] {
   const steps: JobStep[] = [];
   const firstOf: Record<string, number> = {};
-  const bankFound = DURING_YEAR.filter((t) => t.foundInBankRec);
-  const normal = DURING_YEAR.filter((t) => !t.foundInBankRec);
+  const bankFound = cfg.during.filter((t) => t.foundInBankRec);
+  const normal = cfg.during.filter((t) => !t.foundInBankRec);
+  const extras = [...(cfg.extras ?? [])].sort((a, b) => a.date.localeCompare(b.date));
   let recFirst: number | undefined;
 
   const bankRec = (ym: string) => {
-    const isMarch = ym === "2027-03";
+    const isLast = ym === cfg.lastMonth;
     const step: JobStep = {
       id: `REC-${ym}`,
-      date: isMarch ? "2027-04-02" : lastDayOf(ym),
-      doneLabel: isMarch ? "Done when the March statement arrives in early April" : undefined,
-      phase: isMarch ? "year-end" : "during",
+      date: isLast ? cfg.lastRecDate : lastDayOf(ym),
+      doneLabel: isLast ? "Done when the March statement arrives in early April" : undefined,
+      phase: isLast ? "year-end" : "during",
       who: "Ben (bookkeeper)",
       category: "banking",
       title: `Reconcile the bank account for ${monthLabel(ym)}`,
-      txns: isMarch ? bankFound : [],
-      intro: isMarch
-        ? "The most important bank reconciliation of the year, because the balance sheet's bank figure has to be right. This time the statement and the cashbook **don't** agree straight away. Ben works through every difference:\n\n• A **bank fee** on the statement that isn't in the books yet. He records it now (that's the entry below).\n• A **deposit in transit**: the 31 March takings went in the night safe, but the bank processed them on 1 April.\n• An **unpresented payment**: the shopfitter was paid late on 31 March and it cleared on 1 April.\n\nOnly the bank fee needs an entry. The other two are timing differences: the books are right, the bank is just a day behind. They're listed on the reconciliation to prove the difference is explained."
-        : recFirst === undefined
-          ? "At month end Ben reconciles the bank: he compares every line in the café's cashbook (account 100) with the bank statement, ticks off each match and investigates anything that doesn't match.\n\nNo entry is needed when everything agrees, but the job still matters. Doing it **every month** catches mistakes, missed transactions and fraud while they're small and easy to fix."
-          : `Month-end bank reconciliation for ${monthLabel(ym)}: the cashbook and the bank statement are compared line by line. This month they agree, so there's nothing to record.`,
-      repeatOf: isMarch ? undefined : recFirst,
-      skippable: !isMarch && recFirst !== undefined,
+      txns: isLast ? bankFound : [],
+      intro: cfg.recIntro(ym, isLast ? "last" : recFirst === undefined ? "first" : "repeat"),
+      repeatOf: isLast ? undefined : recFirst,
+      skippable: !isLast && recFirst !== undefined,
       panel: { kind: "bankrec", from: `${ym}-01`, to: lastDayOf(ym), month: monthLabel(ym) },
       deep: { href: "/cycle/bank-reconciliation", label: "Bank reconciliation step" },
     };
-    if (!isMarch && recFirst === undefined) recFirst = steps.length;
+    if (!isLast && recFirst === undefined) recFirst = steps.length;
     steps.push(step);
   };
 
-  let currentYm = "2026-04";
+  let currentYm = cfg.firstMonth;
   for (const t of normal) {
     const ym = t.date.slice(0, 7);
-    while (ym > currentYm && currentYm < "2027-03") {
+    while (ym > currentYm && currentYm < cfg.lastMonth) {
       bankRec(currentYm);
-      const [y, m] = currentYm.split("-").map(Number);
-      currentYm = m === 12 ? `${y + 1}-01` : `${y}-${String(m + 1).padStart(2, "0")}`;
+      currentYm = nextYm(currentYm);
     }
+    while (extras.length && extras[0].date < t.date) steps.push(extras.shift()!);
 
     // GST return is prepared and filed just before the settlement entry
     if (t.id.startsWith("GST-")) {
       const pid = t.id.replace("GST-", "");
-      const p = GST_PERIODS.find((x) => x.id === pid)!;
+      const p = cfg.periods.find((x) => x.id === pid)!;
       steps.push({
         id: `GSTRET-${pid}`,
         date: t.date,
@@ -207,12 +228,10 @@ function build(): JobStep[] {
         category: "tax",
         title: `Prepare and file the GST return for ${p.label}`,
         txns: [],
-        intro: pid === "P1"
-          ? `The first two-monthly GST period has ended. Ben prepares the [[gst-return]] from the GST account: GST on sales, called [[output-tax]], minus GST on purchases, called [[input-tax]]. He files it in myIR by **${nzDate(p.due)}**.\n\nBecause the café spent so much on its fit-out and equipment, it claimed more GST than it collected. This first return is a **refund**.`
-          : `Two months are up, so Ben prepares and files the GST return for ${p.label}: output tax on sales minus input tax on purchases, plus any adjustments. It's due **${nzDate(p.due)}**. Filing the return doesn't change the books; paying it (the next step) does.`,
+        intro: cfg.gstIntro(pid, p),
         skippable: false,
         panel: { kind: "gst", period: pid },
-        deep: { href: `/nz/gst-return?period=${pid}`, label: "GST return, box by box" },
+        deep: { href: cfg.gstDeep(pid), label: "GST return, box by box" },
       });
     }
 
@@ -222,23 +241,49 @@ function build(): JobStep[] {
     const isFirst = key !== null && repeatOf === undefined;
     if (isFirst) firstOf[key!] = steps.length;
     const featured = t.kind === "featured";
+    const ov = cfg.overrides?.[t.id];
+    const home = !cfg.teach && isFirst && key ? cfg.kindHome?.[key] : undefined;
     steps.push({
       id: t.id,
       date: t.date,
       phase: "during",
-      who: info?.who ?? featuredWho(t),
-      category: info?.category ?? (t.id.startsWith("GST-") ? "tax" : t.id.startsWith("A0") && Number(t.id.slice(1)) <= 4 ? "setup" : bookCategory[t.book] ?? "event"),
+      who: ov?.who ?? info?.who ?? featuredWho(t),
+      category: ov?.category ?? info?.category ?? (t.id.startsWith("GST-") ? "tax" : t.id.startsWith("A0") && Number(t.id.slice(1)) <= 4 ? "setup" : bookCategory[t.book] ?? "event"),
       title: t.title,
       txns: [t],
       // featured entries have their own detailed story; routine ones get the task explanation
-      intro: featured && !(key === "PAY" && isFirst) ? t.story : info ? (isFirst ? info.first : info.repeat) : t.story,
+      intro: featured && !(key === "PAY" && isFirst && cfg.teach) ? t.story : info ? (isFirst && cfg.teach ? info.first : info.repeat) : t.story,
       repeatOf,
-      skippable: repeatOf !== undefined && !featured,
+      skippable: cfg.teach ? repeatOf !== undefined && !featured : key !== null && !featured,
       also: info?.also,
-      deep: info?.deep,
+      deep: home ? { href: home, label: "First time, explained in full (year 1)" } : info?.deep,
     });
   }
-  bankRec("2027-03");
+  steps.push(...extras);
+  bankRec(cfg.lastMonth);
+  return steps;
+}
+
+function build(): JobStep[] {
+  const steps = duringSteps({
+    during: DURING_YEAR,
+    firstMonth: "2026-04",
+    lastMonth: "2027-03",
+    lastRecDate: "2027-04-02",
+    periods: GST_PERIODS,
+    teach: true,
+    gstIntro: (pid, p) =>
+      pid === "P1"
+        ? `The first two-monthly GST period has ended. Ben prepares the [[gst-return]] from the GST account: GST on sales, called [[output-tax]], minus GST on purchases, called [[input-tax]]. He files it in myIR by **${nzDate(p.due)}**.\n\nBecause the café spent so much on its fit-out and equipment, it claimed more GST than it collected. This first return is a **refund**.`
+        : `Two months are up, so Ben prepares and files the GST return for ${p.label}: output tax on sales minus input tax on purchases, plus any adjustments. It's due **${nzDate(p.due)}**. Filing the return doesn't change the books; paying it (the next step) does.`,
+    gstDeep: (pid) => `/nz/gst-return?period=${pid}`,
+    recIntro: (ym, kind) =>
+      kind === "last"
+        ? "The most important bank reconciliation of the year, because the balance sheet's bank figure has to be right. This time the statement and the cashbook **don't** agree straight away. Ben works through every difference:\n\n• A **bank fee** on the statement that isn't in the books yet. He records it now (that's the entry below).\n• A **deposit in transit**: the 31 March takings went in the night safe, but the bank processed them on 1 April.\n• An **unpresented payment**: the shopfitter was paid late on 31 March and it cleared on 1 April.\n\nOnly the bank fee needs an entry. The other two are timing differences: the books are right, the bank is just a day behind. They're listed on the reconciliation to prove the difference is explained."
+        : kind === "first"
+          ? "At month end Ben reconciles the bank: he compares every line in the café's cashbook (account 100) with the bank statement, ticks off each match and investigates anything that doesn't match.\n\nNo entry is needed when everything agrees, but the job still matters. Doing it **every month** catches mistakes, missed transactions and fraud while they're small and easy to fix."
+          : `Month-end bank reconciliation for ${monthLabel(ym)}: the cashbook and the bank statement are compared line by line. This month they agree, so there's nothing to record.`,
+  });
 
   /* ── Year end ── */
   const ye = (s: Omit<JobStep, "phase" | "skippable"> & { skippable?: boolean }) => steps.push({ phase: "year-end", skippable: false, ...s });
@@ -340,10 +385,28 @@ function build(): JobStep[] {
 
 export const JOB_STEPS: JobStep[] = build();
 
+/** Every entry in posting order, and the number posted after step i (inclusive) */
+export function postingOf(steps: JobStep[]) {
+  const posted = steps.flatMap((s) => s.txns);
+  const cum = steps.reduce<number[]>((acc, s, i) => [...acc, (i ? acc[i - 1] : 0) + s.txns.length], []);
+  return { posted, cum };
+}
+
 /** Every entry in posting order */
-export const JOB_POSTED: Transaction[] = JOB_STEPS.flatMap((s) => s.txns);
+export const JOB_POSTED: Transaction[] = postingOf(JOB_STEPS).posted;
 /** number of entries posted after step i (inclusive) */
-export const JOB_CUM: number[] = JOB_STEPS.reduce<number[]>((acc, s, i) => [...acc, (i ? acc[i - 1] : 0) + s.txns.length], []);
+export const JOB_CUM: number[] = postingOf(JOB_STEPS).cum;
+
+/** Where each kind of routine job is first explained in full (year 1), for later years to link back to */
+export const KIND_HOME_Y1: Record<string, string> = (() => {
+  const out: Record<string, string> = {};
+  for (const st of JOB_STEPS) {
+    const t = st.txns[0];
+    const k = t && kindKey(t);
+    if (k && !out[k]) out[k] = `/on-the-job?year=1&step=${st.id}`;
+  }
+  return out;
+})();
 
 export const CATEGORY_STYLE: Record<Category, { label: string; cls: string }> = {
   setup: { label: "Setting up", cls: "bg-violet-100 text-violet-800" },
@@ -361,16 +424,17 @@ export const CATEGORY_STYLE: Record<Category, { label: string; cls: string }> = 
 };
 
 /** Timeline buckets: each month of the year, then year end and after */
-export const JOB_BUCKETS: { key: string; label: string; first: number }[] = (() => {
+export function bucketsOf(steps: JobStep[]): { key: string; label: string; first: number }[] {
   const out: { key: string; label: string; first: number }[] = [];
-  JOB_STEPS.forEach((s, i) => {
+  steps.forEach((s, i) => {
     const key = s.phase === "during" ? s.date.slice(0, 7) : s.phase;
     if (out.some((b) => b.key === key)) return;
     const label = s.phase === "during" ? monthLabel(key).slice(0, 3) : s.phase === "year-end" ? "Year end" : "After";
     out.push({ key, label, first: i });
   });
   return out;
-})();
+}
+export const JOB_BUCKETS = bucketsOf(JOB_STEPS);
 export const bucketOf = (s: JobStep) => (s.phase === "during" ? s.date.slice(0, 7) : s.phase);
 
 /** Upcoming NZ deadlines after a date (for the "coming up" box) */

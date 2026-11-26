@@ -21,6 +21,19 @@ export const GST_PERIODS: GstPeriod[] = [
   { id: "P6", label: "February–March 2027", from: "2027-02-01", to: "2027-03-31", due: "2027-05-07" },
 ];
 
+/** The six two-monthly periods of the income year starting 1 April `y` (year 1 = 2026 gives GST_PERIODS) */
+export function gstPeriodsFor(y: number, idPrefix = ""): GstPeriod[] {
+  const n = y + 1;
+  return [
+    { id: `${idPrefix}P1`, label: `April–May ${y}`, from: `${y}-04-01`, to: `${y}-05-31`, due: `${y}-06-28` },
+    { id: `${idPrefix}P2`, label: `June–July ${y}`, from: `${y}-06-01`, to: `${y}-07-31`, due: `${y}-08-28` },
+    { id: `${idPrefix}P3`, label: `August–September ${y}`, from: `${y}-08-01`, to: `${y}-09-30`, due: `${y}-10-28` },
+    { id: `${idPrefix}P4`, label: `October–November ${y}`, from: `${y}-10-01`, to: `${y}-11-30`, due: `${n}-01-15` },
+    { id: `${idPrefix}P5`, label: `December ${y}–January ${n}`, from: `${y}-12-01`, to: `${n}-01-31`, due: `${n}-02-28` },
+    { id: `${idPrefix}P6`, label: `February–March ${n}`, from: `${n}-02-01`, to: `${n}-03-31`, due: `${n}-05-07` },
+  ];
+}
+
 export interface GstReturn {
   period: GstPeriod;
   box5: number; // total sales & income incl GST

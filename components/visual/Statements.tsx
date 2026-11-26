@@ -45,7 +45,7 @@ export function ProfitAndLossView({ b, period = "for the year ended 31 March 202
       {pl.revenue.map((l) => <Row key={l.label} label={l.label} sub={l.amount} indent={1} />)}
       <Row label="Total revenue" amount={pl.revenueTotal} bold />
       <H>Less <Term k="cost-of-goods-sold">cost of sales</Term></H>
-      <Row label="Opening stock" sub={0} indent={1} />
+      <Row label="Opening stock" sub={pl.openingStock} indent={1} />
       {pl.purchases.map((l) => <Row key={l.label} label={l.label} sub={l.amount} indent={1} />)}
       <Row label="Less closing stock" sub={pl.stockMovement} indent={1} note="(from the stocktake)" />
       <Row label="Cost of goods sold" amount={-pl.cogs} bold />
@@ -71,8 +71,8 @@ export function ProfitAndLossView({ b, period = "for the year ended 31 March 202
   );
 }
 
-export function BalanceSheetView({ b, date = "31 March 2027" }: { b: Balances; date?: string }) {
-  const bs = balanceSheet(b, { splitLoan: true });
+export function BalanceSheetView({ b, date = "31 March 2027", loanMonthIndex }: { b: Balances; date?: string; loanMonthIndex?: number }) {
+  const bs = balanceSheet(b, { splitLoan: true, loanMonthIndex });
   return (
     <Frame title="Statement of Financial Position" subtitle={`(Balance Sheet) as at ${date}`}>
       <H>Current assets</H>

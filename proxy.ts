@@ -16,7 +16,7 @@ import { EXPLORE_TOOLS } from "@/app/explore/tools";
 const KNOWN: Record<string, Set<string>> = {
   foundations: new Set(FOUNDATIONS.map((f) => f.slug)),
   nz: new Set(NZ_TOPICS.map((t) => t.slug)),
-  cycle: new Set([...CYCLE_STEPS.map((s) => s.slug), "year"]),
+  cycle: new Set(CYCLE_STEPS.map((s) => s.slug)),
   explore: new Set(EXPLORE_TOOLS.map((t) => t.slug)),
 };
 

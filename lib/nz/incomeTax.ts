@@ -1,5 +1,5 @@
 import { r2 } from "@/lib/money";
-import { assetYearOne } from "./assets";
+import { assetYearOne, type FixedAsset } from "./assets";
 import { COMPANY_TAX_RATE } from "./rates";
 import { FIXED_ASSETS } from "@/data/business";
 
@@ -49,3 +49,33 @@ export function taxComputation(input: { profitBeforeTax: number; entertainment: 
   const terminal = r2(residual - input.provisional);
   return { items, assets, accountingDep, taxDep, boost, taxableIncome, tax, rwt: input.rwt, provisional: input.provisional, residual, terminal, rate: COMPANY_TAX_RATE };
 }
+
+export interface TaxAssetRow {
+  asset: FixedAsset;
+  accounting: number;
+  boost: number;
+  taxDep: number;
+  note?: string;
+}
+
+/** Any year: accounting profit + reconciling items → taxable income → tax, less credits */
+export function taxFromItems(input: { profitBeforeTax: number; items: TaxItem[]; assets: TaxAssetRow[]; rwt: number; provisional: number }) {
+  const taxableIncome = r2(input.profitBeforeTax + input.items.reduce((s, i) => s + i.amount, 0));
+  const tax = r2(Math.max(0, Math.floor(taxableIncome)) * COMPANY_TAX_RATE);
+  const residual = r2(tax - input.rwt);
+  return {
+    items: input.items,
+    assets: input.assets,
+    accountingDep: r2(input.assets.reduce((s, a) => s + a.accounting, 0)),
+    taxDep: r2(input.assets.reduce((s, a) => s + a.taxDep, 0)),
+    boost: r2(input.assets.reduce((s, a) => s + a.boost, 0)),
+    taxableIncome,
+    tax,
+    rwt: input.rwt,
+    provisional: input.provisional,
+    residual,
+    terminal: r2(residual - input.provisional),
+    rate: COMPANY_TAX_RATE,
+  };
+}
+export type TaxResult = ReturnType<typeof taxFromItems>;

@@ -46,9 +46,11 @@ export const TAX_CODES: Record<TaxCode, { label: string; flat?: number; explain:
 };
 
 /** PAYE for one pay (includes the ACC earners' levy, like IRD's PAYE tables) */
-export function payeForPay(gross: number, code: TaxCode, paysPerYear = PAYS_PER_YEAR) {
+export type AccLevy = { rate: number; maxLiableEarnings: number };
+
+export function payeForPay(gross: number, code: TaxCode, paysPerYear = PAYS_PER_YEAR, acc: AccLevy = ACC_EARNERS_LEVY) {
   const annual = gross * paysPerYear;
-  const accAnnual = Math.min(annual, ACC_EARNERS_LEVY.maxLiableEarnings) * ACC_EARNERS_LEVY.rate;
+  const accAnnual = Math.min(annual, acc.maxLiableEarnings) * acc.rate;
   const flat = TAX_CODES[code].flat;
   const taxAnnual = flat !== undefined ? annual * flat : progressiveTax(annual).total;
   const ietcAnnual = code === "ME" ? ietcFor(annual) : 0;
@@ -104,11 +106,11 @@ export interface PayResult {
 }
 
 /** One employee's fortnightly pay, calculated the way payroll software does it */
-export function calcPay(employee: Employee, hours: number): PayResult {
+export function calcPay(employee: Employee, hours: number, acc: AccLevy = ACC_EARNERS_LEVY): PayResult {
   const ordinary = r2(hours * employee.rate);
   const holidayPay = employee.casual ? r2(ordinary * 0.08) : 0;
   const gross = r2(ordinary + holidayPay);
-  const p = payeForPay(gross, employee.code);
+  const p = payeForPay(gross, employee.code, PAYS_PER_YEAR, acc);
   const studentLoan = employee.studentLoan
     ? r2(Math.max(0, gross - STUDENT_LOAN.fortnightlyThreshold) * STUDENT_LOAN.rate)
     : 0;

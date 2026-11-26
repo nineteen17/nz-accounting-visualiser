@@ -12,20 +12,12 @@ export default function CyclePage() {
       <PageHeader eyebrow="Part 2" title="The accounting cycle, step by step">
         Follow Kōwhai Café through a full financial year, from the first share issue on 1 April 2026 to the closing entries on 31 March 2027. Every number comes from the café&apos;s real journal, so you can trace any figure all the way back to its source document.
       </PageHeader>
-      <Link href="/cycle/year" className="group mb-10 flex flex-wrap items-center gap-4 rounded-2xl bg-ink p-5 sm:gap-5 sm:p-6 text-white transition hover:shadow-lg">
-        <span className="hidden h-14 w-14 shrink-0 place-items-center rounded-full bg-kowhai-400 text-2xl text-ink sm:grid">▶</span>
-        <span className="min-w-[15rem] flex-1">
-          <span className="block text-xl font-bold">Work the whole year: a year on the job</span>
-          <span className="block text-stone-300">Every task from 1 April to the tax return, in the order a bookkeeper and accountant really do them. Each step shows the job, why it&apos;s done, the entry, and the books updating live.</span>
-        </span>
-        <span className="rounded-xl bg-kowhai-400 px-4 py-2 font-bold text-ink group-hover:bg-kowhai-300">Start →</span>
-      </Link>
       <section className="mb-10 rounded-2xl border border-stone-200 bg-white p-5">
         <h2 className="text-xl font-bold">🗺️ How it all fits together</h2>
         <p className="mb-4 mt-1 text-sm text-stone-600">Every step below is one part of this system. Documents become journal entries, entries are posted to the ledger, and at balance date the ledger becomes the financial statements. The checks and IRD filings read the books along the way.</p>
         <SystemFlow linked note="Click any box to open the step or topic that explains it." />
       </section>
-      <h2 className="mb-4 text-xl font-bold">Or study one step at a time</h2>
+      <h2 className="mb-4 text-xl font-bold">The steps</h2>
       <div className="grid items-start gap-10 lg:grid-cols-[auto_1fr]">
         <CycleWheel size={520} />
         <ol className="space-y-2">
@@ -43,6 +35,9 @@ export default function CyclePage() {
           ))}
         </ol>
       </div>
+      <p className="mt-10 border-t border-stone-200 pt-6 text-sm text-stone-600">
+        Once you know the steps, see them all in action in <Link href="/on-the-job" className="font-semibold text-kowhai-700 underline">Part 4 · A year on the job</Link>: every task of two full years, in the order the work is really done.
+      </p>
     </div>
   );
 }

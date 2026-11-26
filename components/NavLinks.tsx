@@ -9,9 +9,9 @@ const LINKS = [
   { href: "/foundations", label: "1 · Foundations" },
   { href: "/cycle", label: "2 · Accounting cycle" },
   { href: "/nz", label: "3 · NZ tax & rules" },
+  { href: "/on-the-job", label: "4 · A year on the job" },
   { href: "/explore", label: "Explore the books" },
   { href: "/glossary", label: "Glossary" },
-  { href: "/us-vs-nz", label: "🇺🇸 US vs NZ" },
 ];
 
 export function NavLinks() {
@@ -23,15 +23,15 @@ export function NavLinks() {
 
   return (
     <>
-      {/* laptop and up: all links in a row */}
-      <nav className="hidden flex-1 flex-wrap items-center justify-end gap-1 text-sm lg:flex">
+      {/* wide screens: all links in a row */}
+      <nav className="hidden flex-1 flex-wrap items-center justify-end gap-1 text-sm xl:flex">
         {LINKS.map((l) => (
           <Link key={l.href} href={l.href} className={linkCls(l.href)}>{l.label}</Link>
         ))}
       </nav>
 
       {/* phones and tablets: a menu button */}
-      <div className="ml-auto flex items-center gap-2 lg:hidden">
+      <div className="ml-auto flex items-center gap-2 xl:hidden">
         {current && <span className="hidden text-sm font-medium text-stone-500 sm:inline">{current.label}</span>}
         <button
           onClick={() => setOpen(!open)}
@@ -43,7 +43,7 @@ export function NavLinks() {
         </button>
       </div>
       {open && (
-        <nav id="mobile-menu" className="absolute inset-x-0 top-full border-b border-stone-200 bg-paper px-4 pb-4 pt-2 shadow-lg lg:hidden">
+        <nav id="mobile-menu" className="absolute inset-x-0 top-full border-b border-stone-200 bg-paper px-4 pb-4 pt-2 shadow-lg xl:hidden">
           <div className="mx-auto grid max-w-7xl gap-1 text-[15px]">
             <Link href="/" onClick={() => setOpen(false)} className={cx(linkCls("/__home"), path === "/" && "bg-ink text-white")}>Home</Link>
             {LINKS.map((l) => (

@@ -79,6 +79,8 @@ export const ACCOUNTS: Account[] = [
     "The GST control account. GST on sales is added (credit); GST on purchases is subtracted (debit). The balance is what the café owes IRD (or is owed back).", { group: "Tax liabilities" }),
   acc("215", "PAYE & payroll deductions payable", "liability", "current-liability", "none", "employees",
     "PAYE, student loan, KiwiSaver and ESCT deducted from pay runs that must be paid to IRD by the 20th of the next month.", { group: "Employee liabilities" }),
+  acc("216", "Dividend RWT payable", "liability", "current-liability", "none", "dividends",
+    "Resident withholding tax deducted from dividends paid to shareholders, owed to IRD by the 20th of the next month.", { group: "Tax liabilities" }),
   acc("220", "Holiday pay accrual", "liability", "current-liability", "none", "employees",
     "Annual leave staff have earned but not yet taken. The café owes it to them.", { group: "Employee liabilities" }),
   acc("225", "Income in advance", "liability", "current-liability", "none", "customers",
@@ -95,7 +97,7 @@ export const ACCOUNTS: Account[] = [
   // ───────────── EQUITY (owners' stake) ─────────────
   acc("300", "Share capital", "equity", "equity", "none", "shares",
     "Money the shareholders put in to buy shares in the company.", { group: "Equity" }),
-  acc("310", "Retained earnings", "equity", "equity", "none", "none",
+  acc("310", "Retained earnings", "equity", "equity", "none", "dividends",
     "All profits the company has made (after tax) and kept, less any dividends paid.", { group: "Equity" }),
   acc("320", "Income summary", "equity", "equity", "none", "none",
     "A temporary 'funnel' used only during closing: all income and expenses are emptied into it, and the result (profit) is moved to retained earnings.", { group: "Equity", temporary: true }),
@@ -108,6 +110,9 @@ export const ACCOUNTS: Account[] = [
   acc("450", "Interest income", "income", "other-income", "exempt", "interest-received",
     "Interest earned on the term deposit. Financial services are GST-exempt.", { group: "Other income" }),
 
+  acc("460", "Gain on sale of assets", "income", "other-income", "none", "ppe",
+    "The amount an asset sold for above its book value (cost less accumulated depreciation).", { group: "Other income" }),
+
   // ───────────── COST OF SALES ─────────────
   acc("510", "Purchases – coffee beans", "expense", "cost-of-sales", "standard", "suppliers",
     "Coffee beans bought for resale (periodic inventory system).", { group: "Cost of sales" }),
@@ -117,6 +122,8 @@ export const ACCOUNTS: Account[] = [
     "Milk, plant milks, cream, butter.", { group: "Cost of sales" }),
   acc("513", "Purchases – packaging", "expense", "cost-of-sales", "standard", "suppliers",
     "Takeaway cups, lids, bags and napkins.", { group: "Cost of sales" }),
+  acc("518", "Opening stock", "expense", "cost-of-sales", "none", "suppliers",
+    "Last year's closing stocktake, brought into this year's cost of sales (it's sold this year).", { group: "Cost of sales" }),
   acc("519", "Stock movement (opening – closing)", "expense", "cost-of-sales", "none", "suppliers",
     "Year-end adjustment that turns 'purchases' into 'cost of goods sold' by taking out stock still on the shelf.", { group: "Cost of sales" }),
 

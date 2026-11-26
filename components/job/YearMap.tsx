@@ -1,13 +1,14 @@
 "use client";
 
-import { JOB_STEPS, type JobStep } from "@/data/job/steps";
+import type { JobStep } from "@/data/job/steps";
+import type { JobYearData } from "@/data/job/years";
 import { nzDate } from "@/lib/money";
 import { cx } from "@/lib/ui";
 import { SystemFlow, type FlowNode } from "@/components/job/SystemFlow";
 
 /* ───────────── 1. The flow: where each job sits in the system ───────────── */
 
-function nodesFor(s: JobStep): Set<FlowNode> {
+function nodesFor(s: JobStep, D: JobYearData): Set<FlowNode> {
   const n = new Set<FlowNode>();
   const id = s.id;
   if (s.txns.length) { n.add("journal"); n.add("ledger"); }
@@ -17,16 +18,17 @@ function nodesFor(s: JobStep): Set<FlowNode> {
   if (id.startsWith("GSTRET") || id.startsWith("GST-")) n.add("gst");
   if (s.category === "payroll" || id.startsWith("PAYE-")) n.add("payday");
   if (id.startsWith("TB-")) n.add("tb");
-  if (id.startsWith("ADJ")) n.add("adjust");
+  if (/ADJ\d/.test(id) || id === "REVERSALS") n.add("adjust");
+  if (id === "NEW-YEAR") { n.add("close"); n.add("tb"); }
   if (id === "BALANCE-DATE") { n.add("doc"); n.add("adjust"); }
-  if (id === "TAX-CALC" || id === "ADJ11" || id === "ADJ12" || id === "IR4" || id === "F11") n.add("tax");
+  if (D.taxIds.has(id)) n.add("tax");
   if (id === "STATEMENTS" || id === "ANNUAL-RETURN") n.add("statements");
-  if (id.startsWith("CL")) n.add("close");
+  if (/(^|-)CL\d/.test(id)) n.add("close");
   return n;
 }
 
-function Flow({ step }: { step: JobStep }) {
-  return <SystemFlow on={nodesFor(step)} note="The parts lit up in yellow are what this task touches." />;
+function Flow({ step, D }: { step: JobStep; D: JobYearData }) {
+  return <SystemFlow on={nodesFor(step, D)} note="The parts lit up in yellow are what this task touches." />;
 }
 
 /* ───────────── 2. The year: every task on one timeline ───────────── */
@@ -60,29 +62,36 @@ const X_YE = [672, 938] as const;
 const X_AFTER = [952, 992] as const;
 const H = TOP + LANES.length * ROW + 8;
 
-const START = Date.UTC(2026, 3, 1), END = Date.UTC(2027, 2, 31);
-const dayX = (iso: string) => {
-  const t = Date.parse(`${iso}T00:00:00Z`);
-  return X_DURING[0] + ((t - START) / (END - START)) * (X_DURING[1] - X_DURING[0]);
-};
-
-const POINTS = (() => {
-  const ye = JOB_STEPS.map((s, i) => ({ s, i })).filter((p) => p.s.phase === "year-end");
-  const af = JOB_STEPS.map((s, i) => ({ s, i })).filter((p) => p.s.phase === "after");
+function layout(D: JobYearData) {
+  const START = Date.parse(`${D.start}T00:00:00Z`), END = Date.parse(`${D.end}T00:00:00Z`);
+  const dayX = (iso: string) => {
+    const t = Date.parse(`${iso}T00:00:00Z`);
+    return X_DURING[0] + ((t - START) / (END - START)) * (X_DURING[1] - X_DURING[0]);
+  };
+  const ye = D.steps.map((s, i) => ({ s, i })).filter((p) => p.s.phase === "year-end");
+  const af = D.steps.map((s, i) => ({ s, i })).filter((p) => p.s.phase === "after");
   const spread = (k: number, n: number, [a, b]: readonly [number, number]) => (n <= 1 ? (a + b) / 2 : a + (k / (n - 1)) * (b - a));
-  return JOB_STEPS.map((s, i) => {
+  const points = D.steps.map((s, i) => {
     const x = s.phase === "during" ? dayX(s.date) : s.phase === "year-end" ? spread(ye.findIndex((p) => p.i === i), ye.length, X_YE) : spread(af.findIndex((p) => p.i === i), af.length, X_AFTER);
     const lane = LANES.findIndex((l) => l.id === laneOf(s));
     return { i, x, y: TOP + lane * ROW + ROW / 2, big: !s.skippable, s };
   });
-})();
+  const [y0, m0] = D.start.split("-").map(Number);
+  const months = Array.from({ length: 12 }, (_, k) => {
+    const d = new Date(Date.UTC(y0, m0 - 1 + k, 1));
+    return { x: dayX(d.toISOString().slice(0, 10)), label: d.toLocaleDateString("en-NZ", { month: "short", timeZone: "UTC" }) };
+  });
+  return { points, months };
+}
 
-const MONTHS = Array.from({ length: 12 }, (_, k) => {
-  const d = new Date(Date.UTC(2026, 3 + k, 1));
-  return { x: dayX(d.toISOString().slice(0, 10)), label: d.toLocaleDateString("en-NZ", { month: "short", timeZone: "UTC" }) };
-});
+const LAYOUTS = new Map<number, ReturnType<typeof layout>>();
+const layoutOf = (D: JobYearData) => {
+  if (!LAYOUTS.has(D.year)) LAYOUTS.set(D.year, layout(D));
+  return LAYOUTS.get(D.year)!;
+};
 
-function Timeline({ idx, onJump }: { idx: number; onJump: (i: number) => void }) {
+function Timeline({ D, idx, onJump }: { D: JobYearData; idx: number; onJump: (i: number) => void }) {
+  const { points: POINTS, months: MONTHS } = layoutOf(D);
   const cur = POINTS[idx];
   return (
     <div className="overflow-x-auto">
@@ -136,8 +145,8 @@ function Timeline({ idx, onJump }: { idx: number; onJump: (i: number) => void })
 
 /* ───────────── Together ───────────── */
 
-export function YearMap({ idx, onJump }: { idx: number; onJump: (i: number) => void }) {
-  const step = JOB_STEPS[idx];
+export function YearMap({ D, idx, onJump }: { D: JobYearData; idx: number; onJump: (i: number) => void }) {
+  const step = D.steps[idx];
   return (
     <details open className="group mb-6 rounded-2xl border border-stone-200 bg-white">
       <summary className="flex cursor-pointer items-center justify-between px-5 py-3">
@@ -148,11 +157,11 @@ export function YearMap({ idx, onJump }: { idx: number; onJump: (i: number) => v
       <div className="space-y-6 border-t border-stone-100 px-5 pb-5 pt-4">
         <div>
           <div className="mb-2 text-xs font-bold uppercase tracking-wider text-stone-500">Where this task sits in the system</div>
-          <Flow step={step} />
+          <Flow step={step} D={D} />
         </div>
         <div>
           <div className="mb-1 text-xs font-bold uppercase tracking-wider text-stone-500">The whole year: every task, by kind of work</div>
-          <Timeline idx={idx} onJump={onJump} />
+          <Timeline D={D} idx={idx} onJump={onJump} />
         </div>
       </div>
     </details>

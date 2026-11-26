@@ -24,10 +24,11 @@ function linesFor(b: Balances, pred: (a: Account) => boolean, sign = 1): Line[] 
 export function profitAndLoss(b: Balances) {
   const revenue = linesFor(b, (a) => a.subtype === "revenue");
   const revenueTotal = total(revenue);
-  const purchases = linesFor(b, (a) => a.subtype === "cost-of-sales" && a.code !== "519");
+  const purchases = linesFor(b, (a) => a.subtype === "cost-of-sales" && a.code !== "518" && a.code !== "519");
   const purchasesTotal = total(purchases);
+  const openingStock = d(c(b["518"] ?? 0));
   const stockMovement = natural(ACCOUNTS.find((a) => a.code === "519")!, b["519"]); // negative = closing stock
-  const cogs = d(c(purchasesTotal) + c(stockMovement));
+  const cogs = d(c(openingStock) + c(purchasesTotal) + c(stockMovement));
   const grossProfit = d(c(revenueTotal) - c(cogs));
   const otherIncome = linesFor(b, (a) => a.subtype === "other-income");
   const otherIncomeTotal = total(otherIncome);
@@ -43,7 +44,7 @@ export function profitAndLoss(b: Balances) {
   const profitAfterTax = d(c(profitBeforeTax) - c(tax));
   return {
     revenue, revenueTotal,
-    purchases, purchasesTotal, stockMovement, cogs,
+    purchases, purchasesTotal, openingStock, stockMovement, cogs,
     grossProfit, otherIncome, otherIncomeTotal,
     expenseGroups, expensesTotal,
     profitBeforeTax, tax, profitAfterTax,
@@ -58,7 +59,7 @@ export function loanCurrentPortion(asAtMonthIndex = 12) {
 
 /** Statement of Financial Position (Balance Sheet).
  *  Pass `currentProfit` when income/expense accounts haven't been closed yet. */
-export function balanceSheet(b: Balances, opts: { splitLoan?: boolean } = {}) {
+export function balanceSheet(b: Balances, opts: { splitLoan?: boolean; loanMonthIndex?: number } = {}) {
   const currentAssets = linesFor(b, (a) => a.subtype === "current-asset");
   const ppe = ACCOUNTS.filter((a) => a.group === "Property, plant & equipment" && !a.contra).map((costAcc) => {
     const accDep = ACCOUNTS.find((x) => x.contra && x.group === costAcc.group && x.code === String(Number(costAcc.code) + 1))!;
@@ -73,7 +74,7 @@ export function balanceSheet(b: Balances, opts: { splitLoan?: boolean } = {}) {
   const totalAssets = d(c(currentAssetsTotal) + c(nonCurrentTotal));
 
   const loanBal = -b["250"];
-  const loanCurrent = opts.splitLoan && loanBal > 0 ? Math.min(loanBal, loanCurrentPortion()) : 0;
+  const loanCurrent = opts.splitLoan && loanBal > 0 ? Math.min(loanBal, loanCurrentPortion(opts.loanMonthIndex)) : 0;
   const currentLiabilities = linesFor(b, (a) => a.subtype === "current-liability");
   if (loanCurrent) currentLiabilities.push({ label: "Bank loan – current portion", amount: loanCurrent });
   const nonCurrentLiabilities: Line[] = Math.abs(loanBal) > 0.004 ? [{ label: loanCurrent ? "Bank loan – non-current portion" : "Bank loan", amount: d(c(loanBal) - c(loanCurrent)) }] : [];
@@ -112,6 +113,20 @@ export function changesInEquity(before: Balances, profitAfterTax: number) {
   };
 }
 
+/** Changes in equity for any year: opening balances, then the year's movements */
+export function changesInEquityFor(opts: { openingLabel: string; opening: Balances; closing: Balances; profitAfterTax: number; dividends: number }) {
+  const share0 = -(opts.opening["300"] ?? 0), shareN = -(opts.closing["300"] ?? 0);
+  const ret0 = -(opts.opening["310"] ?? 0);
+  const rows = [
+    { label: opts.openingLabel, share: share0, retained: ret0 },
+    { label: "Shares issued", share: d(c(shareN) - c(share0)), retained: 0 },
+    { label: "Profit after tax for the year", share: 0, retained: opts.profitAfterTax },
+    { label: "Dividends", share: 0, retained: -opts.dividends },
+  ];
+  const retained = d(c(ret0) + c(opts.profitAfterTax) - c(opts.dividends));
+  return { rows, closing: { share: shareN, retained, total: d(c(shareN) + c(retained)) } };
+}
+
 /* ───────────── Cash flow ───────────── */
 
 export const CF_LABELS: Record<string, { label: string; section: "operating" | "investing" | "financing" }> = {
@@ -127,6 +142,7 @@ export const CF_LABELS: Record<string, { label: string; section: "operating" | "
   shares: { label: "Shares issued", section: "financing" },
   borrowings: { label: "Loan drawn / repaid", section: "financing" },
   shareholders: { label: "Shareholder drawings", section: "financing" },
+  dividends: { label: "Dividends paid (incl RWT paid to IRD for the shareholders)", section: "financing" },
 };
 
 const OPERATING = new Set(["customers", "suppliers", "employees", "interest-received", "interest-paid", "income-tax"]);
@@ -175,6 +191,10 @@ export function cashFlowIndirect(txns: Transaction[]) {
   const nonCashItems = ACCOUNTS.filter((a) => a.type === "expense" && (a.cf === "none" || a.cf === "shareholders"))
     .map((a) => ({ label: a.name, amount: d(c(b[a.code])) }))
     .filter((l) => Math.abs(l.amount) > 0.004);
+  // gains on selling assets are income, but the cash from the sale is an investing inflow
+  for (const a of ACCOUNTS.filter((a) => a.type === "income" && a.cf === "ppe")) {
+    if (Math.abs(b[a.code] ?? 0) > 0.004) nonCashItems.push({ label: `Less ${a.name.toLowerCase()} (the sale is investing)`, amount: d(c(b[a.code])) });
+  }
   const nonCash = nonCashItems.reduce((s, l) => s + c(l.amount), 0);
   const opTags = new Set(["customers", "suppliers", "employees", "gst", "income-tax", "interest-received", "interest-paid"]);
   const wc = ACCOUNTS.filter((a) => (a.type === "asset" || a.type === "liability") && opTags.has(a.cf))

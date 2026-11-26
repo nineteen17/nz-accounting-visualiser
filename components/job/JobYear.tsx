@@ -2,11 +2,11 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { ALL, DURING_YEAR } from "@/data/books";
-import { CATEGORY_STYLE, JOB_BUCKETS, JOB_CUM, JOB_POSTED, JOB_STEPS, bucketOf, upcomingDeadlines, type JobPanel } from "@/data/job/steps";
+import { CATEGORY_STYLE, bucketOf, type JobPanel } from "@/data/job/steps";
+import { JOB_YEARS, type JobYearData, type YearNo } from "@/data/job/years";
 import { balances, equation, trialBalance } from "@/lib/engine/ledger";
 import { bankReconciliation } from "@/lib/engine/bankrec";
-import { GST_PERIODS, gstReturn } from "@/lib/engine/gst";
+import { gstReturn } from "@/lib/engine/gst";
 import { money, num, nzDate } from "@/lib/money";
 import { cx } from "@/lib/ui";
 import { EquationBar } from "@/components/visual/EquationBar";
@@ -19,19 +19,17 @@ import { Tabs } from "@/components/learn/bits";
 import { TaxRecView } from "@/components/cycle/steps/End";
 import { YearMap } from "@/components/job/YearMap";
 
-const KEY = "job-idx";
-const N = JOB_STEPS.length;
 const weekday = (iso: string) => new Date(`${iso}T00:00:00Z`).toLocaleDateString("en-NZ", { weekday: "long", timeZone: "UTC" });
 
-function nextNonSkippable(from: number) {
-  for (let k = from + 1; k < N; k++) if (!JOB_STEPS[k].skippable) return k;
-  return N - 1;
+function nextNonSkippable(D: JobYearData, from: number) {
+  for (let k = from + 1; k < D.steps.length; k++) if (!D.steps[k].skippable) return k;
+  return D.steps.length - 1;
 }
 
 /* ───────────── Panels for steps that are work but not entries ───────────── */
 
-function BankRecPanel({ p }: { p: Extract<JobPanel, { kind: "bankrec" }> }) {
-  const r = bankReconciliation(DURING_YEAR, p.from, p.to);
+function BankRecPanel({ p, D }: { p: Extract<JobPanel, { kind: "bankrec" }>; D: JobYearData }) {
+  const r = bankReconciliation(D.bankTxns, p.from, p.to);
   const row = (label: string, v: number, strong?: boolean) => (
     <div className={cx("flex justify-between py-0.5", strong && "border-t border-stone-300 pt-1 font-semibold")}><span>{label}</span><span className="num">{money(v)}</span></div>
   );
@@ -73,9 +71,9 @@ function BankRecPanel({ p }: { p: Extract<JobPanel, { kind: "bankrec" }> }) {
   );
 }
 
-function GstPanel({ pid }: { pid: string }) {
-  const p = GST_PERIODS.find((x) => x.id === pid)!;
-  const r = gstReturn(ALL, p);
+function GstPanel({ pid, D }: { pid: string; D: JobYearData }) {
+  const p = D.periods.find((x) => x.id === pid)!;
+  const r = gstReturn(D.gstTxns, p);
   const b = (n: number, label: string, v: number, strong?: boolean) => (
     <div className={cx("grid grid-cols-[2rem_1fr_7rem] items-center gap-2 py-0.5", strong && "font-semibold")}>
       <span className="grid h-5 w-7 place-items-center rounded bg-ink text-[10px] font-bold text-white">{n}</span><span>{label}</span><span className="num text-right">{num(v) === "–" ? "0.00" : num(v)}</span>
@@ -99,31 +97,32 @@ function GstPanel({ pid }: { pid: string }) {
   );
 }
 
-function StatementsPanel({ b }: { b: ReturnType<typeof balances> }) {
+function StatementsPanel({ b, D }: { b: ReturnType<typeof balances>; D: JobYearData }) {
   const [tab, setTab] = useState<"pl" | "bs">("pl");
   return (
     <div className="space-y-3">
       <Tabs value={tab} onChange={setTab} tabs={[{ id: "pl", label: "Profit & loss" }, { id: "bs", label: "Balance sheet" }]} />
-      {tab === "pl" ? <ProfitAndLossView b={b} /> : <BalanceSheetView b={b} />}
+      {tab === "pl" ? <ProfitAndLossView b={b} period={D.plPeriod} /> : <BalanceSheetView b={b} date={D.yearEndLabel} loanMonthIndex={D.loanMonthIndex} />}
+      {D.year === 2 && <Link href="/on-the-job/year-2-statements" className="inline-block text-sm font-semibold text-kowhai-700 underline">See both years side by side (with comparatives) →</Link>}
     </div>
   );
 }
 
-function Panel({ panel, b }: { panel: JobPanel; b: ReturnType<typeof balances> }) {
+function Panel({ panel, b, D }: { panel: JobPanel; b: ReturnType<typeof balances>; D: JobYearData }) {
   switch (panel.kind) {
-    case "bankrec": return <BankRecPanel p={panel} />;
-    case "gst": return <GstPanel pid={panel.period} />;
+    case "bankrec": return <BankRecPanel p={panel} D={D} />;
+    case "gst": return <GstPanel pid={panel.period} D={D} />;
     case "tb": {
       const tb = trialBalance(b);
       return (
         <div>
-          <div className="mb-2 text-sm font-semibold">{panel.stage === "unadjusted" ? "Unadjusted" : panel.stage === "adjusted" ? "Adjusted" : "Post-closing"} trial balance at 31 March 2027</div>
+          <div className="mb-2 text-sm font-semibold">{panel.stage === "opening" ? `Opening trial balance at ${D.openingLabel}` : `${panel.stage === "unadjusted" ? "Unadjusted" : panel.stage === "adjusted" ? "Adjusted" : "Post-closing"} trial balance at ${D.yearEndLabel}`}</div>
           <TrialBalanceTable {...tb} />
         </div>
       );
     }
-    case "statements": return <StatementsPanel b={b} />;
-    case "tax": return <TaxRecView />;
+    case "statements": return <StatementsPanel b={b} D={D} />;
+    case "tax": return <TaxRecView year={D.year} />;
     case "checklist":
       return (
         <ul className="space-y-2 rounded-xl border border-stone-200 bg-white p-4 text-sm">
@@ -135,7 +134,10 @@ function Panel({ panel, b }: { panel: JobPanel; b: ReturnType<typeof balances> }
 
 /* ───────────── Main ───────────── */
 
-export function JobYear() {
+export function JobYear({ year = 1 }: { year?: YearNo }) {
+  const D = JOB_YEARS[year];
+  const N = D.steps.length;
+  const KEY = year === 1 ? "job-idx" : `job-idx-y${year}`;
   const [idx, setIdx] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [speed, setSpeed] = useState(2500);
@@ -143,14 +145,14 @@ export function JobYear() {
   useEffect(() => {
     // ?step=<number> (1-based) or ?step=<step id> opens a specific task; otherwise resume saved progress
     const q = new URLSearchParams(window.location.search).get("step");
-    const fromQuery = q ? (/^\d+$/.test(q) ? Number(q) - 1 : JOB_STEPS.findIndex((s) => s.id === q)) : -1;
+    const fromQuery = q ? (/^\d+$/.test(q) ? Number(q) - 1 : D.steps.findIndex((s) => s.id === q)) : -1;
     const saved = fromQuery >= 0 && fromQuery < N ? fromQuery : Number(localStorage.getItem(KEY));
     // eslint-disable-next-line react-hooks/set-state-in-effect -- restore progress after hydration
     if (saved > 0 && saved < N) setIdx(saved);
-  }, []);
-  useEffect(() => { localStorage.setItem(KEY, String(idx)); }, [idx]);
+  }, [D, N, KEY]);
+  useEffect(() => { localStorage.setItem(KEY, String(idx)); }, [idx, KEY]);
 
-  const go = useCallback((i: number) => setIdx(Math.max(0, Math.min(N - 1, i))), []);
+  const go = useCallback((i: number) => setIdx(Math.max(0, Math.min(N - 1, i))), [N]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -167,28 +169,28 @@ export function JobYear() {
     if (idx >= N - 1) { setPlaying(false); return; } // eslint-disable-line react-hooks/set-state-in-effect -- stop at the end
     const t = setTimeout(() => setIdx((i) => i + 1), speed);
     return () => clearTimeout(t);
-  }, [playing, idx, speed]);
+  }, [playing, idx, speed, N]);
 
-  const step = JOB_STEPS[idx];
-  const posted = useMemo(() => JOB_POSTED.slice(0, JOB_CUM[idx]), [idx]);
-  const before = useMemo(() => JOB_POSTED.slice(0, idx ? JOB_CUM[idx - 1] : 0), [idx]);
+  const step = D.steps[idx];
+  const posted = useMemo(() => [...D.base, ...D.posted.slice(0, D.cum[idx])], [D, idx]);
+  const before = useMemo(() => [...D.base, ...D.posted.slice(0, idx ? D.cum[idx - 1] : 0)], [D, idx]);
   const b = useMemo(() => balances(posted), [posted]);
   const eq = equation(b);
   const prevEq = step.txns.length ? equation(balances(before)) : undefined;
   const touched = useMemo(() => Array.from(new Set(step.txns.flatMap((t) => t.lines.map((l) => l.account)))), [step]);
   const tb = trialBalance(b);
   const bucket = bucketOf(step);
-  const deadlines = upcomingDeadlines(step.date);
+  const deadlines = D.deadlines(step.date);
   const cat = CATEGORY_STYLE[step.category];
   const docTxn = step.txns.find((t) => t.doc);
-  const firstStep = step.repeatOf !== undefined ? JOB_STEPS[step.repeatOf] : undefined;
+  const firstStep = step.repeatOf !== undefined ? D.steps[step.repeatOf] : undefined;
 
   return (
     <div className="pb-28">
       {/* timeline */}
       <div className="mb-6 rounded-2xl border border-stone-200 bg-white p-2">
         <div className="flex flex-wrap gap-1">
-          {JOB_BUCKETS.map((bk) => {
+          {D.buckets.map((bk) => {
             const active = bk.key === bucket;
             const done = bk.first < idx && !active;
             return (
@@ -201,12 +203,12 @@ export function JobYear() {
               </button>
             );
           })}
-          <span className="ml-auto self-center px-2 text-xs text-stone-500"><span className="num">{idx + 1}</span> / {N} tasks · {JOB_CUM[idx]} of {ALL.length} entries posted</span>
+          <span className="ml-auto self-center px-2 text-xs text-stone-500"><span className="num">{idx + 1}</span> / {N} tasks · {D.cum[idx]} of {D.totalEntries} entries posted</span>
         </div>
         <div className="mt-2 h-1 overflow-hidden rounded-full bg-stone-100"><div className="h-full bg-kowhai-400 transition-all" style={{ width: `${((idx + 1) / N) * 100}%` }} /></div>
       </div>
 
-      <YearMap idx={idx} onJump={(i) => { setPlaying(false); go(i); }} />
+      <YearMap D={D} idx={idx} onJump={(i) => { setPlaying(false); go(i); }} />
 
       <div key={step.id} className="fade-up">
           {/* header */}
@@ -264,10 +266,10 @@ export function JobYear() {
                     {touched.slice(0, 6).map((c) => <TAccount key={c + step.id} code={c} txns={posted} highlight={step.txns[0].id} maxRows={6} />)}
                   </div>
                   {touched.length > 6 && <p className="text-xs text-stone-500">+ {touched.length - 6} more accounts. See the trial balance below.</p>}
-                  {step.panel && <Panel panel={step.panel} b={b} />}
+                  {step.panel && <Panel panel={step.panel} b={b} D={D} />}
                 </>
               ) : step.panel ? (
-                <Panel panel={step.panel} b={b} />
+                <Panel panel={step.panel} b={b} D={D} />
               ) : (
                 <div className="rounded-xl border border-dashed border-stone-300 p-6 text-sm text-stone-500">This job doesn&apos;t change the books.</div>
               )}
@@ -301,8 +303,12 @@ export function JobYear() {
       <div className="fixed inset-x-0 bottom-0 z-30 border-t border-stone-200 bg-paper/95 backdrop-blur">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-2 px-4 py-3">
           <button onClick={() => { setPlaying(false); go(idx - 1); }} disabled={idx === 0} className="rounded-xl border border-stone-300 px-4 py-2 text-sm font-semibold disabled:opacity-40">← Back</button>
-          <button onClick={() => { setPlaying(false); go(idx + 1); }} disabled={idx === N - 1} className="rounded-xl bg-kowhai-400 px-5 py-2 text-sm font-bold hover:bg-kowhai-300 disabled:opacity-40">Next task →</button>
-          <button onClick={() => { setPlaying(false); go(nextNonSkippable(idx)); }} title="Jump past repeated routine tasks to the next new kind of job" className="rounded-xl border border-stone-300 px-4 py-2 text-sm font-semibold hover:bg-white">⏩ Skip routine</button>
+          {year === 1 && idx === N - 1 ? (
+            <Link href="/on-the-job?year=2" scroll className="rounded-xl bg-kowhai-400 px-5 py-2 text-sm font-bold hover:bg-kowhai-300">On to year 2 →</Link>
+          ) : (
+            <button onClick={() => { setPlaying(false); go(idx + 1); }} disabled={idx === N - 1} className="rounded-xl bg-kowhai-400 px-5 py-2 text-sm font-bold hover:bg-kowhai-300 disabled:opacity-40">Next task →</button>
+          )}
+          <button onClick={() => { setPlaying(false); go(nextNonSkippable(D, idx)); }} title="Jump past repeated routine tasks to the next new kind of job" className="rounded-xl border border-stone-300 px-4 py-2 text-sm font-semibold hover:bg-white">⏩ Skip routine</button>
           <button onClick={() => setPlaying(!playing)} className={cx("rounded-xl px-4 py-2 text-sm font-semibold", playing ? "bg-ink text-white" : "border border-stone-300 hover:bg-white")}>{playing ? "⏸ Pause" : "▶ Autoplay"}</button>
           <select value={speed} onChange={(e) => setSpeed(Number(e.target.value))} className="rounded-lg border border-stone-300 bg-white px-2 py-2 text-sm" aria-label="Autoplay speed">
             <option value={5000}>Slow</option><option value={2500}>Normal</option><option value={1000}>Fast</option>

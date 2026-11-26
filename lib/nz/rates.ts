@@ -39,6 +39,13 @@ export const ACC_EARNERS_LEVY = {
   source: "https://www.acc.co.nz/for-business/received-an-invoice/calculate-your-levies/",
 };
 
+/** ACC earners' levy 2027–28 (used for the café's second year): $1.83 per $100, max liable earnings $160,244 */
+export const ACC_EARNERS_LEVY_2027_28 = {
+  rate: 0.0183,
+  maxLiableEarnings: 160_244,
+  source: "https://www.ird.govt.nz/income-tax/income-tax-for-individuals/acc-clients-and-carers/acc-earners-levy-rates",
+};
+
 /** KiwiSaver default minimum contribution rose from 3% to 3.5% on 1 April 2026 (4% from 1 April 2028) */
 export const KIWISAVER = {
   employeeDefault: 0.035,
@@ -104,6 +111,8 @@ export const DEPRECIATION = {
 
 export const RWT = {
   companyDefault: 0.28,
+  /** Dividends: RWT is 33% of (cash + imputation credits), less the imputation credits attached (IR284) */
+  dividendRate: 0.33,
   individualRates: [0.105, 0.175, 0.3, 0.33, 0.39],
   noIrdNumber: 0.45,
 };
