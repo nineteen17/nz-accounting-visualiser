@@ -13,6 +13,13 @@ Dates are when the change was made. Rates and rules are for the 2026–27 NZ inc
 
 ## 2026-11-27
 
+### Study: export and import your progress
+- **Progress → Keep your progress**: **Export progress** downloads a JSON file with your flashcards, drill scores, missed questions, streak days and flashcard settings. **Import progress…** loads one back, in this browser or another one.
+- Import checks the file first: anything that isn't a Kōwhai Café study export is refused with a message, broken entries are dropped, and it asks before replacing what's in the browser.
+- Reset progress moved into the same panel.
+- Tests (now 105): a full export → import round trip, and refusing or cleaning bad files.
+- `docs/STUDY.md`: X1 added and ticked; the open question removed.
+
 ### Study Phase 3: make it stick
 - **Missed questions come back.** Every drill question is now built from a seed, so a missed one can be saved and rebuilt exactly. It returns the next day, then 3 days later, and drops off once you've got it right twice.
 - **Today's review** (top of the Study page): the missed questions that are due, 5 new questions from different drills (weakest first), then the flashcards that are due. Each question shows which drill it's from.

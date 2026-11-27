@@ -38,7 +38,7 @@ A learner who finishes the course and keeps up with Study should be able to:
 | `components/study/Study.tsx` | The dashboard and tabs (client component): Today's review, `CardSession` (term and memory-aid flashcards), the drills list grouped by kind, `Progress` (weakest topics, missed questions, known by Part). |
 | `components/study/DrillRun.tsx` | A run of questions from a list of `{ drill, seed }` items (one drill, Today's review, or missed questions): `ChoiceView`, `NumberView`, `EntryView`, `OrderView`, the end-of-run review. Also `makeSet`. |
 | `components/study/PractiseLinks.tsx` | The "Make it stick" box at the end of each lesson: the drills whose revise link is that lesson, and the Part's flashcards. |
-| `lib/study/srs.ts` | Pure logic: the Leitner scheduler (`schedule`, `nextBox`, `intervalLabel`), the saved-data shape (`StudyData`), `loadStudy`, `markStudied`, `streak`, and missed questions (`recordAnswer`, `dueMissed`). No React. |
+| `lib/study/srs.ts` | Pure logic: the Leitner scheduler (`schedule`, `nextBox`, `intervalLabel`), the saved-data shape (`StudyData`), `loadStudy`, `markStudied`, `streak`, missed questions (`recordAnswer`, `dueMissed`), and export/import (`exportStudy`, `parseImport`). No React. |
 | `data/study/core.ts` | Shared types (`Question` = `ChoiceQ` / `NumberQ` / `EntryQ` / `OrderQ`, `Drill`, `DRILL_GROUPS`) and helpers: `seeded` (repeatable random numbers), `newSeed`, `mc`, `num`, `parseAnswer`, `isRight`, money formatting. |
 | `data/study/drills.ts` | The registry (`DRILLS`, `DRILL_MAP`) and the basic drills: debit or credit, element, current, statement, GST maths, due dates, match the term. Also `plain` and `maskTerm`. |
 | `data/study/entries.ts` | Build-the-entry drills (E1–E4): question pools from Kōwhai's real transactions and adjustments (one of each kind), closing entries from the real year-end balances, the year 2 pool, mix-up accounts, `netLines`, `entryQuestion`. |
@@ -106,7 +106,7 @@ A learner who finishes the course and keeps up with Study should be able to:
 }
 "study-settings-v1": { parts, levels, dir, newCount, aids }
 ```
-Bad data loads as empty. `missed` and `aids` were added without a version bump: they're new optional fields, and `loadStudy` / the settings loader fill them with defaults, so older saved progress still loads. **Any change to the shape needs a version bump plus a migration in `loadStudy`**, so learners don't lose progress.
+Bad data loads as empty. **Export / import** (Progress tab): `exportStudy` writes `{ app: "kowhai-cafe-study", exported, study, settings }` as a JSON file; `parseImport` refuses anything that isn't that (or is a different version), drops broken entries, and the settings are checked field by field before anything is replaced. `missed` and `aids` were added without a version bump: they're new optional fields, and `loadStudy` / the settings loader fill them with defaults, so older saved progress still loads. **Any change to the shape needs a version bump plus a migration in `loadStudy`**, so learners don't lose progress.
 
 ### URL options
 - `/study?part=2` studies a single Part.
@@ -239,6 +239,7 @@ Shown on matching flashcards, and practised as cards of their own (`a:` cards, o
 - [x] **N12** Imputation credits (28/72), the gross dividend, dividend RWT and the cash paid.
 - [x] **P1** A "Make it stick" box at the end of every lesson (Foundations, cycle steps and overview, NZ topics, A year on the job, and the ratios tool) with its drills and the Part's flashcards; `/study?drill=` starts a drill.
 - [x] **P2** Weakest topics on Progress: drills with the lowest last score or open missed questions (each with Practise), cards forgotten most, and "Retry them now" for saved questions.
+- [x] **X1** Export and import progress as a JSON file (Progress tab), so it can be backed up or moved to another browser or device. Import asks before replacing and refuses files that aren't a study export.
 - [x] **T3** Tests: every drill regenerates the same question from the same seed; every drill links to a page that exists; closing entries close income with a debit and expenses with a credit and close the real profit; the year 2 pool covers the Part 4 topics; T-account, imputation, RWT and GST-period answers re-worked independently; missed-question scheduling, the 200 cap, and old saved data still loading.
 
 ### Definition of done (each drill)
@@ -254,9 +255,9 @@ Shown on matching flashcards, and practised as cards of their own (`a:` cards, o
 - Entry questions whose amounts must be added up from the document show the amounts up front. Should a harder mode hide them?
 - Should drills count towards "known", or only flashcards? (Currently only flashcards.)
 - Typed recall for flashcards (type the term) as well as self-grading?
-- Progress export/import (JSON), since progress lives in one browser.
 
 ## 6. Log
+- **2026-11-27**: Progress export and import (X1), from the open questions. 105 tests.
 - **2026-11-27**: Phase 3 done. Missed questions come back (seeded questions), Today's review, memory-aid cards, "Put it in order", closing entries, year 2 entries, and four new calculations (T-accounts, cash vs accrual, GST for a period, imputation). "Make it stick" links on every lesson and a weakest-topics view. 36 drills in all; 103 tests.
 - **2026-11-27**: Phase 2 done. 12 "Sort it" drills (C1–C11; US → NZ is under NZ dates & words) and the full NZ calendar in "When is it due?". 29 drills in all; 90 tests.
 - **2026-11-27**: Phase 1 done. Three question types (choice, typed number, journal entry). Ten new drills: Build the journal entry, Year-end adjustments, Accruals & prepayments, Depreciation, Cost of goods sold, Payroll, Holiday pay, Taxable income & tax, Provisional tax, Ratios. GST maths is now typed. The drills tab is grouped into Record it / Work it out / Sort it / NZ dates & words. 17 drills in all; 75 tests.

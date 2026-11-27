@@ -1,14 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { GLOSSARY, GLOSSARY_MAP, type GlossaryEntry } from "@/data/glossary";
 import { AID_MAP, MEMORY_AIDS, aidPart, aidsForTerm } from "@/data/memoryAids";
 import { DRILLS, DRILL_MAP, maskTerm } from "@/data/study/drills";
 import { DRILL_GROUPS, type DrillGroup } from "@/data/study/core";
 import { DrillRun, makeSet, type RunItem } from "./DrillRun";
 import {
-  KNOWN_BOX, STORAGE_KEY, dueMissed, emptyStudy, intervalLabel, isDue, isKnown, loadStudy, markStudied, recordAnswer, schedule, streak, todayLocal,
+  KNOWN_BOX, STORAGE_KEY, dueMissed, emptyStudy, exportStudy, parseImport, intervalLabel, isDue, isKnown, loadStudy, markStudied, recordAnswer, schedule, streak, todayLocal,
   type Grade, type StudyData,
 } from "@/lib/study/srs";
 import { RichText } from "@/components/learn/RichText";
@@ -20,6 +20,20 @@ type Dir = "forward" | "reverse" | "both";
 interface Settings { parts: number[]; levels: Level[]; dir: Dir; newCount: number; aids: boolean }
 const SETTINGS_KEY = "study-settings-v1";
 const DEFAULT_SETTINGS: Settings = { parts: [1, 2, 3, 4], levels: ["essential"], dir: "forward", newCount: 10, aids: true };
+
+/** settings from an imported file: keep only the known fields with sensible values */
+function cleanSettings(raw: Record<string, unknown> | undefined, base: Settings): Settings {
+  if (!raw) return base;
+  const parts = Array.isArray(raw.parts) ? raw.parts.filter((p): p is number => [1, 2, 3, 4].includes(p as number)) : [];
+  const levels = Array.isArray(raw.levels) ? raw.levels.filter((l): l is Level => ["essential", "working", "reference"].includes(l as string)) : [];
+  return {
+    parts: parts.length ? parts : base.parts,
+    levels: levels.length ? levels : base.levels,
+    dir: raw.dir === "forward" || raw.dir === "reverse" || raw.dir === "both" ? raw.dir : base.dir,
+    newCount: [5, 10, 20, 50].includes(raw.newCount as number) ? (raw.newCount as number) : base.newCount,
+    aids: typeof raw.aids === "boolean" ? raw.aids : base.aids,
+  };
+}
 
 const PARTS: Record<number, string> = { 1: "1 · Foundations", 2: "2 · Accounting cycle", 3: "3 · NZ tax & rules", 4: "4 · A year on the job" };
 const LEVELS: Record<Level, string> = { essential: "Essential", working: "Working knowledge", reference: "Reference" };
@@ -236,6 +250,8 @@ export function Study() {
         <Progress
           data={data}
           today={today}
+          settings={settings}
+          onImport={(d, raw) => { update(() => d); changeSettings(cleanSettings(raw, settings)); }}
           onDrill={(k) => setRun(drillRun(k))}
           onRetry={() => setRun(retryRun())}
           onReset={() => { if (confirm("Reset all study progress? This can't be undone.")) update(() => emptyStudy()); }}
@@ -412,7 +428,17 @@ function CardBack({ e, reverse }: { e: GlossaryEntry; reverse?: boolean }) {
 
 /* ───────────── progress ───────────── */
 
-function Progress({ data, today, onDrill, onRetry, onReset }: { data: StudyData; today: string; onDrill: (k: string) => void; onRetry: () => void; onReset: () => void }) {
+interface ProgressProps {
+  data: StudyData;
+  today: string;
+  settings: Settings;
+  onImport: (d: StudyData, settings?: Record<string, unknown>) => void;
+  onDrill: (k: string) => void;
+  onRetry: () => void;
+  onReset: () => void;
+}
+
+function Progress({ data, today, settings, onImport, onDrill, onRetry, onReset }: ProgressProps) {
   const missed = Object.values(data.missed).filter((m) => DRILL_MAP[m.drill]);
   const missedBy = missed.reduce<Record<string, number>>((acc, m) => ({ ...acc, [m.drill]: (acc[m.drill] ?? 0) + 1 }), {});
   // weakest drills: the lowest last score, then the most questions still to fix
@@ -523,10 +549,51 @@ function Progress({ data, today, onDrill, onRetry, onReset }: { data: StudyData;
           </table>
         </div>
       </div>
-      <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-stone-500">
-        <span>Progress is saved in this browser only. Clearing your browser data clears it.</span>
-        <button onClick={onReset} className="rounded-lg border border-rose-300 px-3 py-1.5 font-semibold text-rose-700 hover:bg-rose-50">Reset progress</button>
+      <SaveProgress data={data} today={today} settings={settings} onImport={onImport} onReset={onReset} />
+    </div>
+  );
+}
+
+/* ───────────── export / import ───────────── */
+
+function SaveProgress({ data, today, settings, onImport, onReset }: { data: StudyData; today: string; settings: Settings; onImport: ProgressProps["onImport"]; onReset: () => void }) {
+  const file = useRef<HTMLInputElement>(null);
+  const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const n = (x: object, one: string, many: string) => { const k = Object.keys(x).length; return `${k} ${k === 1 ? one : many}`; };
+  const counts = (d: StudyData) => `${n(d.cards, "card", "cards")}, ${n(d.drills, "drill score", "drill scores")}, ${n(d.missed, "missed question", "missed questions")}`;
+
+  const download = () => {
+    const blob = new Blob([exportStudy(data, settings)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `kowhai-study-progress-${today}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    setMsg({ ok: true, text: `Saved ${counts(data)} to kowhai-study-progress-${today}.json.` });
+  };
+
+  const load = async (f: File | undefined) => {
+    if (!f) return;
+    const res = parseImport(await f.text());
+    if (file.current) file.current.value = "";
+    if ("error" in res) { setMsg({ ok: false, text: res.error }); return; }
+    if (!confirm(`Replace the progress in this browser with the file's (${counts(res.study)})? Your current progress will be lost unless you've exported it.`)) return;
+    onImport(res.study, res.settings);
+    setMsg({ ok: true, text: `Imported ${counts(res.study)}.` });
+  };
+
+  return (
+    <div className="rounded-2xl border border-stone-200 bg-white p-5">
+      <h3 className="font-bold">Keep your progress</h3>
+      <p className="mt-1 text-sm text-stone-500">Progress is saved in this browser only, and clearing your browser data clears it. Export it to a file to keep a copy or carry it to another device or browser, then import it there.</p>
+      <div className="mt-4 flex flex-wrap items-center gap-3 text-sm">
+        <button onClick={download} className="rounded-lg bg-ink px-3 py-1.5 font-semibold text-white hover:bg-ink/85">⬇ Export progress</button>
+        <button onClick={() => file.current?.click()} className="rounded-lg px-3 py-1.5 font-semibold ring-1 ring-stone-300 hover:bg-stone-100">⬆ Import progress…</button>
+        <input ref={file} type="file" accept="application/json,.json" className="hidden" onChange={(e) => load(e.target.files?.[0])} aria-label="Progress file to import" />
+        <button onClick={onReset} className="rounded-lg border border-rose-300 px-3 py-1.5 font-semibold text-rose-700 hover:bg-rose-50 sm:ml-auto">Reset progress</button>
       </div>
+      {msg && <p role="status" className={cx("mt-3 text-sm font-medium", msg.ok ? "text-emerald-700" : "text-rose-700")}>{msg.ok ? "✓ " : "✗ "}{msg.text}</p>}
     </div>
   );
 }

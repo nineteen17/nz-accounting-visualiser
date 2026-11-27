@@ -137,3 +137,43 @@ export function recordAnswer(d: StudyData, drill: string, seed: number, right: b
 }
 
 export const dueMissed = (d: StudyData, today: string) => Object.values(d.missed).filter((m) => m.state.due <= today);
+
+/* ───────────── export / import (progress lives in one browser) ───────────── */
+
+export const EXPORT_APP = "kowhai-cafe-study";
+
+export interface StudyExport {
+  app: typeof EXPORT_APP;
+  exported: string;
+  study: StudyData;
+  settings?: Record<string, unknown>;
+}
+
+export function exportStudy(study: StudyData, settings: object, now = new Date()): string {
+  const out: StudyExport = { app: EXPORT_APP, exported: now.toISOString(), study, settings: { ...settings } };
+  return JSON.stringify(out, null, 2);
+}
+
+const isObj = (x: unknown): x is Record<string, unknown> => !!x && typeof x === "object" && !Array.isArray(x);
+const isDate = (x: unknown) => typeof x === "string" && /^\d{4}-\d{2}-\d{2}$/.test(x);
+const isCard = (c: unknown) => isObj(c) && Number.isInteger(c.box) && (c.box as number) >= 0 && (c.box as number) <= MAX_BOX && isDate(c.due) && typeof c.reps === "number" && typeof c.lapses === "number";
+
+/**
+ * Read an exported file. Returns null (with the reason) if it isn't a study export,
+ * so a wrong or damaged file never replaces real progress.
+ * Unknown or broken entries inside a good file are dropped rather than failing the whole import.
+ */
+export function parseImport(text: string): { study: StudyData; settings?: Record<string, unknown> } | { error: string } {
+  let raw: unknown;
+  try { raw = JSON.parse(text); } catch { return { error: "That file isn't a progress export (it's not JSON)." }; }
+  if (!isObj(raw) || raw.app !== EXPORT_APP || !isObj(raw.study)) return { error: "That file isn't a Kōwhai Café study export." };
+  const s = raw.study;
+  if (s.version !== 1) return { error: "That export is from a different version of the study tool." };
+  const cards = Object.fromEntries(Object.entries(isObj(s.cards) ? s.cards : {}).filter(([k, c]) => /^[fra]:/.test(k) && isCard(c))) as Record<string, CardState>;
+  const drills = Object.fromEntries(Object.entries(isObj(s.drills) ? s.drills : {}).filter(([, d]) =>
+    isObj(d) && [d.attempts, d.best, d.last, d.total].every((n) => typeof n === "number") && isDate(d.when))) as Record<string, DrillStat>;
+  const missed = Object.fromEntries(Object.entries(isObj(s.missed) ? s.missed : {}).filter(([k, m]) =>
+    isObj(m) && typeof m.drill === "string" && Number.isInteger(m.seed) && k === missedKey(m.drill, m.seed as number) && isCard(m.state))) as Record<string, MissedQ>;
+  const days = (Array.isArray(s.days) ? s.days : []).filter(isDate).slice(-400) as string[];
+  return { study: { version: 1, cards, drills, missed, days }, settings: isObj(raw.settings) ? raw.settings : undefined };
+}

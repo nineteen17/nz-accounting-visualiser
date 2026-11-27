@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { addDays, loadStudy, markStudied, schedule, streak, emptyStudy, intervalLabel, recordAnswer, dueMissed, missedKey } from "@/lib/study/srs";
+import { addDays, loadStudy, markStudied, schedule, streak, emptyStudy, intervalLabel, recordAnswer, dueMissed, missedKey, exportStudy, parseImport } from "@/lib/study/srs";
 import { DRILLS, DRILL_MAP, maskTerm, plain } from "@/data/study/drills";
 import { $, $$, parseAnswer, seeded as coreSeeded, type Question } from "@/data/study/core";
 import { ADJUSTMENT_POOL, EVERYDAY_POOL, PART4_POOL, closingQuestion, entryQuestion } from "@/data/study/entries";
@@ -291,6 +291,39 @@ describe("drills", () => {
     for (let s = 0; s < 210; s++) d = recordAnswer(d, "gst", s, false, today);
     expect(Object.keys(d.missed)).toHaveLength(200);
     expect(d.missed[missedKey("gst", 0)]).toBeUndefined();
+  });
+
+  it("exports progress and imports it back unchanged", () => {
+    let d = emptyStudy();
+    d = { ...d, cards: { "f:asset": schedule(undefined, "good", "2026-11-27"), "a:dead-clic": schedule(undefined, "easy", "2026-11-27") } };
+    d = { ...d, drills: { gst: { attempts: 2, best: 9, last: 8, total: 10, when: "2026-11-27" } } };
+    d = markStudied(recordAnswer(d, "order", 123, false, "2026-11-27"), "2026-11-27");
+    const settings = { parts: [1, 2], levels: ["essential"], dir: "both", newCount: 20, aids: false };
+    const back = parseImport(exportStudy(d, settings));
+    if ("error" in back) throw new Error(back.error);
+    expect(back.study).toEqual(d);
+    expect(back.settings).toEqual(settings);
+  });
+
+  it("refuses files that aren't a study export, and drops broken entries", () => {
+    expect("error" in parseImport("not json")).toBe(true);
+    expect("error" in parseImport(JSON.stringify({ some: "other file" }))).toBe(true);
+    expect("error" in parseImport(JSON.stringify({ app: "kowhai-cafe-study", study: { version: 2 } }))).toBe(true);
+    const res = parseImport(JSON.stringify({
+      app: "kowhai-cafe-study",
+      study: {
+        version: 1,
+        cards: { "f:asset": { box: 2, due: "2026-12-01", reps: 2, lapses: 0 }, "f:bad": { box: 99, due: "x" }, "zz:odd": { box: 1, due: "2026-12-01", reps: 1, lapses: 0 } },
+        drills: { gst: { attempts: 1, best: 5, last: 5, total: 10, when: "2026-11-27" }, bad: { attempts: "lots" } },
+        missed: { "gst:7": { drill: "gst", seed: 7, state: { box: 1, due: "2026-11-28", reps: 1, lapses: 1 } }, "gst:8": { drill: "gst", seed: 9, state: { box: 1, due: "2026-11-28", reps: 1, lapses: 1 } } },
+        days: ["2026-11-27", "yesterday"],
+      },
+    }));
+    if ("error" in res) throw new Error(res.error);
+    expect(Object.keys(res.study.cards)).toEqual(["f:asset"]);
+    expect(Object.keys(res.study.drills)).toEqual(["gst"]);
+    expect(Object.keys(res.study.missed)).toEqual(["gst:7"]);
+    expect(res.study.days).toEqual(["2026-11-27"]);
   });
 
   it("reads typed answers the way people type them", () => {
