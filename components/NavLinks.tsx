@@ -11,6 +11,7 @@ const LINKS = [
   { href: "/nz", label: "3 · NZ tax & rules" },
   { href: "/on-the-job", label: "4 · A year on the job" },
   { href: "/explore", label: "Explore the books" },
+  { href: "/study", label: "Study" },
   { href: "/glossary", label: "Glossary" },
 ];
 

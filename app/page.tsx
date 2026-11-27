@@ -9,6 +9,7 @@ import { FOUNDATIONS, NZ_TOPICS } from "@/data/topics";
 import { CYCLE_STEPS } from "@/data/cycle";
 import { EXPLORE_TOOLS } from "@/app/explore/tools";
 import { GLOSSARY } from "@/data/glossary";
+import { DRILLS } from "@/data/study/drills";
 import { JOB_YEARS } from "@/data/job/years";
 
 type Section = {
@@ -66,6 +67,14 @@ const TOOLS: Section[] = [
     inside: EXPLORE_TOOLS.map((t) => t.title),
     when: "You want to check a number, look something up, or poke around on your own.",
     size: `${EXPLORE_TOOLS.length} tools`, cta: "Open the books",
+  },
+  {
+    href: "/study", badge: "🎯", nav: "Study",
+    what: "Practice that makes it stick. Flashcards test you on the glossary terms and bring each one back just before you'd forget it. Drills are quick questions made from the café's books, marked straight away with the reason for each answer.",
+    doing: "Choose the Parts you've done and how deep to go (start with Essential), then spend ten minutes a day: recall each term before you look, and mark how well you remembered it.",
+    inside: ["Flashcards with spaced repetition", "Debit or credit?", "Which element?", "Current or non-current?", "Which statement?", "GST maths", "Due dates", "Your progress by Part"],
+    when: "After each Part, and a few minutes most days. Your progress is saved in your browser.",
+    size: `${GLOSSARY.filter((e) => e.level === "essential").length} essential terms · ${DRILLS.length} drills`, cta: "Start studying",
   },
   {
     href: "/glossary", badge: "📖", nav: "Glossary",
@@ -129,7 +138,7 @@ export default function Home() {
       <section className="mx-auto max-w-7xl px-4 py-12">
         <h2 className="text-2xl font-bold">What&apos;s in this tool</h2>
         <p className="mt-1 max-w-3xl text-stone-600">
-          The menu at the top has six sections. The four numbered ones are the course, meant to be done in order. The other two are tools you can use at any time.
+          The menu at the top has seven sections. The four numbered ones are the course, meant to be done in order. The other three are tools you can use at any time.
         </p>
 
         <ol className="mt-5 flex flex-wrap items-center gap-2 text-sm font-semibold" aria-label="Suggested order">

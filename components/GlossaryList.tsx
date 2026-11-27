@@ -18,11 +18,18 @@ const CATS: Record<GlossaryEntry["category"], string> = {
   us: "🇺🇸 US → NZ terms",
 };
 
+const LEVELS: Record<GlossaryEntry["level"], { label: string; tip: string; cls: string }> = {
+  essential: { label: "Essential", tip: "Know it cold: you'll use it every day", cls: "bg-kowhai-100 text-kowhai-700" },
+  working: { label: "Working knowledge", tip: "Understand it, and know where to look it up", cls: "bg-sky-50 text-sky-700" },
+  reference: { label: "Reference", tip: "Look it up when you need it", cls: "bg-stone-100 text-stone-500" },
+};
+
 export function GlossaryList() {
   const [q, setQ] = useState("");
   const [cat, setCat] = useState<string>("all");
+  const [level, setLevel] = useState<string>("all");
   const { openTerm } = useOverlay();
-  const list = GLOSSARY.filter((e) => (cat === "all" || e.category === cat) && (!q || `${e.term} ${e.short}`.toLowerCase().includes(q.toLowerCase()))).sort((a, b) => a.term.localeCompare(b.term));
+  const list = GLOSSARY.filter((e) => (cat === "all" || e.category === cat) && (level === "all" || e.level === level) && (!q || `${e.term} ${e.short}`.toLowerCase().includes(q.toLowerCase()))).sort((a, b) => a.term.localeCompare(b.term));
   return (
     <div>
       <div className="mb-4 flex flex-wrap gap-2">
@@ -33,6 +40,13 @@ export function GlossaryList() {
           <button key={k} onClick={() => setCat(k)} className={cx("rounded-lg px-3 py-1 text-sm", cat === k ? "bg-ink text-white" : "bg-white hover:bg-stone-100")}>{v}</button>
         ))}
       </div>
+      <div className="mb-6 flex flex-wrap items-center gap-1 text-sm">
+        <span className="mr-1 font-semibold text-stone-500">How well to know it:</span>
+        {[["all", "All levels", ""], ...Object.entries(LEVELS).map(([k, v]) => [k, v.label, v.tip])].map(([k, v, tip]) => (
+          <button key={k} title={tip} onClick={() => setLevel(k)} className={cx("rounded-lg px-3 py-1", level === k ? "bg-ink text-white" : "bg-white hover:bg-stone-100")}>{v}</button>
+        ))}
+        <span className="ml-2 text-stone-500">{list.length} terms</span>
+      </div>
       {cat === "us" && (
         <p className="mb-4 rounded-xl bg-sky-50 px-4 py-3 text-sm">
           These are terms from American (US GAAP) material. Each one points to its NZ equivalent. For every difference in one place, see{" "}
@@ -42,9 +56,12 @@ export function GlossaryList() {
       <div className="grid gap-2 sm:grid-cols-2">
         {list.map((e) => (
           <button key={e.key} onClick={() => openTerm(e.key)} className="rounded-xl border border-stone-200 bg-white p-4 text-left transition hover:border-kowhai-500 hover:shadow-sm">
-            <div className="flex items-baseline justify-between gap-2">
+            <div className="flex flex-wrap items-baseline justify-between gap-x-2 gap-y-1">
               <span className="font-semibold">{e.term}</span>
-              <span className="shrink-0 text-[10px] font-semibold uppercase tracking-wider text-stone-400">{CATS[e.category]}</span>
+              <span className="flex flex-wrap items-center gap-1.5">
+                {e.level !== "reference" && <span title={LEVELS[e.level].tip} className={cx("rounded px-1.5 py-0.5 text-[10px] font-semibold", LEVELS[e.level].cls)}>{LEVELS[e.level].label}</span>}
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-stone-400">{CATS[e.category]}</span>
+              </span>
             </div>
             <div className="mt-1 text-sm text-stone-600">{e.short.replace(/\*\*/g, "")}</div>
           </button>

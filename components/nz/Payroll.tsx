@@ -204,7 +204,7 @@ export function HolidaysTopic() {
   ];
   return (
     <div className="space-y-6">
-      <Callout kind="warn" title="Check for changes">As at 29 October 2026 the Holidays Act 2003 is still in force; its last amendment took effect on 20 December 2023. The Government has proposed replacing it with new legislation that changes how leave accrues (hours-based), so check employment.govt.nz for what applies when you read this. The concepts below are what matter for the accounts. Section references are to the Holidays Act 2003 (legislation.govt.nz).</Callout>
+      <Callout kind="warn" title="Check for changes">The Holidays Act 2003 still applies. In August 2026 Parliament passed the Employment Leave Bill, which will replace it with an hours-based system (leave builds up for each hour worked). The new rules are expected to take effect in 2028, after a two-year lead-in, and until then employers must keep following the Holidays Act (employment.govt.nz). Kōwhai&apos;s years (2026–28) all fall under the Holidays Act. The concepts below are what matter for the accounts. Section references are to the Holidays Act 2003 (legislation.govt.nz).</Callout>
       <div className="grid gap-6 lg:grid-cols-2">
         <div className="prose-learn text-[16px]">
           <h2>Annual leave</h2>

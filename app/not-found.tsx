@@ -16,6 +16,7 @@ export default function NotFound() {
           ["/cycle", "2 · Accounting cycle", "Each step, one at a time"],
           ["/nz", "3 · NZ tax & rules", "GST, PAYE, income tax and more"],
           ["/on-the-job", "4 · A year on the job", "Two years of books, task by task"],
+          ["/study", "Study", "Flashcards and drills"],
           ["/glossary", "Glossary", "Every term, A to Z"],
         ].map(([href, t, d]) => (
           <li key={href}>

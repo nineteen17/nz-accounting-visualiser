@@ -13,6 +13,69 @@ Dates are when the change was made. Rates and rules are for the 2026–27 NZ inc
 
 ## 2026-11-27
 
+### Study Phase 1: record it and work it out
+- **Three kinds of question** (`data/study/core.ts`): multiple choice, **typed amounts** (accepts `$1,234.50`, `1234.5`, `70.3%`), and **build the journal entry**.
+- **Build the journal entry** (`data/study/entries.ts`), from real transactions in Kōwhai's books:
+  - 79 everyday transactions and 17 year-end adjustments from years 1 and 2, one of each kind.
+  - Read what happened and the source document, then choose debit or credit and the amount for each account. The wrong choices are accounts beginners mix up with the right ones.
+  - Live debit and credit totals show whether the entry balances. It's marked row by row and then shows the real entry with the reason for each line.
+  - When some amounts only come from adding up the document (a month's sales, a pay run), they're shown up front; otherwise they're behind a hint.
+- **Eight "work it out" drills** (`data/study/calc.ts`), using the same NZ calculators and statements as the course:
+  - **Accruals & prepayments**: prepaid amount, this year's expense, accrued wages, accrued income, income in advance.
+  - **Depreciation**: DV for part of a year, SL, DV year 2, book value, gain or loss on sale.
+  - **Cost of goods sold**: COGS, gross profit and margin.
+  - **Payroll**: gross pay, employee and employer KiwiSaver, ESCT, student loan, net pay and employer cost.
+  - **Holiday pay**: 8% pay-as-you-go, time and a half on a public holiday, annual leave pay.
+  - **Taxable income & tax**: the add-backs, then 28%.
+  - **Provisional tax**: RIT, the standard method, instalments, terminal tax, the $5,000 threshold.
+  - **Ratios**: from Kōwhai's real year 1 and year 2 statements.
+  - Each shows the full working afterwards.
+- **GST maths** now asks for a typed answer.
+- **Drills tab grouped** into Record it / Work it out / Sort it / NZ dates & words (17 drills). The drill screen moved to `components/study/DrillRun.tsx`.
+- **Tests (now 75)**:
+  - Every generated question is well-formed, and its working includes the answer.
+  - Entries balance and include the right accounts.
+  - Answers match the known figures: espresso depreciation $3,360 and $7,840 book value, current ratio 2.71, gross margin 70.3% and 69.6%.
+  - Net pay is gross less deductions; typed answers parse correctly; no glossary link sits inside bold (it wouldn't render).
+- `docs/STUDY.md` updated: architecture, coverage map, Phase 1 ticked off, log.
+
+### Study tracker
+- New `docs/STUDY.md`: the study tool's purpose and principles; its architecture (files, data flow, saved-data shape, scheduler rules, planned question types); a coverage map of every lesson against flashcards and drills; a phased checklist with IDs (Phase 1 record and calculate, Phase 2 classify, Phase 3 make it stick); the definition of done for a drill; open questions; and a log.
+
+### Study: flashcards and drills (active recall)
+- **New "Study" section** (`/study`, in the menu and on the home page) for practising what's been learned, instead of re-reading it.
+- **Flashcards with spaced repetition**:
+  - One card per glossary term. Choose which Parts (1–4) and levels (Essential / Working knowledge / Reference) to study; Essential is the default.
+  - Cards go term → meaning, meaning → term (the term is hidden in its definition), or both.
+  - You try to recall the answer first, then see the meaning, the café example, the common mistake and the matching memory aid, then mark it Again / Hard / Good / Easy.
+  - A simple box system schedules each card (`lib/study/srs.ts`): reviews come back after 1, 3, 7, 14, 30 and 60 days, and a forgotten card starts again. A term counts as **known** once it's recalled well with a week or more between reviews.
+  - Every button shows when the card will come back. Keyboard: Space to show, 1–4 to mark.
+- **Seven drills** (`data/study/drills.ts`): 10 auto-marked questions at a time, generated fresh each time from the café's own data, so the answers always agree with the rest of the app.
+  - **Debit or credit?**: real lines from Kōwhai's journals (years 1 and 2).
+  - **Which element?**, **Current or non-current?** and **Which statement?**: from the chart of accounts.
+  - **GST maths**: find the GST, add it, or take it off.
+  - **When is it due?**: GST (including the 7 May and 15 January exceptions), PAYE, payday filing and provisional tax.
+  - **Match the term**: from the glossary.
+  - Each answer explains why it's right and names the usual trap. The end screen lists the missed questions with their explanations and links to the lesson to revise.
+- **Progress**: due, new and known counts, a day streak, known terms by Part and level, and the best and last score for each drill. It's saved in the browser (`localStorage`), with a reset button. `/study?part=2` studies a single Part.
+- **Tests (now 61)**: the scheduler and streak; 300 generated questions per drill are all well-formed; debit/credit answers agree with the reasoning shown; GST answers are arithmetically right; the GST due-date exceptions; term masking.
+
+### Glossary audit and expansion (groundwork for a study tool)
+- **Audit**: the glossary had 131 terms. Many concepts the app teaches had no entry (e.g. current vs non-current, mentioned ~35 times; "shareholder", 134 times). 99 entries had no café example, 126 no common mistake, and 57 no link to the page that teaches them.
+- **48 new terms**:
+  - Statements: current & non-current assets, current & non-current liabilities, net assets, statement of changes in equity, operating/investing/financing activities, direct vs indirect method, gross margin, current ratio, quick ratio, liquidity, break-even point, adjusted and post-closing trial balances, temporary vs permanent accounts, the NZ reporting framework.
+  - Principles: matching principle, historical cost.
+  - Recording: cashbook, narration.
+  - Assets & stock: accumulated depreciation, diminishing value, straight line, gain or loss on sale, opening and closing stock, doubtful debts, wastage.
+  - Tax: taxable income, residual income tax, non-deductible expenses, safe harbour, provisional tax methods, income year.
+  - Payroll: Holidays Act 2003, annual leave, public holidays, sick leave, 8% pay-as-you-go, minimum wage, employer KiwiSaver contribution.
+  - GST: registration threshold, GST-inclusive vs exclusive, taxable period, standard-rated supply.
+  - Business: shareholder, director, limited liability, Companies Office annual return.
+- **Fuller entries**: café examples for every essential and working-knowledge term (160 of 179 have one; only reference terms may go without), a common-mistake note on every essential term (80 in total), and a link to the teaching page on every term. All café figures come from the books.
+- **Levels**: every term is marked **essential** (73: know it cold), **working knowledge** (81: understand it, know where to look) or **reference** (25: look it up), plus the **Part** that teaches it (1–4). The glossary has a "How well to know it" filter and a level badge on each card. These drive the planned active-recall tool.
+- **Holidays Act note corrected**: the NZ topic said the replacement law was only proposed. Parliament passed the Employment Leave Bill in August 2026; the new hours-based rules are expected to take effect in 2028, and until then the Holidays Act applies ([employment.govt.nz](https://employment.govt.nz/news-and-updates/employment-leave-bill-2026)). Kōwhai's two years both fall under the Holidays Act. The official legislation and Parliament pages couldn't be read to confirm the exact Royal assent and start dates.
+- **Tests (now 48)**: unique keys and terms; every `[[link]]`, page link and US → NZ pointer is real; every term links to a page; essential and working terms have an example; essential terms have a common mistake; the key concepts from the audit exist.
+
 ### Memory aids
 - **18 memory aids**, each with what it stands for, **why it works** (so it builds understanding rather than replacing it) and a Kōwhai Café example. All in `data/memoryAids.ts`:
   - **Debits, credits & the equation**: "What you own = what you owe + what's yours"; **DEAD CLIC**; "cRedit has an R for Right".
