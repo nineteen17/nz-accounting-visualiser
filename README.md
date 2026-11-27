@@ -41,6 +41,23 @@ The notice and warning disappear by themselves once `CURRENT_PAYROLL` is moved o
 
 Don't change `PAYROLL_2026_27`: the café's first year of books uses it. Each café year keeps the rates for its own dates, so new rates never rewrite an earlier year.
 
+## Checking NZ law (for AI assistants)
+
+These are optional and the site doesn't use them. They let Claude Code (or another AI assistant) read NZ law while working on the project. Always confirm against legislation.govt.nz, and IRD's guidance for how a rule is applied.
+
+**Installed (local to this project):**
+
+- **jurisd**: AU/NZ legislation and case law, from AustLII/NZLII. No key needed. Added with `claude mcp add -s local jurisd -- npx -y github:russellbrenner/jurisd`. Not yet tested on NZ tax Acts. Source: [github.com/russellbrenner/jurisd](https://github.com/russellbrenner/jurisd) (Apache-2.0).
+- **global-law**: NZ Acts from the [lexifina/new-zealand-law](https://github.com/lexifina/new-zealand-law) data (no tax Acts). Its saved address is missing a letter (`.../mc`), so it doesn't connect. Fix: `claude mcp remove global-law -s local`, then `claude mcp add --transport http -s local global-law https://global-law.lexifina.com/mcp`.
+
+**Alternative: nz-legislation-mcp.** Reads the official legislation.govt.nz API, so it has every current Act, including the Income Tax Act 2007, the Goods and Services Tax Act 1985 and the Tax Administration Act 1994. It needs a free personal API key from the Parliamentary Counsel Office (email contact@pco.govt.nz; see [legislation.govt.nz/developer-api](https://www.legislation.govt.nz/developer-api/)). The key mustn't be shared or committed.
+
+1. Save the key (in PowerShell or Windows Terminal; Git Bash can't hide the typing): `npx -y nz-legislation-mcp setup`
+2. Add it: `claude mcp add --transport stdio --scope user nz-legislation -- npx -y nz-legislation-mcp`
+3. Check it works: `npx -y nz-legislation-mcp doctor`
+
+Source: [github.com/thatskiff33/nz-legislation-mcp](https://github.com/thatskiff33/nz-legislation-mcp) (Apache-2.0).
+
 ## Where things are
 
 - `data/`: the café (business, chart of accounts, the year's transactions, glossary, study drills)
