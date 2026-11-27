@@ -1,22 +1,7 @@
 import type { SourceDoc as Doc } from "@/lib/engine/types";
 import { nzDate, num } from "@/lib/money";
 import { cx } from "@/lib/ui";
-
-const KIND_LABEL: Record<Doc["kind"], string> = {
-  "tax-invoice-in": "Supplier tax invoice (a bill)",
-  "tax-invoice-out": "Our tax invoice to a customer",
-  receipt: "Receipt",
-  "z-report": "POS Z-report",
-  "eftpos-settlement": "Card settlement statement",
-  "deposit-slip": "Bank deposit slip",
-  "bank-transfer": "Bank transfer record",
-  "bank-statement": "Bank statement",
-  payslip: "Payslip",
-  agreement: "Agreement / confirmation",
-  internal: "Internal document / working",
-  ird: "IRD return / payment",
-  stocktake: "Stocktake sheet",
-};
+import { DOC_KIND_LABEL as KIND_LABEL } from "@/data/docKinds";
 
 /** Renders any source document so it looks like the real thing */
 export function SourceDoc({ doc }: { doc: Doc }) {

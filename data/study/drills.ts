@@ -7,11 +7,12 @@ import { ACCOUNTS } from "@/data/chartOfAccounts";
 import { ADJUSTMENTS, DURING_YEAR } from "@/data/books";
 import { DURING_YEAR as Y2_DURING } from "@/data/books/year2";
 import { GLOSSARY, type GlossaryEntry } from "@/data/glossary";
-import { PROVISIONAL_TAX } from "@/lib/nz/rates";
+import { PROVISIONAL_TAX, RECORD_KEEPING_YEARS } from "@/lib/nz/rates";
 import type { Account } from "@/lib/engine/types";
 import { $, article, int, mc, num, nzDate, pick, r2, shuffle, type Drill } from "./core";
 import { ENTRY_DRILLS } from "./entries";
 import { CALC_DRILLS } from "./calc";
+import { CLASSIFY_DRILLS } from "./classify";
 
 export type { Drill, Question, Rng } from "./core";
 /** any drill's key */
@@ -119,10 +120,10 @@ const BASIC_DRILLS: Drill[] = [
   },
   {
     key: "deadlines", group: "nz", title: "When is it due?", icon: "📅", part: 3,
-    blurb: "GST, PAYE, payday filing and provisional tax dates.",
+    blurb: "The NZ tax calendar: GST, PAYE, payday filing, KiwiSaver, provisional and terminal tax, the IR4, the annual return.",
     learn: { href: "/glossary/memory-aids", label: "Memory aids: NZ dates" },
     make(rng) {
-      const kind = pick(rng, ["gst", "gst", "paye", "payday", "provisional"] as const);
+      const kind = pick(rng, ["gst", "gst", "gst6", "paye", "payday", "kiwisaver", "provisional", "terminal", "ir4", "annual-return", "records"] as const);
       const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
       if (kind === "gst") {
         const end = pick(rng, [4, 6, 8, 10, 0, 2]); // two-monthly periods end in May, Jul, Sep, Nov, Jan, Mar (0-based months)
@@ -144,6 +145,41 @@ const BASIC_DRILLS: Drill[] = [
         return mc(rng, "Within 2 working days of payday", ["By the 20th of the next month", "With the next GST return", "Once a year, after balance date"],
           "After a pay run, when must Kōwhai send IRD the **employment information** (payday filing)?",
           "**Within 2 working days of payday.** Don't mix it up with paying the PAYE, which is due by the 20th of the next month.");
+      }
+      if (kind === "gst6") {
+        const sep = rng() < 0.5;
+        return mc(rng, sep ? "28 October" : "7 May", sep ? ["28 September", "20 October", "7 November"] : ["28 April", "20 April", "31 May"],
+          `A small business files **six-monthly** GST, with a period ending on **${sep ? "30 September" : "31 March"}**. When is the return due?`,
+          sep
+            ? "**28 October**: the usual rule, the 28th of the month after the period ends. Six-monthly filing is allowed when turnover is under $500,000."
+            : "**7 May**: periods ending in March get extra time, the same as two-monthly filers.");
+      }
+      if (kind === "kiwisaver") {
+        return mc(rng, "With the PAYE, by the 20th of the next month", ["Once a year, with the IR4", "Directly to the KiwiSaver provider each payday", "With the GST return"],
+          "How do Kōwhai's KiwiSaver deductions and employer contributions get to the KiwiSaver provider?",
+          "They're paid to **IRD with the PAYE, by the 20th of the next month**, and IRD passes them on to each employee's provider.");
+      }
+      if (kind === "terminal") {
+        const agent = rng() < 0.5;
+        return mc(rng, agent ? "7 April 2028" : "7 February 2028", agent ? ["7 February 2028", "31 March 2028", "7 July 2027"] : ["7 April 2028", "31 March 2028", "7 July 2027"],
+          `Kōwhai's year ends 31 March 2027. ${agent ? "It **has a tax agent** (Rata & Co)." : "It **doesn't have a tax agent**."} When is its [[terminal-tax|terminal tax]] due?`,
+          `**${agent ? "7 April 2028" : "7 February 2028"}**. Terminal tax is due 7 February after the year ends, or **7 April with a tax agent** who has an extension of time. That's why Kōwhai's year-1 terminal tax is due 7 April 2028.`);
+      }
+      if (kind === "ir4") {
+        const agent = rng() < 0.5;
+        return mc(rng, agent ? "31 March 2028" : "7 July 2027", agent ? ["7 July 2027", "7 April 2028", "28 August 2027"] : ["31 March 2028", "7 April 2028", "28 August 2027"],
+          `Kōwhai's year ends 31 March 2027. ${agent ? "Its accountant is a **tax agent** with an extension of time." : "It files **without a tax agent**."} When is its **IR4** (company income tax return) due?`,
+          `**${agent ? "31 March 2028" : "7 July 2027"}**. An IR4 is due 7 July after the year ends, or **31 March of the following year** when a tax agent has an extension of time.`);
+      }
+      if (kind === "annual-return") {
+        return mc(rng, "Once a year, in the company's allocated filing month", ["7 July, with the IR4", "Within 2 months of balance date", "Only when the directors change"],
+          "When does Kōwhai file its **annual return** with the Companies Office?",
+          "**Once a year, in the filing month the Companies Office allocated** when the company was registered. It confirms the directors, shareholders and addresses, and it's separate from anything filed with IRD.");
+      }
+      if (kind === "records") {
+        return mc(rng, `${RECORD_KEEPING_YEARS} years`, ["3 years", "5 years", "10 years"],
+          "How long must Kōwhai keep its business records, such as invoices, bank statements and payroll?",
+          `**${RECORD_KEEPING_YEARS} years**, the IRD requirement for business records.`);
       }
       const correct = PROVISIONAL_TAX.instalments.map((d) => d.replace("August", "Aug").replace("January", "Jan")).join(", ");
       return mc(rng, correct, ["28 Jul, 28 Nov, 28 Mar", "20 Aug, 20 Jan, 20 May", "31 Aug, 31 Dec, 31 Mar"],
@@ -167,7 +203,7 @@ const BASIC_DRILLS: Drill[] = [
   },
 ];
 
-export const DRILLS: Drill[] = [...ENTRY_DRILLS, ...CALC_DRILLS, ...BASIC_DRILLS];
+export const DRILLS: Drill[] = [...ENTRY_DRILLS, ...CALC_DRILLS, ...BASIC_DRILLS, ...CLASSIFY_DRILLS];
 export const DRILL_MAP: Record<string, Drill> = Object.fromEntries(DRILLS.map((d) => [d.key, d]));
 
 /** glossary text without **bold** or [[link|label]] markup, for answer buttons */

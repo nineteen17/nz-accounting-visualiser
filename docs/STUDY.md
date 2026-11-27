@@ -41,6 +41,8 @@ A learner who finishes the course and keeps up with Study should be able to:
 | `data/study/core.ts` | Shared types (`Question` = `ChoiceQ` / `NumberQ` / `EntryQ`, `Drill`, `DRILL_GROUPS`) and helpers: `mc`, `num`, `parseAnswer`, `isRight`, money formatting. |
 | `data/study/drills.ts` | The registry (`DRILLS`, `DRILL_MAP`) and the basic drills: debit or credit, element, current, statement, GST maths, due dates, match the term. Also `plain` and `maskTerm`. |
 | `data/study/entries.ts` | Build-the-entry drills (E1, E2): question pools from Kōwhai's real transactions and adjustments (one of each kind), mix-up accounts, `netLines`, `entryQuestion`. |
+| `data/study/classify.ts` | "Sort it" drills (C1–C12): cash-flow sections, effect on the equation, TB errors (CROPOC), bank rec items, temporary/permanent, capital or revenue, GST type, deductibility, source documents, is it a transaction, owners & structures, US → NZ. Built from real transactions and the chart of accounts where possible; rule-based scenarios otherwise. |
+| `data/docKinds.ts` | Names of the source-document types, shared by the document component and the drills. |
 | `data/study/calc.ts` | Typed-answer drills (N1–N8): apportioning, depreciation, COGS, payroll, holiday pay, taxable income, provisional tax, ratios. Uses `lib/nz/*` and the real statements. |
 | `data/glossary.ts` | The flashcard source. Each term has `level` (essential / working / reference) and `part` (1–4). |
 | `data/memoryAids.ts` | Memory aids, shown on flashcards for matching terms. |
@@ -116,49 +118,49 @@ Bad or old data loads as empty. **Any change to the shape needs a version bump p
 |---|---|---|---|
 | What is accounting | ✅ | – | |
 | Five elements | ✅ | ✅ Which element? | |
-| Accounting equation | ✅ | ❌ | Effect on A = L + E (C3) |
+| Accounting equation | ✅ | ✅ Effect on the equation (real transactions) | |
 | Double entry | ✅ | ✅ Build the journal entry | |
 | Debits & credits | ✅ | ✅ Debit or credit? | |
 | T-accounts | ✅ | ❌ | Balance a T-account (N9) |
 | Chart of accounts | ✅ | ✅ Which element? / statement | |
-| Source documents | ✅ | ❌ | Which document? (C9) |
+| Source documents | ✅ | ✅ Which source document? | |
 | Cash vs accrual | ✅ | ❌ | Cash vs accrual profit (N10) |
-| US vs NZ | ✅ (reference) | – | US → NZ term match (C10) |
-| Business structures | ✅ | ❌ | Which structure? (C11) |
+| US vs NZ | ✅ (reference) | ✅ US → NZ terms | |
+| Business structures | ✅ | ✅ Owners & business structures | |
 
 ### Part 2 · Accounting cycle
 | Step | Flashcards | Drills | Gap / planned |
 |---|---|---|---|
-| Identify / analyse | ✅ | 🟡 | Is it a transaction? (C12) |
+| Identify / analyse | ✅ | ✅ Is it a transaction?, Build the journal entry | |
 | Journalise | ✅ | ✅ Build the journal entry (79 real transactions) | |
 | Post | ✅ | ❌ | T-account balance (N9) |
 | The year | – | ✅ via Build the journal entry | |
-| Unadjusted TB | ✅ | ❌ | CROPOC error type (C4) |
-| Bank reconciliation | ✅ | ❌ | Bank rec items (C5) |
+| Unadjusted TB | ✅ | ✅ Trial balance errors (CROPOC, will it balance?) | |
+| Bank reconciliation | ✅ | ✅ Bank reconciliation items | |
 | Adjustments | ✅ | ✅ Year-end adjustments (17 real entries), Accruals & prepayments | |
 | Adjusted TB | ✅ | ❌ | |
-| Statements | ✅ | ✅ current / which statement, Ratios, Cost of goods sold | Cash flow sections (C1) |
-| Closing | ✅ | ❌ | Temporary or permanent (C6), closing entries (E3) |
+| Statements | ✅ | ✅ current / which statement, Ratios, Cost of goods sold, Operating/investing/financing | |
+| Closing | ✅ | 🟡 Temporary or permanent? | Closing entries (E3) |
 | Post-closing | ✅ | ❌ | |
 | Cycle order | memory aid only | ❌ | Put the steps in order (O1) |
 
 ### Part 3 · NZ tax & rules
 | Topic | Flashcards | Drills | Gap / planned |
 |---|---|---|---|
-| GST | ✅ | ✅ GST maths | Supply type (C7) |
+| GST | ✅ | ✅ GST maths, Standard / zero-rated / exempt | |
 | GST return | ✅ | 🟡 due dates, GST entries in E1 | GST payable for a period (N11) |
 | PAYE | ✅ | ✅ Payroll, pay-run entries in E1 | |
 | KiwiSaver | ✅ | ✅ Payroll (employee and employer KS, ESCT) | |
 | Holidays | ✅ | ✅ Holiday pay | |
 | Employment | ✅ | ❌ | |
 | ACC | ✅ | 🟡 earners' levy is inside PAYE in Payroll | |
-| Income tax | ✅ | ✅ Taxable income & tax, tax entries in E2 | Deductible? (C8) |
+| Income tax | ✅ | ✅ Taxable income & tax, Deductible for tax?, tax entries in E2 | |
 | Provisional tax | ✅ | ✅ Provisional tax, due dates | |
-| Shareholders | ✅ | ❌ | Drawings vs salary vs dividend (C11) |
-| Depreciation | ✅ | ✅ Depreciation, depreciation entry in E2 | Capital vs revenue (C2) |
+| Shareholders | ✅ | ✅ Owners & business structures, entries in E1/E2 | Imputation maths (N12) |
+| Depreciation | ✅ | ✅ Depreciation, Capital or revenue?, depreciation entry in E2 | |
 | Inventory | ✅ | ✅ Cost of goods sold, stocktake entries in E2 | |
 | Other taxes | ✅ | ❌ | |
-| Compliance | ✅ | 🟡 | Full NZ calendar (D1) |
+| Compliance | ✅ | ✅ When is it due? (full calendar), records 7 years | |
 
 ### Part 4 · A year on the job
 | Topic | Flashcards | Drills | Gap / planned |
@@ -199,20 +201,21 @@ Shown on flashcards; **not yet practised on their own** (M1).
 
 ### Phase 1: record and calculate ✅ done (see above)
 
-### Phase 2: classify (quick, many questions)
-- [ ] **C1** Operating, investing or financing?
-- [ ] **C2** Capital or revenue expenditure? (including the $1,000 low-value asset rule)
-- [ ] **C3** Effect on the accounting equation (which of A, L, E go up or down).
-- [ ] **C4** Trial balance errors: will the TB catch it? Which CROPOC type?
-- [ ] **C5** Bank reconciliation items: timing difference, or enter in the cashbook?
-- [ ] **C6** Temporary or permanent account?
-- [ ] **C7** Standard-rated, zero-rated or exempt?
-- [ ] **C8** Deductible, non-deductible or 50%?
-- [ ] **C9** Which source document?
-- [ ] **C10** US term → NZ term.
-- [ ] **C11** Business structures and owner payments (drawings vs salary vs dividend).
-- [ ] **C12** Is it a transaction?
-- [ ] **D1** Full NZ calendar: terminal tax (7 Feb, or 7 Apr with an agent), IR4, six-monthly GST, Companies Office annual return, payday filing, KiwiSaver.
+### Phase 2: classify ✅ done
+- [x] **C1** Operating, investing or financing? (Kōwhai's real cash movements, classified the way the cash flow statement does)
+- [x] **C2** Capital or revenue? (including the low-value asset rule from `DEPRECIATION.lowValueAssetThreshold`)
+- [x] **C3** Effect on the accounting equation (real transactions; each account's movement explained)
+- [x] **C4** Trial balance errors: will it balance? Which CROPOC type? (built on real entries)
+- [x] **C5** Bank reconciliation items: timing difference, cashbook entry, or the bank's mistake
+- [x] **C6** Temporary or permanent account? (from the chart of accounts)
+- [x] **C7** Standard-rated, zero-rated, exempt, or not a supply? (Kōwhai's accounts plus scenarios)
+- [x] **C8** Deductible: fully, 50%, not, or later/over time?
+- [x] **C9** Which source document? (real documents; internal workings left out)
+- [x] **C10** US term → NZ term (from the glossary)
+- [x] **C11** Owner payments (drawings / salary / dividend / wages) and business structures
+- [x] **C12** Is it a transaction?
+- [x] **D1** Full NZ calendar: two- and six-monthly GST, PAYE, payday filing, KiwiSaver, provisional and terminal tax (with and without an agent), IR4, annual return, record keeping
+- [x] **T2** Tests: cash-flow sections for known transactions, the equation balances for every transaction, temporary/permanent matches the account type, TB-error answers agree with their explanations, no internal documents, terminal tax and IR4 dates with and without an agent.
 
 ### Phase 3: make it stick
 - [ ] **R1** Seeded, repeatable questions; missed drill questions are saved and come back through the scheduler.
@@ -244,5 +247,6 @@ Shown on flashcards; **not yet practised on their own** (M1).
 - Progress export/import (JSON), since progress lives in one browser.
 
 ## 6. Log
+- **2026-11-27**: Phase 2 done. 12 "Sort it" drills (C1–C11; US → NZ is under NZ dates & words) and the full NZ calendar in "When is it due?". 29 drills in all; 90 tests.
 - **2026-11-27**: Phase 1 done. Three question types (choice, typed number, journal entry). Ten new drills: Build the journal entry, Year-end adjustments, Accruals & prepayments, Depreciation, Cost of goods sold, Payroll, Holiday pay, Taxable income & tax, Provisional tax, Ratios. GST maths is now typed. The drills tab is grouped into Record it / Work it out / Sort it / NZ dates & words. 17 drills in all; 75 tests.
 - **2026-11-27**: Glossary expanded to 179 terms with levels and Parts. Study tool v1: flashcards, 7 multiple-choice drills, progress. Coverage review found the gaps in recording, calculating and Part 4 practice; this tracker was created, and Phase 1 is next.

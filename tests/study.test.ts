@@ -3,6 +3,8 @@ import { addDays, loadStudy, markStudied, schedule, streak, emptyStudy, interval
 import { DRILLS, DRILL_MAP, maskTerm, plain } from "@/data/study/drills";
 import { $, $$, parseAnswer, type Question } from "@/data/study/core";
 import { ADJUSTMENT_POOL, EVERYDAY_POOL, entryQuestion } from "@/data/study/entries";
+import { CASH_POOL, EQ_POOL } from "@/data/study/classify";
+import { CF_LABELS } from "@/lib/engine/statements";
 import { GLOSSARY_MAP } from "@/data/glossary";
 import { ACCOUNTS } from "@/data/chartOfAccounts";
 
@@ -143,6 +145,46 @@ describe("drills", () => {
     expect(EVERYDAY_POOL.length).toBeGreaterThan(40);
     expect(ADJUSTMENT_POOL.length).toBeGreaterThan(10);
     for (const t of [...EVERYDAY_POOL, ...ADJUSTMENT_POOL]) expect(entryQuestion(seeded(1), t).lines.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it("classifies Kōwhai's cash flows the way the cash flow statement does", () => {
+    const section = (re: RegExp) => {
+      const x = CASH_POOL.find((c) => re.test(c.t.title));
+      if (!x) throw new Error(`no transaction matching ${re}`);
+      return CF_LABELS[x.tag].section;
+    };
+    expect(section(/Buy the espresso machine/)).toBe("investing");
+    expect(section(/Pay the lease bond/)).toBe("investing");
+    expect(section(/Borrow/)).toBe("financing");
+    expect(section(/buy shares/)).toBe("financing");
+    expect(section(/drawings/)).toBe("financing");
+    expect(section(/fully imputed dividend/)).toBe("financing");
+    expect(section(/Pay suppliers/)).toBe("operating");
+    expect(section(/PAYE & deductions/)).toBe("operating");
+  });
+
+  it("every transaction keeps the accounting equation balanced", () => {
+    expect(EQ_POOL.length).toBeGreaterThan(60);
+    for (const { t, A, L, E } of EQ_POOL) expect(Math.abs(A - L - E), t.title).toBeLessThan(0.005);
+  });
+
+  it("classification answers follow the rules", () => {
+    const rng = seeded(21);
+    for (let n = 0; n < 300; n++) {
+      const tp = asChoice(DRILL_MAP.temporary.make(rng));
+      const a = ACCOUNTS.find((x) => tp.prompt.includes(`**${x.name}**`))!;
+      expect(tp.options[tp.answer].startsWith("Temporary"), a.name).toBe(a.type === "income" || a.type === "expense" || a.code === "320");
+
+      const tb = asChoice(DRILL_MAP["tb-errors"].make(rng));
+      if (tb.options.includes("Yes, it still balances")) expect(tb.options[tb.answer] === "Yes, it still balances").toBe(tb.explain.includes("It's an error of"));
+
+      const doc = asChoice(DRILL_MAP["source-doc"].make(rng));
+      expect(doc.options[doc.answer]).not.toMatch(/Internal/);
+
+      const dl = asChoice(DRILL_MAP.deadlines.make(rng));
+      if (/terminal tax/.test(dl.prompt)) expect(dl.options[dl.answer]).toBe(/has a tax agent/.test(dl.prompt) ? "7 April 2028" : "7 February 2028");
+      if (/IR4/.test(dl.prompt)) expect(dl.options[dl.answer]).toBe(/tax agent/.test(dl.prompt) && !/without/.test(dl.prompt) ? "31 March 2028" : "7 July 2027");
+    }
   });
 
   it("reads typed answers the way people type them", () => {

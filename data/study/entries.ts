@@ -9,10 +9,10 @@ import { ACCOUNTS } from "@/data/chartOfAccounts";
 import type { Transaction } from "@/lib/engine/types";
 import { $, nzDate, pick, r2, shuffle, type Drill, type EntryLine, type EntryQ, type Rng } from "./core";
 
-const ACC = Object.fromEntries(ACCOUNTS.map((a) => [a.code, a]));
+export const ACC = Object.fromEntries(ACCOUNTS.map((a) => [a.code, a]));
 
 /** accounts beginners mix up with each other: offered as wrong choices next to the right ones */
-const MIX_UPS: Record<string, string[]> = {
+export const MIX_UPS: Record<string, string[]> = {
   "100": ["105", "110", "115"], "105": ["100", "110"], "110": ["100", "120", "622"], "115": ["100", "450"],
   "120": ["125", "200", "400", "410"], "125": ["120", "225", "410"], "130": ["510", "511", "518", "519"],
   "135": ["136", "610", "205"], "136": ["135", "613", "205"], "140": ["450", "230", "141"], "141": ["230", "690", "140"],
@@ -44,7 +44,7 @@ export function netLines(t: Transaction): EntryLine[] {
 }
 
 /** one of each kind of transaction ("May 2026 power bill" and "June 2026 power bill" are the same exercise) */
-function pool(txns: Transaction[], maxAccounts: number) {
+export function uniqueKinds(txns: Transaction[], maxAccounts: number) {
   const seen = new Set<string>();
   return txns.filter((t) => {
     const lines = netLines(t);
@@ -56,8 +56,8 @@ function pool(txns: Transaction[], maxAccounts: number) {
   });
 }
 
-export const EVERYDAY_POOL = pool([...Y1.DURING_YEAR, ...Y2.DURING_YEAR].filter((t) => t.kind === "featured" || t.kind === "routine"), 5);
-export const ADJUSTMENT_POOL = pool([...Y1.ADJUSTMENTS, ...Y2.ADJUSTMENTS], 6);
+export const EVERYDAY_POOL = uniqueKinds([...Y1.DURING_YEAR, ...Y2.DURING_YEAR].filter((t) => t.kind === "featured" || t.kind === "routine"), 5);
+export const ADJUSTMENT_POOL = uniqueKinds([...Y1.ADJUSTMENTS, ...Y2.ADJUSTMENTS], 6);
 
 const yearOf = (iso: string) => (iso <= "2027-03-31" ? "year 1" : "year 2");
 

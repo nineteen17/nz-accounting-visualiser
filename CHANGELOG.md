@@ -13,6 +13,26 @@ Dates are when the change was made. Rates and rules are for the 2026–27 NZ inc
 
 ## 2026-11-27
 
+### Study Phase 2: sort it, and the full NZ calendar
+- **12 new drills** (`data/study/classify.ts`), built from Kōwhai's books and chart of accounts where possible:
+  - **Operating, investing or financing?**: Kōwhai's real cash movements, classified the same way as its cash flow statement.
+  - **Effect on the equation**: what each real transaction does to assets, liabilities and equity, with every account's movement explained.
+  - **Trial balance errors**: will it still balance, and which CROPOC error is it? Built on real entries.
+  - **Which source document?**: real transactions matched to the documents behind them.
+  - **Temporary or permanent?**: every account in the chart.
+  - **Standard, zero-rated or exempt?**: Kōwhai's accounts plus everyday situations (exports, residential rent, wages).
+  - **US → NZ terms**: from the glossary.
+  - **Bank reconciliation items, Capital or revenue?, Deductible for tax?, Is it a transaction?, Owners & business structures**: short scenarios built on the NZ rules the course teaches.
+- **When is it due?** now covers the full NZ calendar: six-monthly GST, KiwiSaver, terminal tax and the IR4 (with and without a tax agent), the Companies Office annual return, and keeping records for 7 years.
+- 29 drills in all. The Study page intro and the home page card describe the new drills.
+- Shared `data/docKinds.ts` holds the source-document type names (previously inside the document component).
+- **Tests (now 90)**:
+  - Known transactions land in the right cash-flow section, and every transaction keeps the equation balanced.
+  - Temporary/permanent matches the account type, and TB-error answers agree with their explanations.
+  - Internal workings never appear as a source-document answer.
+  - Terminal tax and IR4 dates are right with and without an agent.
+- `docs/STUDY.md`: Phase 2 ticked off, coverage map and log updated.
+
 ### Study Phase 1: record it and work it out
 - **Three kinds of question** (`data/study/core.ts`): multiple choice, **typed amounts** (accepts `$1,234.50`, `1234.5`, `70.3%`), and **build the journal entry**.
 - **Build the journal entry** (`data/study/entries.ts`), from real transactions in Kōwhai's books:
