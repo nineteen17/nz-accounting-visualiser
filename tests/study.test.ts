@@ -10,6 +10,7 @@ import { EXPLORE_TOOLS } from "@/app/explore/tools";
 import * as Y1 from "@/data/books";
 import * as Y2 from "@/data/books/year2";
 import { CASH_POOL, EQ_POOL } from "@/data/study/classify";
+import { COLUMNS, YEARS, worksheetColumn } from "@/data/study/gaps";
 import { CF_LABELS } from "@/lib/engine/statements";
 import { GLOSSARY_MAP } from "@/data/glossary";
 import { ACCOUNTS } from "@/data/chartOfAccounts";
@@ -291,6 +292,29 @@ describe("drills", () => {
     for (let s = 0; s < 210; s++) d = recordAnswer(d, "gst", s, false, today);
     expect(Object.keys(d.missed)).toHaveLength(200);
     expect(d.missed[missedKey("gst", 0)]).toBeUndefined();
+  });
+
+  it("the worksheet and post-closing drills agree with Kōwhai's real trial balances", () => {
+    for (const y of YEARS) {
+      // closing adds the profit to retained earnings, and leaves income and expenses at $0
+      expect(-(y.adj["310"] ?? 0) + y.profit).toBeCloseTo(-(y.post["310"] ?? 0), 2);
+      for (const a of ACCOUNTS.filter((x) => x.type === "income" || x.type === "expense")) expect(Math.abs(y.post[a.code] ?? 0), a.name).toBeLessThan(0.005);
+      // the worksheet's columns balance once the profit is added to the smaller P&L side
+      const tot = { pd: 0, pc: 0, bd: 0, bc: 0 } as Record<keyof typeof COLUMNS, number>;
+      for (const a of ACCOUNTS) { const b = y.adj[a.code] ?? 0; if (Math.abs(b) > 0.004) tot[worksheetColumn(a.code, b)] += Math.abs(b); }
+      expect(tot.pc - tot.pd).toBeCloseTo(y.profit, 2);
+      expect(tot.bd - tot.bc).toBeCloseTo(y.profit, 2);
+    }
+    // the adjusted balance asked for is the real adjusted balance
+    const rng = seeded(4);
+    for (let n = 0; n < 200; n++) {
+      const q = DRILL_MAP.worksheet.make(rng);
+      if (q.kind !== "number") continue;
+      const name = /\*\*(.+?)\*\* has/.exec(q.prompt)![1];
+      const acc = ACCOUNTS.find((a) => a.name === name)!;
+      const y = YEARS.find((x) => q.prompt.includes(x.label))!;
+      expect(q.answer, name).toBeCloseTo(Math.abs(y.adj[acc.code]), 2);
+    }
   });
 
   it("exports progress and imports it back unchanged", () => {

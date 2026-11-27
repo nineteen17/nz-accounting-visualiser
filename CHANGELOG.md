@@ -13,6 +13,18 @@ Dates are when the change was made. Rates and rules are for the 2026–27 NZ inc
 
 ## 2026-11-27
 
+### Study: drills for the last uncovered lessons, and the IR4 date checked
+- **IR4 due date verified** against IRD's company tax return guide 2026 and 2026–27 tax calendar: 7 July without a tax agent (for a 31 March balance date), 31 March the following year with one. The "When is it due?" drill already had both right.
+- **5 new drills (41 in all)**, so every lesson now has practice:
+  - **The worksheet** (Step 8): which column each real adjusted balance goes in, and working out adjusted balances from Kōwhai's unadjusted balances and adjusting entries.
+  - **After closing** (Step 11): what stays on the post-closing trial balance, retained earnings after the profit goes in (both years), and what closing does to the totals.
+  - **Employment basics**: the minimum wage, deductions below it, how long records are kept (6 vs 7 years), employee or contractor, IR330 and KS1.
+  - **ACC levies**: the earners' levy through PAYE, including the maximum liable earnings cap, and the work levy invoice and its entry.
+  - **RWT, FBT or withholding tax?**: interest, dividends, the work van, gym memberships, an overdrawn current account, contract cleaners, directors' fees, plus RWT on interest at 28%.
+- Each one is linked from its lesson's "Make it stick" box.
+- Tests (now 111): the worksheet's columns balance with the real profit in both years, retained earnings after closing = before + profit, and the adjusted balances asked for match the books.
+- `docs/STUDY.md`: coverage map has no gaps left; G4 and V1 added.
+
 ### Study: a harder mode for journal entries
 - The entry drills (Build the journal entry, Year-end adjustments, Closing entries, Year 2 entries) have a **Harder** checkbox: the amounts are never shown up front, so you work them out from the story and the source document (split off the GST, add up the payslips, net two figures).
 - It's off by default and remembered in this browser. When a question has amounts that aren't written anywhere, a note says so.

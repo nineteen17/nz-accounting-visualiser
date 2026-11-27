@@ -43,6 +43,7 @@ A learner who finishes the course and keeps up with Study should be able to:
 | `data/study/drills.ts` | The registry (`DRILLS`, `DRILL_MAP`) and the basic drills: debit or credit, element, current, statement, GST maths, due dates, match the term. Also `plain` and `maskTerm`. |
 | `data/study/entries.ts` | Build-the-entry drills (E1–E4): question pools from Kōwhai's real transactions and adjustments (one of each kind), closing entries from the real year-end balances, the year 2 pool, mix-up accounts, `netLines`, `entryQuestion`. |
 | `data/study/classify.ts` | "Sort it" drills (C1–C12): cash-flow sections, effect on the equation, TB errors (CROPOC), bank rec items, temporary/permanent, capital or revenue, GST type, deductibility, source documents, is it a transaction, owners & structures, US → NZ. Built from real transactions and the chart of accounts where possible; rule-based scenarios otherwise. |
+| `data/study/gaps.ts` | Drills for lessons that had none: the worksheet (adjusted TB), after closing (post-closing TB), employment basics, ACC levies, RWT / FBT / withholding tax. Balances from the real books; rates from `lib/nz/rates.ts`. |
 | `data/study/order.ts` | "Put it in order" (O1): the cycle steps from `data/cycle.ts`, and the course's processes (a transaction's journey, closing, a pay run, a GST period, the tax year). |
 | `data/docKinds.ts` | Names of the source-document types, shared by the document component and the drills. |
 | `data/study/calc.ts` | Typed-answer drills (N1–N12): apportioning, depreciation, COGS, payroll, holiday pay, taxable income, provisional tax, ratios, T-account balances, cash vs accrual, GST for a period, imputation and dividend RWT. Uses `lib/nz/*` and the real statements. |
@@ -148,10 +149,10 @@ See the open questions in section 5.
 | Unadjusted TB | ✅ | ✅ Trial balance errors (CROPOC, will it balance?) | |
 | Bank reconciliation | ✅ | ✅ Bank reconciliation items | |
 | Adjustments | ✅ | ✅ Year-end adjustments (17 real entries), Accruals & prepayments | |
-| Adjusted TB | ✅ | ❌ | |
+| Adjusted TB | ✅ | ✅ The worksheet (columns and adjusted balances, real) | |
 | Statements | ✅ | ✅ current / which statement, Ratios, Cost of goods sold, Operating/investing/financing | |
 | Closing | ✅ | ✅ Closing entries (real balances), Temporary or permanent?, closing order | |
-| Post-closing | ✅ | 🟡 closing order in Put it in order | |
+| Post-closing | ✅ | ✅ After closing (real retained earnings and totals), closing order | |
 | Cycle order | ✅ memory aid card | ✅ Put it in order | |
 
 ### Part 3 · NZ tax & rules
@@ -162,14 +163,14 @@ See the open questions in section 5.
 | PAYE | ✅ | ✅ Payroll, pay-run entries in E1 | |
 | KiwiSaver | ✅ | ✅ Payroll (employee and employer KS, ESCT) | |
 | Holidays | ✅ | ✅ Holiday pay | |
-| Employment | ✅ | ❌ | |
-| ACC | ✅ | 🟡 earners' levy is inside PAYE in Payroll | |
+| Employment | ✅ | ✅ Employment basics | |
+| ACC | ✅ | ✅ ACC levies, earners' levy inside PAYE in Payroll | |
 | Income tax | ✅ | ✅ Taxable income & tax, Deductible for tax?, tax entries in E2 | |
 | Provisional tax | ✅ | ✅ Provisional tax, due dates | |
 | Shareholders | ✅ | ✅ Dividends & imputation, Owners & business structures, entries in E1/E2/E4 | |
 | Depreciation | ✅ | ✅ Depreciation, Capital or revenue?, depreciation entry in E2 | |
 | Inventory | ✅ | ✅ Cost of goods sold, stocktake entries in E2 | |
-| Other taxes | ✅ | ❌ | |
+| Other taxes | ✅ | ✅ RWT, FBT or withholding tax? | |
 | Compliance | ✅ | ✅ When is it due? (full calendar), records 7 years | |
 
 ### Part 4 · A year on the job
@@ -240,6 +241,8 @@ Shown on matching flashcards, and practised as cards of their own (`a:` cards, o
 - [x] **N12** Imputation credits (28/72), the gross dividend, dividend RWT and the cash paid.
 - [x] **P1** A "Make it stick" box at the end of every lesson (Foundations, cycle steps and overview, NZ topics, A year on the job, and the ratios tool) with its drills and the Part's flashcards; `/study?drill=` starts a drill.
 - [x] **P2** Weakest topics on Progress: drills with the lowest last score or open missed questions (each with Practise), cards forgotten most, and "Retry them now" for saved questions.
+- [x] **G4** Drills for the last uncovered lessons: The worksheet, After closing, Employment basics, ACC levies, RWT/FBT/withholding tax. Every lesson now has a drill. Tests check the worksheet columns balance with the real profit, retained earnings after closing, and the adjusted balances asked for.
+- [x] **V1** IR4 due date checked against IRD (company tax return guide 2026 and the 2026–27 tax calendar): 7 July without an agent, 31 March the following year with one.
 - [x] **X2** Harder entry mode: hide the amounts, with the hint still available (from the open questions).
 - [x] **X1** Export and import progress as a JSON file (Progress tab), so it can be backed up or moved to another browser or device. Import asks before replacing and refuses files that aren't a study export.
 - [x] **T3** Tests: every drill regenerates the same question from the same seed; every drill links to a page that exists; closing entries close income with a debit and expenses with a credit and close the real profit; the year 2 pool covers the Part 4 topics; T-account, imputation, RWT and GST-period answers re-worked independently; missed-question scheduling, the 200 cap, and old saved data still loading.
@@ -258,6 +261,7 @@ Shown on matching flashcards, and practised as cards of their own (`a:` cards, o
 - Typed recall for flashcards (type the term) as well as self-grading?
 
 ## 6. Log
+- **2026-11-27**: IR4 dates verified against IRD (V1). Five drills for the last uncovered lessons (G4): every lesson now has practice. 41 drills; 111 tests.
 - **2026-11-27**: Harder entry mode (X2), from the open questions.
 - **2026-11-27**: Progress export and import (X1), from the open questions. 105 tests.
 - **2026-11-27**: Phase 3 done. Missed questions come back (seeded questions), Today's review, memory-aid cards, "Put it in order", closing entries, year 2 entries, and four new calculations (T-accounts, cash vs accrual, GST for a period, imputation). "Make it stick" links on every lesson and a weakest-topics view. 36 drills in all; 103 tests.
