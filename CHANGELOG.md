@@ -8,11 +8,14 @@ Dates are when the change was made. Rates and rules are for the 2026–27 NZ inc
 ## Proposed / not yet done
 
 - **2027–28 rates (on or after 1 April 2027)**. Follow README "Updating the rates" (`npm run rates` lists what to check). In short: when IRD, ACC and MBIE announce them, fill in `PAYROLL_2027_28` in `lib/nz/rates.ts` and clear its `toConfirm` list (tax brackets, IETC, student loan threshold and ESCT bands are carried forward for now); update `MINIMUM_WAGE`; then on 1 April 2027 point `CURRENT_PAYROLL` at 2027–28. Year 1's books keep the 2026–27 rates.
-- **NZ law lookup (MCP)**. jurisd is installed but not used yet: decide what it's for first. global-law's address needs fixing (README "Checking NZ law"). nz-legislation-mcp is the alternative if official, current wording of the tax Acts is needed (needs a PCO API key).
+- **NZ law lookup (MCP)**. Plan in `docs/LAW-LOOKUP.md` (not started; includes the proposed pay yourself tool). global-law's address needs fixing (README "Checking NZ law"). nz-legislation-mcp is the alternative if official, current wording of the tax Acts is needed (needs a PCO API key).
 
 ---
 
 ## 2026-11-28
+
+### Plan: checking NZ law with jurisd
+- `docs/LAW-LOOKUP.md`: how jurisd will be used (prove it works, "The law" references on each NZ topic, check the site's rules against the Acts, the April routine), and a proposed follow-on **pay yourself** tool (salary vs dividend). Nothing run yet.
 
 ### README: NZ law lookup
 - **jurisd** law server installed for this project (no key needed; not used yet). README "Checking NZ law" lists it, the existing **global-law** server (its saved address is missing a letter, so it doesn't connect; the fix is there), and **nz-legislation-mcp** as an alternative that needs a PCO API key.
