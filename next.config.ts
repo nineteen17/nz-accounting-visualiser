@@ -9,6 +9,8 @@ const nextConfig: NextConfig = {
   // static export for builds only: in `next dev` it turns unknown slugs into errors instead of 404s
   output: process.env.NODE_ENV === "production" ? "export" : undefined,
   basePath,
+  // the browser needs the base path to find the offline service worker (out/sw.js)
+  env: { NEXT_PUBLIC_BASE_PATH: basePath },
   trailingSlash: true,
   turbopack: {
     root: process.cwd(),

@@ -5,6 +5,8 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "postbuild": "node scripts/build-sw.mjs && node --no-warnings --experimental-strip-types scripts/rates-status.mjs --warn-only",
+    "rates": "node --no-warnings --experimental-strip-types scripts/rates-status.mjs",
     "start": "next start",
     "lint": "eslint"
   },

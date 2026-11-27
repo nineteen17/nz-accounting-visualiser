@@ -7,12 +7,21 @@ Dates are when the change was made. Rates and rules are for the 2026–27 NZ inc
 
 ## Proposed / not yet done
 
-- **2027–28 rates (from early 2027)**. When IRD, ACC and MBIE announce them: fill in `PAYROLL_2027_28` in `lib/nz/rates.ts` and clear its `toConfirm` list (tax brackets, IETC, student loan threshold and ESCT bands are carried forward for now); update `MINIMUM_WAGE`; then on 1 April 2027 point `CURRENT_PAYROLL` at 2027–28. Year 1's books keep the 2026–27 rates.
+- **2027–28 rates (on or after 1 April 2027)**. Follow README "Updating the rates" (`npm run rates` lists what to check). In short: when IRD, ACC and MBIE announce them, fill in `PAYROLL_2027_28` in `lib/nz/rates.ts` and clear its `toConfirm` list (tax brackets, IETC, student loan threshold and ESCT bands are carried forward for now); update `MINIMUM_WAGE`; then on 1 April 2027 point `CURRENT_PAYROLL` at 2027–28. Year 1's books keep the 2026–27 rates.
 - **global-law MCP**. The `claude mcp add` entry was saved with a trailing "." in the URL and fails to connect. Fix: `claude mcp remove global-law`, then re-add with `https://global-law.lexifina.com/mcp`. Note: the NZ law data it uses has no tax Acts (see 2026-11-26).
 
 ---
 
 ## 2026-11-28
+
+### Works offline, installs to a phone, and knows when its rates are out of date
+- **Offline and installable.** After one visit, every page, drill and tool is saved on the device (a service worker, `out/sw.js`, generated after each build by `scripts/build-sw.mjs`). The site can be added to a phone's home screen with its own café icon. The footer says "Saved on this device" once it's ready. Each deploy gets a fresh saved copy on the next visit. Tested by loading the site once, stopping the server, then opening pages, following links and answering a drill.
+- **Rates check, ready for April 2027** (no server needed). The course knows which tax year it teaches; from 1 April after that year:
+  - the site shows a notice under the header saying which year its figures are for;
+  - `npm run build` prints a warning;
+  - `npm run rates` lists each year's figures, what's still to confirm, and the official page for each.
+  - README "Updating the rates" has the steps. The notice goes away once `CURRENT_PAYROLL` is moved on.
+- README rewritten for this project (it was the Next.js starter text).
 
 ### Budget vs actual, and the rest of the site made keyboard and screen-reader friendly
 - **New Explore tool: Budget vs actual** (`/explore/budget`). Year 2's budget sits beside what really happened, line by line, with each variance marked favourable (F) or unfavourable (U).

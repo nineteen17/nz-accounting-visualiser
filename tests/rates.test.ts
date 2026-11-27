@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
-import { CURRENT_PAYROLL, KIWISAVER, MINIMUM_WAGE, PAYROLL_2026_27, PAYROLL_2027_28, PROVISIONAL_TAX } from "@/lib/nz/rates";
+import { CURRENT_PAYROLL, KIWISAVER, MINIMUM_WAGE, NEXT_RATES_FROM, PAYROLL_2026_27, PAYROLL_2027_28, PROVISIONAL_TAX, ratesOutOfDate } from "@/lib/nz/rates";
 import { calcPay, payeForPay } from "@/lib/nz/payroll";
 import { EMPLOYEES } from "@/data/business";
 import { YEAR1 } from "@/data/books/year";
@@ -59,5 +59,15 @@ describe("each café year keeps its own payroll rates", () => {
   });
   it("the lessons' current year defaults the calculators", () => {
     expect(payeForPay(1000, "M").paye).toBe(payeForPay(1000, "M", undefined, CURRENT_PAYROLL).paye);
+  });
+});
+
+describe("knowing when the rates are out of date", () => {
+  it("flags the site from 1 April after the year it teaches, not before", () => {
+    const start = Number(CURRENT_PAYROLL.year.slice(0, 4));
+    expect(NEXT_RATES_FROM).toBe(`${start + 1}-04-01`);
+    expect(ratesOutOfDate(`${start + 1}-03-31`)).toBe(false);
+    expect(ratesOutOfDate(`${start + 1}-04-01`)).toBe(true);
+    expect(ratesOutOfDate(`${start}-11-28`)).toBe(false);
   });
 });

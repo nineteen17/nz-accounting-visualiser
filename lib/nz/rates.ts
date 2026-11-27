@@ -89,6 +89,11 @@ export const PAYROLL_2027_28: PayrollRates = {
 /** the income year the lessons, calculators and drills teach: move it on each 1 April */
 export const CURRENT_PAYROLL = PAYROLL_2026_27;
 
+/** the day the next income year's rates apply ("2027-04-01" while the course teaches 2026–27) */
+export const NEXT_RATES_FROM = `${Number(CURRENT_PAYROLL.year.slice(0, 4)) + 1}-04-01`;
+/** true once that day has come and CURRENT_PAYROLL still hasn't been moved on (see README: "Updating the rates") */
+export const ratesOutOfDate = (todayIso: string) => todayIso >= NEXT_RATES_FROM;
+
 /* the current year's figures, under the names the lessons use */
 
 export const INDIVIDUAL_TAX_BRACKETS = CURRENT_PAYROLL.brackets;

@@ -1,13 +1,18 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Link from "next/link";
 import "./globals.css";
 import { CURRENT_PAYROLL } from "@/lib/nz/rates";
 import { OverlayProvider } from "@/components/learn/Overlay";
 import { NavLinks } from "@/components/NavLinks";
+import { Offline } from "@/components/Offline";
+import { RatesNotice } from "@/components/RatesNotice";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
+
+// the phone's status bar takes the café's yellow when the site is installed
+export const viewport: Viewport = { themeColor: "#f7c948" };
 
 export const metadata: Metadata = {
   title: "Kōwhai Café – Learn NZ Accounting",
@@ -29,10 +34,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
               <NavLinks />
             </div>
           </header>
+          <RatesNotice />
           <main id="main" tabIndex={-1} className="flex-1">{children}</main>
           <footer className="border-t border-stone-200 py-6 text-center text-sm text-stone-500">
             A learning tool. Kōwhai Café Ltd and everyone in it are fictional. Rates are for the {CURRENT_PAYROLL.year} year: always check{" "}
             <a className="underline" href="https://www.ird.govt.nz" target="_blank" rel="noreferrer">ird.govt.nz</a> for current figures.
+            <Offline />
           </footer>
         </OverlayProvider>
       </body>
