@@ -3,12 +3,12 @@
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { GLOSSARY, GLOSSARY_MAP, type GlossaryEntry } from "@/data/glossary";
-import { aidsForTerm } from "@/data/memoryAids";
-import { DRILLS, maskTerm, type DrillKey } from "@/data/study/drills";
+import { AID_MAP, MEMORY_AIDS, aidPart, aidsForTerm } from "@/data/memoryAids";
+import { DRILLS, DRILL_MAP, maskTerm } from "@/data/study/drills";
 import { DRILL_GROUPS, type DrillGroup } from "@/data/study/core";
-import { DrillRun } from "./DrillRun";
+import { DrillRun, makeSet, type RunItem } from "./DrillRun";
 import {
-  KNOWN_BOX, STORAGE_KEY, emptyStudy, intervalLabel, isDue, isKnown, loadStudy, markStudied, schedule, streak, todayLocal,
+  KNOWN_BOX, STORAGE_KEY, dueMissed, emptyStudy, intervalLabel, isDue, isKnown, loadStudy, markStudied, recordAnswer, schedule, streak, todayLocal,
   type Grade, type StudyData,
 } from "@/lib/study/srs";
 import { RichText } from "@/components/learn/RichText";
@@ -17,9 +17,9 @@ import { cx } from "@/lib/ui";
 
 type Level = GlossaryEntry["level"];
 type Dir = "forward" | "reverse" | "both";
-interface Settings { parts: number[]; levels: Level[]; dir: Dir; newCount: number }
+interface Settings { parts: number[]; levels: Level[]; dir: Dir; newCount: number; aids: boolean }
 const SETTINGS_KEY = "study-settings-v1";
-const DEFAULT_SETTINGS: Settings = { parts: [1, 2, 3, 4], levels: ["essential"], dir: "forward", newCount: 10 };
+const DEFAULT_SETTINGS: Settings = { parts: [1, 2, 3, 4], levels: ["essential"], dir: "forward", newCount: 10, aids: true };
 
 const PARTS: Record<number, string> = { 1: "1 · Foundations", 2: "2 · Accounting cycle", 3: "3 · NZ tax & rules", 4: "4 · A year on the job" };
 const LEVELS: Record<Level, string> = { essential: "Essential", working: "Working knowledge", reference: "Reference" };
@@ -29,6 +29,22 @@ const ORDER = new Map(GLOSSARY.map((e, i) => [e.key, i]));
 const byCurriculum = (a: GlossaryEntry, b: GlossaryEntry) => a.part - b.part || LEVEL_RANK[a.level] - LEVEL_RANK[b.level] || ORDER.get(a.key)! - ORDER.get(b.key)!;
 
 const cardKey = (id: string) => id.slice(2);
+/** how a card is named in lists: the term, or the memory aid's topic */
+const cardName = (id: string) => (id.startsWith("a:") ? `🧠 ${AID_MAP[cardKey(id)]?.topic}` : GLOSSARY_MAP[cardKey(id)]?.term) ?? id;
+
+/** a run of drill questions: one drill, or a mixed review */
+interface Run {
+  title: string;
+  icon: string;
+  items: RunItem[];
+  mixed?: boolean;
+  drill?: string;
+  learn?: { href: string; label: string };
+  again?: { label: string; run: () => RunItem[] | void };
+}
+
+const TODAY_NEW = 5;
+const MAX_TODAY_MISSED = 10;
 const chip = (on: boolean) => cx("rounded-lg px-3 py-1.5 text-sm font-medium transition", on ? "bg-ink text-white" : "bg-white ring-1 ring-stone-200 hover:bg-stone-100");
 
 export function Study() {
@@ -37,7 +53,7 @@ export function Study() {
   const [today, setToday] = useState("");
   const [tab, setTab] = useState<"cards" | "drills" | "progress">("cards");
   const [session, setSession] = useState<string[] | null>(null);
-  const [drill, setDrill] = useState<DrillKey | null>(null);
+  const [run, setRun] = useState<Run | null>(null);
 
   useEffect(() => {
     const saved = (() => { try { return { ...DEFAULT_SETTINGS, ...JSON.parse(localStorage.getItem(SETTINGS_KEY) ?? "{}") } as Settings; } catch { return DEFAULT_SETTINGS; } })();
@@ -49,10 +65,20 @@ export function Study() {
     if (q.get("tab") === "drills" || q.get("tab") === "progress") setTab(q.get("tab") as "drills" | "progress");
     setData(loadStudy(localStorage.getItem(STORAGE_KEY)));
     setToday(todayLocal());
+    // ?drill=key (a lesson's "Practise this" link) starts that drill straight away
+    const k = q.get("drill");
+    if (k && DRILL_MAP[k]) setRun(drillRun(k));
     /* eslint-enable react-hooks/set-state-in-effect */
   }, []);
 
-  const save = useCallback((d: StudyData) => { setData(d); localStorage.setItem(STORAGE_KEY, JSON.stringify(d)); }, []);
+  const update = useCallback((f: (d: StudyData) => StudyData) => {
+    setData((prev) => {
+      const next = f(prev);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+      return next;
+    });
+  }, []);
+  const onAnswer = useCallback((it: RunItem, right: boolean) => update((d) => markStudied(recordAnswer(d, it.drill, it.seed, right, todayLocal()), todayLocal())), [update]);
   const changeSettings = (s: Settings) => { setSettings(s); localStorage.setItem(SETTINGS_KEY, JSON.stringify(s)); };
 
   const scope = useMemo(
@@ -61,11 +87,34 @@ export function Study() {
   );
   const ids = useMemo(() => {
     const dirs = settings.dir === "both" ? ["f", "r"] : [settings.dir === "forward" ? "f" : "r"];
-    return scope.flatMap((e) => dirs.map((d) => `${d}:${e.key}`));
-  }, [scope, settings.dir]);
+    const terms = scope.flatMap((e) => dirs.map((d) => ({ id: `${d}:${e.key}`, part: e.part, rank: LEVEL_RANK[e.level] })));
+    // memory aids join each Part's cards after its essential terms
+    const aids = settings.aids ? MEMORY_AIDS.filter((a) => settings.parts.includes(aidPart(a))).map((a) => ({ id: `a:${a.key}`, part: aidPart(a), rank: 0.5 })) : [];
+    return [...terms, ...aids].sort((a, b) => a.part - b.part || a.rank - b.rank).map((x) => x.id);
+  }, [scope, settings.dir, settings.aids, settings.parts]);
   const due = ids.filter((id) => isDue(data.cards[id], today));
   const fresh = ids.filter((id) => !data.cards[id]);
   const known = scope.filter((e) => isKnown(data.cards[`f:${e.key}`])).length;
+  const missedDue = today ? dueMissed(data, today).filter((m) => DRILL_MAP[m.drill]) : [];
+
+  /** Today's review: missed questions that are due, then a few new ones from across the course, weakest drills first */
+  const todayRun = (): Run => {
+    const retry = shuffled(missedDue).slice(0, MAX_TODAY_MISSED).map((m) => ({ drill: m.drill, seed: m.seed }));
+    const score = (k: string) => { const st = data.drills[k]; return st ? st.last / st.total : 0.6; };
+    const picks = DRILLS.filter((d) => settings.parts.includes(d.part))
+      .map((d) => ({ k: d.key, w: score(d.key) + Math.random() * 0.5 }))
+      .sort((a, b) => a.w - b.w).slice(0, TODAY_NEW)
+      .flatMap((x) => makeSet(x.k, 1));
+    const dueCards = shuffled(due);
+    return {
+      title: "Today's review", icon: "☀️", mixed: true, items: [...retry, ...shuffled(picks)],
+      again: dueCards.length ? { label: `Now your ${dueCards.length} due flashcard${dueCards.length === 1 ? "" : "s"} →`, run: () => { setRun(null); setSession(dueCards); } } : undefined,
+    };
+  };
+  const retryRun = (): Run => ({
+    title: "Missed questions", icon: "🔁", mixed: true,
+    items: shuffled(Object.values(data.missed).filter((m) => DRILL_MAP[m.drill])).slice(0, 20).map((m) => ({ drill: m.drill, seed: m.seed })),
+  });
 
   if (!today) return <div className="h-96 animate-pulse rounded-2xl bg-stone-100" />;
 
@@ -75,25 +124,31 @@ export function Study() {
         queue={session}
         data={data}
         today={today}
-        onGrade={(id, g) => save(markStudied({ ...data, cards: { ...data.cards, [id]: schedule(data.cards[id], g, today) } }, today))}
+        onGrade={(id, g) => update((d) => markStudied({ ...d, cards: { ...d.cards, [id]: schedule(d.cards[id], g, today) } }, today))}
         onExit={() => setSession(null)}
       />
     );
   }
-  if (drill) {
+  if (run) {
+    const k = run.drill;
     return (
       <DrillRun
-        k={drill}
+        key={`${run.title}-${run.items[0]?.seed}`}
+        {...run}
+        onAnswer={onAnswer}
         onFinish={(score, total) => {
-          const prev = data.drills[drill];
-          save(markStudied({ ...data, drills: { ...data.drills, [drill]: { attempts: (prev?.attempts ?? 0) + 1, best: Math.max(prev?.best ?? 0, score), last: score, total, when: today } } }, today));
+          if (!k) return;
+          update((d) => {
+            const prev = d.drills[k];
+            return markStudied({ ...d, drills: { ...d.drills, [k]: { attempts: (prev?.attempts ?? 0) + 1, best: Math.max(prev?.best ?? 0, score), last: score, total, when: today } } }, today);
+          });
         }}
-        onExit={() => setDrill(null)}
+        onExit={() => setRun(null)}
       />
     );
   }
 
-  const start = () => setSession([...shuffleIds(due), ...fresh.slice(0, settings.newCount)]);
+  const start = () => setSession([...shuffled(due), ...fresh.slice(0, settings.newCount)]);
   const toggle = <T,>(xs: T[], x: T) => (xs.includes(x) ? (xs.length > 1 ? xs.filter((y) => y !== x) : xs) : [...xs, x]);
 
   return (
@@ -103,6 +158,18 @@ export function Study() {
         <Stat label="New cards" value={fresh.length} note={`not studied yet (${Math.min(settings.newCount, fresh.length)} per session)`} />
         <Stat label="Known" value={`${known} / ${scope.length}`} note="terms you've recalled well over a week or more" />
         <Stat label="Streak" value={`${streak(data.days, today)} day${streak(data.days, today) === 1 ? "" : "s"}`} note="days in a row you've studied" />
+      </div>
+
+      <div className="mb-6 flex flex-col gap-4 rounded-2xl bg-kowhai-50 p-5 ring-1 ring-kowhai-200 sm:flex-row sm:items-center">
+        <div className="min-w-0 flex-1">
+          <div className="text-lg font-bold">☀️ Today&apos;s review</div>
+          <p className="text-sm text-stone-600">
+            {missedDue.length > 0 ? <><strong>{Math.min(missedDue.length, MAX_TODAY_MISSED)}</strong> question{missedDue.length === 1 ? "" : "s"} you missed before, then </> : null}
+            <strong>{TODAY_NEW}</strong> new questions from across {settings.parts.length === 4 ? "the course" : settings.parts.length === 1 ? `Part ${settings.parts[0]}` : `Parts ${settings.parts.join(", ")}`}, weakest topics first
+            {due.length > 0 ? <>, then your <strong>{due.length}</strong> due flashcard{due.length === 1 ? "" : "s"}</> : null}. About ten minutes.
+          </p>
+        </div>
+        <button onClick={() => setRun(todayRun())} className="shrink-0 rounded-xl bg-kowhai-400 px-5 py-3 font-bold text-ink hover:bg-kowhai-300">Start today&apos;s review →</button>
       </div>
 
       <div className="mb-6 flex flex-wrap gap-2 border-b border-stone-200 pb-3">
@@ -122,6 +189,9 @@ export function Study() {
             </Field>
             <Field label="Which way round?" hint="Meaning → term is harder: try it once a term is known.">
               {([["forward", "Term → meaning"], ["reverse", "Meaning → term"], ["both", "Both"]] as const).map(([d, l]) => <button key={d} className={chip(settings.dir === d)} onClick={() => changeSettings({ ...settings, dir: d })}>{l}</button>)}
+            </Field>
+            <Field label="Memory aids too?" hint="The memory hooks (like DEAD CLIC) as cards of their own.">
+              {([[true, "Yes"], [false, "No"]] as const).map(([v, l]) => <button key={l} className={chip(settings.aids === v)} onClick={() => changeSettings({ ...settings, aids: v })}>{l}</button>)}
             </Field>
             <Field label="New cards per session">
               {[5, 10, 20, 50].map((n) => <button key={n} className={chip(settings.newCount === n)} onClick={() => changeSettings({ ...settings, newCount: n })}>{n}</button>)}
@@ -145,7 +215,7 @@ export function Study() {
                 {DRILLS.filter((d) => d.group === g).map((d) => {
                   const st = data.drills[d.key];
                   return (
-                    <button key={d.key} onClick={() => setDrill(d.key)} className="group flex flex-col rounded-2xl border border-stone-200 bg-white p-5 text-left transition hover:border-kowhai-500 hover:shadow-lg">
+                    <button key={d.key} onClick={() => setRun(drillRun(d.key))} className="group flex flex-col rounded-2xl border border-stone-200 bg-white p-5 text-left transition hover:border-kowhai-500 hover:shadow-lg">
                       <span className="text-2xl">{d.icon}</span>
                       <span className="mt-2 text-lg font-bold group-hover:underline">{d.title}</span>
                       <span className="mt-1 flex-1 text-sm text-stone-600">{d.blurb}</span>
@@ -162,13 +232,26 @@ export function Study() {
         </div>
       )}
 
-      {tab === "progress" && <Progress data={data} onReset={() => { if (confirm("Reset all study progress? This can't be undone.")) save(emptyStudy()); }} />}
+      {tab === "progress" && (
+        <Progress
+          data={data}
+          today={today}
+          onDrill={(k) => setRun(drillRun(k))}
+          onRetry={() => setRun(retryRun())}
+          onReset={() => { if (confirm("Reset all study progress? This can't be undone.")) update(() => emptyStudy()); }}
+        />
+      )}
     </div>
   );
 }
 
-function shuffleIds(ids: string[]) {
-  const a = [...ids];
+function drillRun(k: string): Run {
+  const d = DRILL_MAP[k];
+  return { title: d.title, icon: d.icon, drill: k, learn: d.learn, items: makeSet(k), again: { label: `New set of ${d.length ?? 10} →`, run: () => makeSet(k) } };
+}
+
+function shuffled<T>(xs: T[]) {
+  const a = [...xs];
   for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
   return a;
 }
@@ -223,7 +306,8 @@ function CardSession({ queue: start, data, today, onGrade, onExit }: { queue: st
   const [shown, setShown] = useState(false);
   const [tally, setTally] = useState<Record<Grade, number>>({ again: 0, hard: 0, good: 0, easy: 0 });
   const id = queue[i];
-  const e = id ? GLOSSARY_MAP[cardKey(id)] : undefined;
+  const aid = id?.startsWith("a:") ? AID_MAP[cardKey(id)] : undefined;
+  const e = id && !aid ? GLOSSARY_MAP[cardKey(id)] : undefined;
   const reverse = id?.startsWith("r:");
 
   const grade = useCallback((g: Grade) => {
@@ -246,7 +330,7 @@ function CardSession({ queue: start, data, today, onGrade, onExit }: { queue: st
     return () => window.removeEventListener("keydown", onKey);
   }, [shown, grade]);
 
-  if (!e) {
+  if (!e && !aid) {
     const total = Object.values(tally).reduce((a, b) => a + b, 0);
     return (
       <div className="mx-auto max-w-xl rounded-2xl border border-stone-200 bg-white p-8 text-center">
@@ -270,28 +354,28 @@ function CardSession({ queue: start, data, today, onGrade, onExit }: { queue: st
 
       <div className="rounded-2xl border border-stone-200 bg-white p-6 shadow-sm sm:p-8">
         <div className="flex flex-wrap gap-2 text-xs font-semibold">
-          <span className="rounded-full bg-stone-100 px-2 py-0.5 text-stone-500">{PARTS[e.part]}</span>
-          <span className="rounded-full bg-kowhai-100 px-2 py-0.5 text-kowhai-700">{LEVELS[e.level]}</span>
+          <span className="rounded-full bg-stone-100 px-2 py-0.5 text-stone-500">{PARTS[aid ? aidPart(aid) : e!.part]}</span>
+          <span className={cx("rounded-full px-2 py-0.5", aid ? "bg-teal-100 text-teal-700" : "bg-kowhai-100 text-kowhai-700")}>{aid ? "🧠 Memory aid" : LEVELS[e!.level]}</span>
         </div>
-        <div className="mt-4 text-sm font-semibold uppercase tracking-wider text-stone-500">{reverse ? "Which term is this?" : "What does this mean?"}</div>
-        {reverse
-          ? <div className="mt-2 text-xl leading-snug"><RichText text={maskTerm(e, e.short)} inlineOnly /></div>
-          : <div className="mt-2 text-3xl font-bold tracking-tight">{e.term}</div>}
+        {aid ? (
+          <>
+            <div className="mt-4 text-sm font-semibold uppercase tracking-wider text-stone-500">What does this help you remember, and how?</div>
+            <div className="mt-2 text-3xl font-bold tracking-tight">{aid.hook}</div>
+          </>
+        ) : (
+          <>
+            <div className="mt-4 text-sm font-semibold uppercase tracking-wider text-stone-500">{reverse ? "Which term is this?" : "What does this mean?"}</div>
+            {reverse
+              ? <div className="mt-2 text-xl leading-snug"><RichText text={maskTerm(e!, e!.short)} inlineOnly /></div>
+              : <div className="mt-2 text-3xl font-bold tracking-tight">{e!.term}</div>}
+          </>
+        )}
 
         {!shown ? (
           <button onClick={() => setShown(true)} className="mt-8 w-full rounded-xl bg-ink px-5 py-3 font-bold text-white hover:bg-ink/85">Show answer <span className="font-normal text-stone-400">(Space)</span></button>
         ) : (
           <div className="mt-6 border-t border-stone-200 pt-5">
-            {reverse && <div className="text-3xl font-bold tracking-tight">{e.term}</div>}
-            <div className={cx("rounded-lg bg-kowhai-50 px-4 py-3 text-lg leading-snug", reverse && "mt-3")}><RichText text={e.short} inlineOnly /></div>
-            {e.example && <div className="mt-3 text-[15px] text-stone-700"><span className="font-semibold text-stone-500">☕ At Kōwhai: </span><RichText text={e.example} inlineOnly /></div>}
-            {e.mistake && <div className="mt-2 text-[15px] text-stone-700"><span className="font-semibold text-rose-700">⚠ Common mistake: </span><RichText text={e.mistake} inlineOnly /></div>}
-            {aidsForTerm(e.key).slice(0, 1).map((a) => <MemoryAid key={a.key} k={a.key} compact link={false} />)}
-            <details className="mt-3 text-[15px]">
-              <summary className="cursor-pointer text-sm font-semibold text-stone-600 hover:underline">Full explanation</summary>
-              <div className="prose-learn mt-2"><RichText text={e.body} /></div>
-              {e.href && <Link href={e.href} className="mt-2 inline-block text-sm font-semibold text-kowhai-700 underline">Learn it in full →</Link>}
-            </details>
+            {aid ? <MemoryAid k={aid.key} className="my-0" /> : <CardBack e={e!} reverse={reverse} />}
             <div className="mt-6 text-sm font-semibold text-stone-600">How well did you remember it?</div>
             <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
               {GRADES.map(({ g, label, cls }, n) => (
@@ -309,11 +393,81 @@ function CardSession({ queue: start, data, today, onGrade, onExit }: { queue: st
   );
 }
 
+function CardBack({ e, reverse }: { e: GlossaryEntry; reverse?: boolean }) {
+  return (
+    <>
+      {reverse && <div className="text-3xl font-bold tracking-tight">{e.term}</div>}
+      <div className={cx("rounded-lg bg-kowhai-50 px-4 py-3 text-lg leading-snug", reverse && "mt-3")}><RichText text={e.short} inlineOnly /></div>
+      {e.example && <div className="mt-3 text-[15px] text-stone-700"><span className="font-semibold text-stone-500">☕ At Kōwhai: </span><RichText text={e.example} inlineOnly /></div>}
+      {e.mistake && <div className="mt-2 text-[15px] text-stone-700"><span className="font-semibold text-rose-700">⚠ Common mistake: </span><RichText text={e.mistake} inlineOnly /></div>}
+      {aidsForTerm(e.key).slice(0, 1).map((a) => <MemoryAid key={a.key} k={a.key} compact link={false} />)}
+      <details className="mt-3 text-[15px]">
+        <summary className="cursor-pointer text-sm font-semibold text-stone-600 hover:underline">Full explanation</summary>
+        <div className="prose-learn mt-2"><RichText text={e.body} /></div>
+        {e.href && <Link href={e.href} className="mt-2 inline-block text-sm font-semibold text-kowhai-700 underline">Learn it in full →</Link>}
+      </details>
+    </>
+  );
+}
+
 /* ───────────── progress ───────────── */
 
-function Progress({ data, onReset }: { data: StudyData; onReset: () => void }) {
+function Progress({ data, today, onDrill, onRetry, onReset }: { data: StudyData; today: string; onDrill: (k: string) => void; onRetry: () => void; onReset: () => void }) {
+  const missed = Object.values(data.missed).filter((m) => DRILL_MAP[m.drill]);
+  const missedBy = missed.reduce<Record<string, number>>((acc, m) => ({ ...acc, [m.drill]: (acc[m.drill] ?? 0) + 1 }), {});
+  // weakest drills: the lowest last score, then the most questions still to fix
+  const weakDrills = DRILLS.filter((d) => data.drills[d.key] || missedBy[d.key])
+    .map((d) => { const st = data.drills[d.key]; return { d, pct: st ? st.last / st.total : 1, open: missedBy[d.key] ?? 0 }; })
+    .filter((x) => x.pct < 0.8 || x.open > 0)
+    .sort((a, b) => a.pct - b.pct || b.open - a.open)
+    .slice(0, 6);
+  // weakest cards: forgotten most often, then still in the lowest box
+  const weakCards = Object.entries(data.cards)
+    .filter(([id, c]) => (c.lapses > 0 || (c.reps > 1 && c.box <= 1)) && (id.startsWith("a:") ? AID_MAP[cardKey(id)] : GLOSSARY_MAP[cardKey(id)]))
+    .sort(([, a], [, b]) => b.lapses - a.lapses || a.box - b.box)
+    .slice(0, 10);
+  const aidsKnown = MEMORY_AIDS.filter((a) => isKnown(data.cards[`a:${a.key}`])).length;
   return (
     <div className="space-y-6">
+      <div className="rounded-2xl border border-stone-200 bg-white p-5">
+        <h3 className="font-bold">Your weakest topics</h3>
+        <p className="text-sm text-stone-500">Where to spend the next ten minutes.</p>
+        {!weakDrills.length && !weakCards.length ? (
+          <p className="mt-3 text-[15px] text-stone-600">Nothing yet. Try a few drills and flashcards, and the ones that trip you up will show here.</p>
+        ) : (
+          <div className="mt-4 grid gap-5 md:grid-cols-2">
+            <div>
+              <div className="text-sm font-semibold text-stone-600">Drills</div>
+              {weakDrills.length ? (
+                <ul className="mt-2 space-y-2">
+                  {weakDrills.map(({ d, pct, open }) => (
+                    <li key={d.key} className="flex items-center gap-3 text-sm">
+                      <span className="min-w-0 flex-1">{d.icon} {d.title}<span className="block text-xs text-stone-500">{data.drills[d.key] ? `Last score ${Math.round(pct * 100)}%` : "Not finished yet"}{open ? ` · ${open} missed question${open === 1 ? "" : "s"} to fix` : ""}</span></span>
+                      <button onClick={() => onDrill(d.key)} className="shrink-0 rounded-lg bg-white px-3 py-1.5 font-semibold ring-1 ring-stone-300 hover:bg-stone-100">Practise</button>
+                    </li>
+                  ))}
+                </ul>
+              ) : <p className="mt-2 text-sm text-stone-500">All your drill scores are 80% or more.</p>}
+            </div>
+            <div>
+              <div className="text-sm font-semibold text-stone-600">Cards you keep forgetting</div>
+              {weakCards.length ? (
+                <ul className="mt-2 flex flex-wrap gap-2">
+                  {weakCards.map(([id, c]) => (
+                    <li key={id} className="rounded-full bg-rose-50 px-3 py-1 text-sm text-rose-900 ring-1 ring-rose-200">{cardName(id)}{id.startsWith("r:") ? " (meaning → term)" : ""}{c.lapses ? <span className="text-rose-600"> · forgot {c.lapses}×</span> : null}</li>
+                  ))}
+                </ul>
+              ) : <p className="mt-2 text-sm text-stone-500">None so far.</p>}
+            </div>
+          </div>
+        )}
+        {missed.length > 0 && (
+          <div className="mt-5 flex flex-wrap items-center gap-3 border-t border-stone-100 pt-4 text-sm">
+            <span className="flex-1 text-stone-600"><strong>{missed.length}</strong> missed question{missed.length === 1 ? "" : "s"} saved, {missed.filter((m) => m.state.due <= today).length} due today. Each one comes back until you get it right twice.</span>
+            <button onClick={onRetry} className="rounded-lg bg-kowhai-400 px-3 py-1.5 font-bold text-ink hover:bg-kowhai-300">Retry them now</button>
+          </div>
+        )}
+      </div>
       <div className="rounded-2xl border border-stone-200 bg-white p-5">
         <h3 className="font-bold">Terms by Part</h3>
         <p className="text-sm text-stone-500"><span className="font-semibold text-emerald-700">Known</span>: recalled well for a week or more · <span className="font-semibold text-kowhai-700">Learning</span>: seen, not yet known · <span className="font-semibold text-stone-500">New</span>: not studied yet (term → meaning cards)</p>
@@ -341,6 +495,11 @@ function Progress({ data, onReset }: { data: StudyData; onReset: () => void }) {
               <Link href={`/study?part=${p}`} className="text-xs font-semibold text-kowhai-700 underline">Study Part {p} only</Link>
             </div>
           ))}
+          <div className="grid grid-cols-[8.5rem_minmax(0,1fr)_4.5rem] items-center gap-3 border-t border-stone-100 pt-3 text-sm">
+            <span className="text-stone-600">🧠 Memory aids</span>
+            <span className="flex h-3 overflow-hidden rounded-full bg-stone-200"><span className="bg-emerald-500" style={{ width: `${(aidsKnown / MEMORY_AIDS.length) * 100}%` }} /></span>
+            <span className="num text-right text-stone-600">{aidsKnown}/{MEMORY_AIDS.length}</span>
+          </div>
         </div>
       </div>
       <div className="rounded-2xl border border-stone-200 bg-white p-5">

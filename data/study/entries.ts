@@ -6,6 +6,7 @@
 import * as Y1 from "@/data/books";
 import * as Y2 from "@/data/books/year2";
 import { ACCOUNTS } from "@/data/chartOfAccounts";
+import { balances } from "@/lib/engine/ledger";
 import type { Transaction } from "@/lib/engine/types";
 import { $, nzDate, pick, r2, shuffle, type Drill, type EntryLine, type EntryQ, type Rng } from "./core";
 
@@ -21,7 +22,7 @@ export const MIX_UPS: Record<string, string[]> = {
   "200": ["205", "120", "100"], "205": ["200", "206", "135"], "206": ["205", "600", "215"], "210": ["215", "230", "100"],
   "215": ["600", "210", "206"], "216": ["215", "230", "310"], "220": ["602", "206", "600"], "225": ["125", "410", "120"],
   "230": ["690", "141", "210"], "240": ["605", "300", "310", "241"], "241": ["605", "300", "310", "240"], "250": ["630", "100", "300"],
-  "300": ["310", "250", "240"], "310": ["300", "690", "240"], "400": ["410", "120", "110"], "410": ["400", "120", "225"],
+  "300": ["310", "250", "240"], "310": ["300", "320", "690", "240"], "320": ["310", "300", "690"], "400": ["410", "120", "110"], "410": ["400", "120", "225"],
   "450": ["115", "140", "400"], "460": ["170", "175", "400"], "510": ["130", "511", "512"], "511": ["130", "510", "512"],
   "512": ["130", "510", "511"], "513": ["130", "510"], "518": ["130", "519"], "519": ["130", "518", "510"],
   "600": ["605", "206", "215", "602"], "601": ["600", "215"], "602": ["220", "600"], "605": ["240", "600"],
@@ -65,7 +66,7 @@ export function entryQuestion(rng: Rng, t: Transaction): EntryQ {
   const lines = netLines(t);
   const right = lines.map((l) => l.account);
   const near = shuffle(rng, [...new Set(right.flatMap((c) => MIX_UPS[c] ?? []))].filter((c) => !right.includes(c) && ACC[c]));
-  const sameType = shuffle(rng, ACCOUNTS.filter((a) => !right.includes(a.code) && a.code !== "320" && right.some((c) => ACC[c].type === a.type)).map((a) => a.code));
+  const sameType = shuffle(rng, ACCOUNTS.filter((a) => !right.includes(a.code) && (a.code !== "320" || right.includes("310")) && right.some((c) => ACC[c].type === a.type)).map((a) => a.code));
   const extra = [...new Set([...near, ...sameType])].slice(0, Math.max(3, 8 - right.length));
   const options = [...right, ...extra].sort();
   const dr = lines.filter((l) => l.side === "debit"), cr = lines.filter((l) => l.side === "credit");
@@ -88,6 +89,40 @@ export function entryQuestion(rng: Rng, t: Transaction): EntryQ {
   };
 }
 
+/* ───────────── E3 closing entries, from the real year-end balances ───────────── */
+
+const YEAR_ENDS = [
+  { date: "2027-03-31", b: balances(Y1.BEFORE_CLOSING), profit: Y1.NET_PROFIT },
+  { date: "2028-03-31", b: balances([Y2.OPENING_ENTRY, ...Y2.BEFORE_CLOSING]), profit: Y2.NET_PROFIT },
+];
+const closingTxn = (date: string, title: string, story: string, lines: Transaction["lines"]): Transaction => ({ id: `CLOSE-${title}`, date, title, kind: "closing", book: "general", story, lines });
+
+export function closingQuestion(rng: Rng): EntryQ {
+  const y = pick(rng, YEAR_ENDS);
+  const kind = pick(rng, ["income", "expense", "expense", "summary"] as const);
+  if (kind === "summary") {
+    return entryQuestion(rng, closingTxn(y.date, "Close the income summary to retained earnings",
+      `Every income and expense account has been closed. The [[income-summary|income summary]] now has a credit balance of ${$(y.profit)}: the year's profit after tax. Move it to [[retained-earnings|retained earnings]].`,
+      [{ account: "320", debit: y.profit, why: "Empties the income summary: it's only used while closing." }, { account: "310", credit: y.profit, why: "The profit is kept in the business, so retained earnings (equity) goes up." }]));
+  }
+  const accts = ACCOUNTS.filter((a) => a.type === kind && a.code !== "519" && Math.abs(y.b[a.code] ?? 0) > 0.004);
+  const a = pick(rng, accts);
+  const bal = r2(Math.abs(y.b[a.code]));
+  const income = kind === "income";
+  return entryQuestion(rng, closingTxn(y.date, `Close ${a.name}`,
+    `At ${nzDate(y.date)}, **${a.name}** has ${income ? "a credit" : "a debit"} balance of ${$(bal)}. Write the [[closing-entries|closing entry]] that resets it to zero.`,
+    income
+      ? [{ account: a.code, debit: bal, why: "Income has a credit balance, so a debit empties it." }, { account: "320", credit: bal, why: "The income moves into the income summary." }]
+      : [{ account: "320", debit: bal, why: "The expense moves into the income summary." }, { account: a.code, credit: bal, why: "Expenses have debit balances, so a credit empties them." }]));
+}
+
+/* ───────────── E4 Part 4: what changes in year 2 ───────────── */
+
+export const PART4_POOL = uniqueKinds(
+  [...Y2.DURING_YEAR, ...Y2.ADJUSTMENTS].filter((t) => /Reverse|Sell the old|Depreciate the old|dividend|deposit becomes income|annual leave|provisional tax|instalment|card sales arrive|power bill finally/i.test(t.title)),
+  6,
+);
+
 export const ENTRY_DRILLS: Drill[] = [
   {
     key: "entry", group: "record", title: "Build the journal entry", icon: "✍️", part: 2, length: 5,
@@ -100,5 +135,17 @@ export const ENTRY_DRILLS: Drill[] = [
     blurb: "Accruals, prepayments, depreciation, stock, holiday pay, bad debts and tax: write each adjusting entry.",
     learn: { href: "/cycle/adjustments", label: "Step 7 · Adjusting entries" },
     make: (rng) => entryQuestion(rng, pick(rng, ADJUSTMENT_POOL)),
+  },
+  {
+    key: "closing-entry", group: "record", title: "Closing entries", icon: "🔒", part: 2, length: 5,
+    blurb: "Close Kōwhai's real income and expense accounts, then move the profit to retained earnings.",
+    learn: { href: "/cycle/closing", label: "Step 10 · Closing" },
+    make: closingQuestion,
+  },
+  {
+    key: "year2-entry", group: "record", title: "Year 2 entries", icon: "🔁", part: 4, length: 5,
+    blurb: "Reversing last year's accruals, selling an asset, paying a dividend, annual leave and provisional tax.",
+    learn: { href: "/on-the-job?year=2", label: "A year on the job · Year 2" },
+    make: (rng) => entryQuestion(rng, pick(rng, PART4_POOL)),
   },
 ];

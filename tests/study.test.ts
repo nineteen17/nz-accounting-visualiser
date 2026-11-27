@@ -1,8 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { addDays, loadStudy, markStudied, schedule, streak, emptyStudy, intervalLabel } from "@/lib/study/srs";
+import { addDays, loadStudy, markStudied, schedule, streak, emptyStudy, intervalLabel, recordAnswer, dueMissed, missedKey } from "@/lib/study/srs";
 import { DRILLS, DRILL_MAP, maskTerm, plain } from "@/data/study/drills";
-import { $, $$, parseAnswer, type Question } from "@/data/study/core";
-import { ADJUSTMENT_POOL, EVERYDAY_POOL, entryQuestion } from "@/data/study/entries";
+import { $, $$, parseAnswer, seeded as coreSeeded, type Question } from "@/data/study/core";
+import { ADJUSTMENT_POOL, EVERYDAY_POOL, PART4_POOL, closingQuestion, entryQuestion } from "@/data/study/entries";
+import { MEMORY_AIDS, aidPart } from "@/data/memoryAids";
+import { FOUNDATIONS, NZ_TOPICS } from "@/data/topics";
+import { CYCLE_STEPS } from "@/data/cycle";
+import { EXPLORE_TOOLS } from "@/app/explore/tools";
+import * as Y1 from "@/data/books";
+import * as Y2 from "@/data/books/year2";
 import { CASH_POOL, EQ_POOL } from "@/data/study/classify";
 import { CF_LABELS } from "@/lib/engine/statements";
 import { GLOSSARY_MAP } from "@/data/glossary";
@@ -64,6 +70,9 @@ describe("drills", () => {
           // the working shown must arrive at the same answer
           const shown = q.unit === "$" ? [$(q.answer), $$(q.answer)] : [`${q.answer}`, q.answer.toFixed(2), q.answer.toFixed(1)];
           expect(shown.some((x) => q.explain.includes(x)), `${q.prompt}\n→ ${q.answer} not in: ${q.explain}`).toBe(true);
+        } else if (q.kind === "order") {
+          expect(q.items.length, q.prompt).toBeGreaterThanOrEqual(3);
+          expect(new Set(q.items).size, q.prompt).toBe(q.items.length);
         } else {
           const dr = q.lines.filter((l) => l.side === "debit").reduce((s, l) => s + l.amount, 0);
           const cr = q.lines.filter((l) => l.side === "credit").reduce((s, l) => s + l.amount, 0);
@@ -185,6 +194,103 @@ describe("drills", () => {
       if (/terminal tax/.test(dl.prompt)) expect(dl.options[dl.answer]).toBe(/has a tax agent/.test(dl.prompt) ? "7 April 2028" : "7 February 2028");
       if (/IR4/.test(dl.prompt)) expect(dl.options[dl.answer]).toBe(/tax agent/.test(dl.prompt) && !/without/.test(dl.prompt) ? "31 March 2028" : "7 July 2027");
     }
+  });
+
+  it("regenerates exactly the same question from the same seed (so missed ones can come back)", () => {
+    for (const d of DRILLS) {
+      for (const seed of [1, 42, 99_999]) {
+        const a = d.make(coreSeeded(seed)), b = d.make(coreSeeded(seed));
+        expect(JSON.stringify(b), d.key).toBe(JSON.stringify(a));
+      }
+    }
+  });
+
+  it("every drill links to a page that exists", () => {
+    const routes = new Set(["/cycle", "/glossary", "/glossary/memory-aids", "/on-the-job",
+      ...FOUNDATIONS.map((f) => `/foundations/${f.slug}`), ...NZ_TOPICS.map((t) => `/nz/${t.slug}`),
+      ...CYCLE_STEPS.map((s) => `/cycle/${s.slug}`), ...EXPLORE_TOOLS.map((t) => `/explore/${t.slug}`)]);
+    for (const d of DRILLS) expect(routes.has(d.learn.href.split("?")[0]), `${d.key} → ${d.learn.href}`).toBe(true);
+    for (const a of MEMORY_AIDS) expect([1, 2, 3, 4]).toContain(aidPart(a));
+  });
+
+  it("closing entries use Kōwhai's real year-end balances and profit", () => {
+    const rng = seeded(5);
+    const profits = new Set([Y1.NET_PROFIT, Y2.NET_PROFIT]);
+    let summary = 0;
+    for (let n = 0; n < 200; n++) {
+      const q = closingQuestion(rng);
+      const close = q.lines.find((l) => l.account === "320")!;
+      expect(close, q.prompt).toBeDefined();
+      if (q.lines.some((l) => l.account === "310")) {
+        summary++;
+        expect(profits.has(close.amount)).toBe(true);
+        expect(q.lines.find((l) => l.account === "310")!.side).toBe("credit");
+      } else {
+        const other = q.lines.find((l) => l.account !== "320")!;
+        const acc = ACCOUNTS.find((a) => a.code === other.account)!;
+        // income is closed with a debit, expenses with a credit
+        expect(other.side, acc.name).toBe(acc.type === "income" ? "debit" : "credit");
+        expect(["income", "expense"]).toContain(acc.type);
+      }
+    }
+    expect(summary).toBeGreaterThan(20);
+    // the real closing entries close the same income summary amount
+    expect(Y1.CLOSING.some((t) => t.lines.some((l) => l.account === "310" && Math.abs((l.credit ?? 0) - Y1.NET_PROFIT) < 0.005))).toBe(true);
+  });
+
+  it("year 2 entries cover the Part 4 topics", () => {
+    const titles = PART4_POOL.map((t) => t.title).join(" | ");
+    for (const re of [/Reverse/, /Sell the old/, /dividend/i, /provisional tax/i]) expect(titles, `${re}`).toMatch(re);
+  });
+
+  it("works out the Phase 3 sums correctly", () => {
+    const rng = seeded(8);
+    for (let n = 0; n < 300; n++) {
+      const t = asNumber(DRILL_MAP["t-account"].make(rng));
+      // re-add the listed moves and the opening balance
+      const opening = Number(/balance of \*\*\$([\d,]+)/.exec(t.prompt)![1].replace(/,/g, ""));
+      const normal = /\*\*debit\*\* balance/.test(t.prompt) ? 1 : -1;
+      let bal = opening * normal;
+      for (const [, side, amt] of t.prompt.matchAll(/- (Debit|Credit) \$([\d,]+)/g)) bal += (side === "Debit" ? 1 : -1) * Number(amt.replace(/,/g, ""));
+      expect(t.answer, t.prompt).toBe(Math.abs(bal));
+      expect(bal * normal).toBeGreaterThan(0);
+
+      const imp = asNumber(DRILL_MAP.imputation.make(rng));
+      const cash = Number(/dividend of \*\*\$([\d,]+)/.exec(imp.prompt)![1].replace(/,/g, ""));
+      const ic = Math.round(((cash * 28) / 72) * 100) / 100;
+      if (/imputation credit\]\] is attached/.test(imp.prompt)) expect(imp.answer).toBeCloseTo(ic, 2);
+      if (/What.s the \*\*gross dividend/.test(imp.prompt)) expect(imp.answer).toBeCloseTo(cash + ic, 2);
+      if (/dividend RWT\*\* must/.test(imp.prompt)) expect(imp.answer).toBeCloseTo((cash + ic) * 0.33 - ic, 1);
+
+      const g = asNumber(DRILL_MAP["gst-return"].make(rng));
+      const [sales, purchases] = [...g.prompt.matchAll(/(?:Sales|tax invoices): \*\*\$([\d,]+)/g)].map((m) => Number(m[1].replace(/,/g, "")));
+      expect(g.answer).toBeCloseTo(((sales - purchases) * 3) / 23, 1);
+    }
+    // a $72,000 dividend carries $28,000 of credits: the $100,000 profit it came from, taxed at 28%
+    expect(Math.round((72_000 * 28) / 72)).toBe(28_000);
+  });
+
+  it("brings missed questions back, and drops them once they're right twice", () => {
+    let d = emptyStudy();
+    const today = "2026-11-27";
+    d = recordAnswer(d, "gst", 7, true, today);
+    expect(Object.keys(d.missed)).toHaveLength(0); // right first time: nothing saved
+    d = recordAnswer(d, "gst", 7, false, today);
+    expect(dueMissed(d, today)).toHaveLength(0); // not again today
+    expect(dueMissed(d, addDays(today, 1))).toHaveLength(1); // back tomorrow
+    d = recordAnswer(d, "gst", 7, true, addDays(today, 1));
+    expect(d.missed[missedKey("gst", 7)].state.due).toBe(addDays(today, 4)); // then in 3 days
+    d = recordAnswer(d, "gst", 7, false, addDays(today, 4));
+    expect(d.missed[missedKey("gst", 7)].state.lapses).toBe(2); // wrong again: back to tomorrow
+    d = recordAnswer(d, "gst", 7, true, addDays(today, 5));
+    d = recordAnswer(d, "gst", 7, true, addDays(today, 8));
+    expect(d.missed[missedKey("gst", 7)]).toBeUndefined();
+    // old saved progress without missed questions still loads
+    expect(loadStudy(JSON.stringify({ version: 1, cards: {}, drills: {}, days: [] })).missed).toEqual({});
+    // capped, oldest dropped first
+    for (let s = 0; s < 210; s++) d = recordAnswer(d, "gst", s, false, today);
+    expect(Object.keys(d.missed)).toHaveLength(200);
+    expect(d.missed[missedKey("gst", 0)]).toBeUndefined();
   });
 
   it("reads typed answers the way people type them", () => {

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PageSkeleton } from "@/components/learn/PageSkeleton";
 import type { Metadata } from "next";
+import { PractiseLinks } from "@/components/study/PractiseLinks";
 import { FOUNDATIONS } from "@/data/topics";
 import * as L from "@/components/foundations/Lessons";
 import { PageHeader } from "@/components/learn/bits";
@@ -62,6 +63,7 @@ async function Content({ params }: { params: Promise<{ topic: string }> }) {
       />
       <PageHeader eyebrow={`Lesson ${i + 1}`} title={f.title}>{f.blurb}</PageHeader>
       {LESSONS[topic]()}
+      <PractiseLinks href={`/foundations/${topic}`} part={1} />
       <div className="mt-12 flex justify-between border-t border-stone-200 pt-6">
         {prev ? <Link href={`/foundations/${prev.slug}`} className="rounded-xl border border-stone-300 px-4 py-3 text-sm hover:bg-white">← {prev.title}</Link> : <span />}
         {next ? (

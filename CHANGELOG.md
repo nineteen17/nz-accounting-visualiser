@@ -13,6 +13,26 @@ Dates are when the change was made. Rates and rules are for the 2026–27 NZ inc
 
 ## 2026-11-27
 
+### Study Phase 3: make it stick
+- **Missed questions come back.** Every drill question is now built from a seed, so a missed one can be saved and rebuilt exactly. It returns the next day, then 3 days later, and drops off once you've got it right twice.
+- **Today's review** (top of the Study page): the missed questions that are due, 5 new questions from different drills (weakest first), then the flashcards that are due. Each question shows which drill it's from.
+- **Memory aids as flashcards**: the hook on the front (e.g. DEAD CLIC), what it stands for and why on the back. On by default; switch off in the flashcard settings.
+- **7 new drills (36 in all)**:
+  - **Put it in order**: a new question type. The accounting cycle, a transaction's journey, closing the year, a pay run, a GST period and Kōwhai's tax year.
+  - **Closing entries**: close Kōwhai's real income and expense balances at 31 March 2027 and 2028, then move the profit to retained earnings.
+  - **Year 2 entries**: reversing last year's accruals, selling the old POS system, the dividend and its RWT, annual leave and provisional tax.
+  - **Balance a T-account**, **Cash vs accrual profit**, **GST for a period** (output − input, ignoring exempt fees and wages), **Dividends & imputation** (28/72 credits, gross dividend, dividend RWT, cash paid).
+- **"Make it stick" links**: the end of every lesson (Foundations, the cycle steps and overview, NZ topics, A year on the job, and the ratios tool) links to its drills and to that Part's flashcards. `/study?drill=<key>` starts a drill directly.
+- **Progress → Your weakest topics**: the drills with the lowest last score or open missed questions (with a Practise button), the cards you forget most, and "Retry them now" for every saved missed question.
+- Saved progress from before this change still loads; it just has no missed questions yet.
+- The home page's Study card lists Today's review, memory-aid cards, missed questions and weakest topics.
+- **Tests (now 103)**:
+  - Every drill rebuilds the same question from the same seed, and every drill links to a page that exists.
+  - Closing entries close income with a debit and expenses with a credit, and close the real profit.
+  - The T-account, imputation, RWT and GST-period answers are re-worked independently.
+  - Missed-question scheduling and the 200-question cap are tested.
+- `docs/STUDY.md`: Phase 3 ticked off; architecture, saved data, coverage map and log updated.
+
 ### Study Phase 2: sort it, and the full NZ calendar
 - **12 new drills** (`data/study/classify.ts`), built from Kōwhai's books and chart of accounts where possible:
   - **Operating, investing or financing?**: Kōwhai's real cash movements, classified the same way as its cash flow statement.

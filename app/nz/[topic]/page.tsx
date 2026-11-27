@@ -9,6 +9,7 @@ import * as T from "@/components/nz/Tax";
 import { PageHeader } from "@/components/learn/bits";
 import { SectionNav } from "@/components/learn/SectionNav";
 import { RATES_AS_AT } from "@/lib/nz/rates";
+import { PractiseLinks } from "@/components/study/PractiseLinks";
 
 const PAGES: Record<string, () => React.ReactNode> = {
   gst: () => <T.GstTopic />,
@@ -66,6 +67,7 @@ async function Content({ params }: { params: Promise<{ topic: string }> }) {
       />
       <PageHeader eyebrow={`🇳🇿 ${t.group}`} title={t.title}>{t.blurb}</PageHeader>
       {PAGES[topic]()}
+      <PractiseLinks href={`/nz/${topic}`} part={3} />
       <p className="mt-10 text-xs text-stone-500">Rates as at {RATES_AS_AT}. This is a learning tool, not tax advice. Check ird.govt.nz, employment.govt.nz and acc.co.nz.</p>
       <div className="mt-6 flex justify-between border-t border-stone-200 pt-6">
         {prev ? <Link href={`/nz/${prev.slug}`} className="rounded-xl border border-stone-300 px-4 py-3 text-sm hover:bg-white">← {prev.title}</Link> : <span />}

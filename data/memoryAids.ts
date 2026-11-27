@@ -229,3 +229,7 @@ export function aidsForStep(id: string, title: string): string[] {
   if (id === "A01") return ["equation", "dead-clic"];
   return [];
 }
+
+/** which Part of the course a memory aid belongs to, from where it's taught */
+export const aidPart = (a: MemoryAid): 1 | 2 | 3 | 4 =>
+  a.learn.href.startsWith("/foundations") ? 1 : a.learn.href.startsWith("/nz") ? 3 : a.learn.href.startsWith("/on-the-job") ? 4 : 2;

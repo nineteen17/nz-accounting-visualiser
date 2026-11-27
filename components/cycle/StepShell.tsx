@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { CYCLE_STEPS, stepIndex } from "@/data/cycle";
 import { MarkVisited } from "./CycleWheel";
 import { SectionNav } from "@/components/learn/SectionNav";
+import { PractiseLinks } from "@/components/study/PractiseLinks";
 
 export function StepShell({ slug, children }: { slug: string; children: ReactNode }) {
   const i = stepIndex(slug);
@@ -26,6 +27,7 @@ export function StepShell({ slug, children }: { slug: string; children: ReactNod
         <p className="mt-2 max-w-3xl text-lg text-stone-600">{s.blurb}</p>
       </header>
       {children}
+      <PractiseLinks href={`/cycle/${slug}`} part={2} />
       <div className="mt-12 flex items-center justify-between gap-3 border-t border-stone-200 pt-6">
         {prev ? (
           <Link href={`/cycle/${prev.slug}`} className="rounded-xl border border-stone-300 px-4 py-3 text-sm hover:bg-white">

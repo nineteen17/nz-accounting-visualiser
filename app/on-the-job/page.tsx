@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import { PageHeader } from "@/components/learn/bits";
 import { JobYears } from "@/components/job/JobYears";
 import { PageSkeleton } from "@/components/learn/PageSkeleton";
+import { PractiseLinks } from "@/components/study/PractiseLinks";
 
 export const metadata = { title: "A year on the job – Kōwhai Café" };
 
@@ -14,6 +15,7 @@ export default function YearOnTheJobPage() {
       <Suspense fallback={<PageSkeleton />}>
         <JobYears />
       </Suspense>
+      <PractiseLinks href="/on-the-job" part={4} />
     </div>
   );
 }

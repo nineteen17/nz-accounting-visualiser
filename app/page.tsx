@@ -70,9 +70,9 @@ const TOOLS: Section[] = [
   },
   {
     href: "/study", badge: "🎯", nav: "Study",
-    what: "Practice that makes it stick. Flashcards test you on the glossary terms and bring each one back just before you'd forget it. Drills are made from the café's books and marked straight away with the reason for each answer: write journal entries, work out the numbers, and sort things into the right place.",
+    what: "Practice that makes it stick. Flashcards test you on the glossary terms and bring each one back just before you'd forget it. Drills are made from the café's books and marked straight away with the reason for each answer: write journal entries, work out the numbers, and sort things into the right place. The questions you miss come back until you've got them.",
     doing: "Choose the Parts you've done and how deep to go (start with Essential), then spend ten minutes a day: recall each term before you look, and mark how well you remembered it.",
-    inside: ["Flashcards with spaced repetition", "Build the journal entry", "Year-end adjustments", "GST, depreciation, payroll & tax maths", "Ratios", "Cash flows, TB errors, bank rec", "The NZ tax calendar", "Your progress by Part"],
+    inside: ["Today's review: ten minutes a day", "Flashcards and memory aids, spaced out", "Missed questions come back", "Journal entries: everyday, year end, closing", "GST, depreciation, payroll & tax maths", "Cash flows, TB errors, bank rec", "The NZ tax calendar", "Your weakest topics"],
     when: "After each Part, and a few minutes most days. Your progress is saved in your browser.",
     size: `${GLOSSARY.filter((e) => e.level === "essential").length} essential terms · ${DRILLS.length} drills`, cta: "Start studying",
   },

@@ -4,6 +4,7 @@ import { CycleWheel } from "@/components/cycle/CycleWheel";
 import { MemoryAid } from "@/components/learn/MemoryAid";
 import { PageHeader } from "@/components/learn/bits";
 import { SystemFlow } from "@/components/job/SystemFlow";
+import { PractiseLinks } from "@/components/study/PractiseLinks";
 
 export const metadata = { title: "The accounting cycle – Kōwhai Café" };
 
@@ -37,6 +38,7 @@ export default function CyclePage() {
           ))}
         </ol>
       </div>
+      <PractiseLinks href="/cycle" part={2} />
       <p className="mt-10 border-t border-stone-200 pt-6 text-sm text-stone-600">
         Once you know the steps, see them all in action in <Link href="/on-the-job" className="font-semibold text-kowhai-700 underline">Part 4 · A year on the job</Link>: every task of two full years, in the order the work is really done.
       </p>

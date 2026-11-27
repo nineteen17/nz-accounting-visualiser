@@ -10,7 +10,7 @@ import { balances } from "@/lib/engine/ledger";
 import { balanceSheet, profitAndLoss } from "@/lib/engine/statements";
 import { dvDepreciation, monthsOwned, slDepreciation } from "@/lib/nz/assets";
 import { calcPay } from "@/lib/nz/payroll";
-import { COMPANY_TAX_RATE, HOLIDAYS, KIWISAVER, PROVISIONAL_TAX, STUDENT_LOAN } from "@/lib/nz/rates";
+import { COMPANY_TAX_RATE, HOLIDAYS, KIWISAVER, PROVISIONAL_TAX, RWT, STUDENT_LOAN } from "@/lib/nz/rates";
 import { $, $$, int, mc, num, pct, pick, r2, type Drill, type Question, type Rng } from "./core";
 
 /* months of Kōwhai's first income year: 1 April 2026 – 31 March 2027 */
@@ -265,6 +265,88 @@ function ratios(rng: Rng): Question {
     `${$(y.bs.totalLiabilities)} ÷ ${$(y.bs.equityTotal)} = **${(y.bs.totalLiabilities / y.bs.equityTotal).toFixed(2)}**: lenders and suppliers fund ${(y.bs.totalLiabilities / y.bs.equityTotal).toFixed(2)} dollars for every dollar of the owners'. Banks like it under 2.`, { unit: "", tolerance: 0.01, hint: "Two decimal places" });
 }
 
+/* ───────────── N9 balance a T-account ───────────── */
+
+const T_ACCOUNTS = [
+  { name: "Bank – cheque account", normal: "debit", dr: ["card sales settled", "cash takings banked", "a customer pays an invoice"], cr: ["rent paid", "suppliers paid", "wages paid", "loan repayment"] },
+  { name: "Accounts payable (creditors)", normal: "credit", dr: ["paid Southern Roasters", "paid Valley Dairy", "paid Fresh Fields"], cr: ["beans bought on credit", "milk bought on credit", "food bought on credit", "power bill received"] },
+  { name: "Accounts receivable (debtors)", normal: "debit", dr: ["catering invoice to Tūī Consulting", "catering invoice to Harbour Law", "catering invoice to the school"], cr: ["Tūī Consulting pays", "Harbour Law pays", "the school pays"] },
+] as const;
+
+function tAccount(rng: Rng): Question {
+  const acc = pick(rng, T_ACCOUNTS);
+  const sign = acc.normal === "debit" ? 1 : -1;
+  for (;;) {
+    const opening = int(rng, 20, 120) * 50;
+    const moves: { side: "debit" | "credit"; what: string; amt: number }[] = [];
+    const n = int(rng, 3, 5);
+    for (let i = 0; i < n; i++) {
+      const side = rng() < 0.5 ? "debit" : "credit";
+      moves.push({ side, what: pick(rng, side === "debit" ? acc.dr : acc.cr), amt: int(rng, 4, 80) * 25 });
+    }
+    let bal = opening * sign;
+    for (const m of moves) bal += m.side === "debit" ? m.amt : -m.amt;
+    if (bal * sign <= 0) continue; // keep it on its normal side
+    const dr = moves.filter((m) => m.side === "debit").reduce((x, m) => x + m.amt, 0) + (acc.normal === "debit" ? opening : 0);
+    const cr = moves.filter((m) => m.side === "credit").reduce((x, m) => x + m.amt, 0) + (acc.normal === "credit" ? opening : 0);
+    const list = moves.map((m) => `- ${m.side === "debit" ? "Debit" : "Credit"} ${$$(m.amt)}: ${m.what}`).join("\n");
+    const answer = Math.abs(bal);
+    return num(`**${acc.name}** starts the month with a **${acc.normal}** balance of **${$$(opening)}**. Then:\n\n${list}\n\nWhat's the closing balance? (It's still a ${acc.normal} balance.)`, answer,
+      `Debits total ${$$(dr)} and credits total ${$$(cr)} (the opening balance counts on the ${acc.normal} side). The difference is **${$$(answer)}**, on the ${acc.normal} side. See [[t-account|T-accounts]].`,
+      { hint: "Add up each side, then take the smaller from the bigger" });
+  }
+}
+
+/* ───────────── N10 cash basis vs accrual basis ───────────── */
+
+function cashVsAccrual(rng: Rng): Question {
+  const cashSales = int(rng, 200, 400) * 100, invoiced = int(rng, 10, 40) * 50, received = int(rng, 10, 40) * 50;
+  const foodUsed = int(rng, 60, 120) * 50, paidOld = int(rng, 50, 110) * 50, rent = 3_000;
+  const accrual = cashSales + invoiced - foodUsed - rent;
+  const cash = cashSales + received - paidOld - rent;
+  const facts = [
+    `Cash and card sales over the counter: **${$$(cashSales)}**`,
+    `A catering job done and invoiced this month, to be paid next month: **${$$(invoiced)}**`,
+    `A customer pays for last month's catering: **${$$(received)}**`,
+    `Food used this month, bought on credit and not paid yet: **${$$(foodUsed)}**`,
+    `Last month's food bill paid: **${$$(paidOld)}**`,
+    `This month's rent, paid: **${$$(rent)}**`,
+  ].map((f) => `- ${f}`).join("\n");
+  const accrualQ = rng() < 0.5;
+  return num(`One month at Kōwhai (all amounts before GST):\n\n${facts}\n\nWhat's the month's profit on the **${accrualQ ? "accrual" : "cash"} basis**?`, accrualQ ? accrual : cash,
+    accrualQ
+      ? `The accrual basis counts what was **earned and used** this month, whenever the cash moves: ${$$(cashSales)} + ${$$(invoiced)} − ${$$(foodUsed)} − ${$$(rent)} = **${$$(accrual)}**. Last month's invoice and bill belong to last month. See [[accrual-basis]].`
+      : `The cash basis only counts **money in and out** this month: ${$$(cashSales)} + ${$$(received)} − ${$$(paidOld)} − ${$$(rent)} = **${$$(cash)}**. The new invoice and the unpaid food bill don't count yet. See [[cash-basis]].`,
+    { hint: "Whole dollars" });
+}
+
+/* ───────────── N11 GST payable for a period ───────────── */
+
+function gstReturn(rng: Rng): Question {
+  const sales = int(rng, 500, 900) * 100, purchases = int(rng, 120, 400) * 100, fees = int(rng, 20, 60) * 10, wages = int(rng, 150, 300) * 100;
+  const output = r2((sales * 3) / 23), input = r2((purchases * 3) / 23), pay = r2(output - input);
+  return num(`Kōwhai's two-monthly GST period (amounts **include GST** where GST applies):\n\n- Sales: **${$$(sales)}**\n- Purchases with tax invoices: **${$$(purchases)}**\n- Bank and merchant fees: **${$$(fees)}** (exempt)\n- Wages: **${$$(wages)}**\n\nHow much GST does Kōwhai pay IRD for the period?`, pay,
+    `Output tax ${$$(sales)} × 3/23 = ${$(output)}; input tax ${$$(purchases)} × 3/23 = ${$(input)}. GST to pay = ${$(output)} − ${$(input)} = **${$(pay)}**. Fees are exempt and wages aren't a supply, so neither has GST to claim. See [[gst-return]].`);
+}
+
+/* ───────────── N12 dividends and imputation ───────────── */
+
+function imputation(rng: Rng): Question {
+  const cash = int(rng, 5, 60) * 1_000;
+  const ic = r2((cash * COMPANY_TAX_RATE) / (1 - COMPANY_TAX_RATE));
+  const gross = r2(cash + ic), rwt = r2(gross * RWT.dividendRate - ic);
+  const kind = pick(rng, ["ic", "gross", "rwt", "net"] as const);
+  const base = `Kōwhai pays a fully imputed dividend of **${$$(cash)}**.`;
+  if (kind === "ic") return num(`${base}\n\nHow much [[imputation-credit|imputation credit]] is attached? (Company tax is 28%.)`, ic,
+    `Fully imputed means the full 28% company tax already paid comes with it: ${$$(cash)} × 28/72 = **${$(ic)}**. (28/72, because the cash dividend is the 72% left after tax.)`);
+  if (kind === "gross") return num(`${base}\n\nWhat's the **gross dividend** (cash plus imputation credits)?`, gross,
+    `Imputation credits are ${$$(cash)} × 28/72 = ${$(ic)}, so the gross dividend is ${$$(cash)} + ${$(ic)} = **${$(gross)}**: the profit before company tax.`);
+  if (kind === "rwt") return num(`${base} Imputation credits of **${$(ic)}** are attached.\n\nHow much **dividend RWT** must Kōwhai deduct? (33% of the gross dividend, less the imputation credits)`, rwt,
+    `(${$$(cash)} + ${$(ic)}) × 33% = ${$(r2(gross * RWT.dividendRate))}, less the imputation credits ${$(ic)} = **${$(rwt)}**. It covers the gap between company tax (28%) and the 33% RWT rate.`);
+  return num(`${base} Imputation credits are **${$(ic)}** and dividend RWT is **${$(rwt)}**.\n\nHow much cash do the shareholders receive in total?`, r2(cash - rwt),
+    `The dividend less the RWT, which Kōwhai pays to IRD for them: ${$$(cash)} − ${$(rwt)} = **${$(r2(cash - rwt))}**. Imputation credits aren't cash; they're tax already paid, which the shareholders claim on their own returns.`);
+}
+
 export const CALC_DRILLS: Drill[] = [
   { key: "apportion", group: "calculate", part: 2, title: "Accruals & prepayments", icon: "✂️", blurb: "Split a cost or income between this year and next: prepayments, accrued wages, accrued income, deposits.", learn: { href: "/cycle/adjustments", label: "Step 7 · Adjusting entries" }, make: apportion },
   { key: "depreciation", group: "calculate", part: 3, title: "Depreciation", icon: "📉", blurb: "Diminishing value and straight line, part years, book value, and gain or loss on sale.", learn: { href: "/nz/depreciation", label: "Depreciation" }, make: depreciation },
@@ -273,5 +355,9 @@ export const CALC_DRILLS: Drill[] = [
   { key: "holiday-pay", group: "calculate", part: 3, title: "Holiday pay", icon: "🏖️", blurb: "8% pay-as-you-go, working a public holiday, and annual leave pay.", learn: { href: "/nz/holidays", label: "Holidays" }, make: holidayPay },
   { key: "taxable-income", group: "calculate", part: 3, title: "Taxable income & tax", icon: "🏛️", blurb: "From accounting profit to taxable income, then tax at 28%.", learn: { href: "/nz/income-tax", label: "Income tax" }, make: taxableIncome },
   { key: "provisional", group: "calculate", part: 3, title: "Provisional tax", icon: "⏱️", blurb: "RIT, the standard method, instalments and terminal tax.", learn: { href: "/nz/provisional-tax", label: "Provisional tax" }, make: provisional },
+  { key: "t-account", group: "calculate", part: 1, title: "Balance a T-account", icon: "📒", blurb: "Add up the debits and credits and find the closing balance.", learn: { href: "/foundations/t-accounts", label: "T-accounts" }, make: tAccount },
+  { key: "cash-accrual", group: "calculate", part: 1, title: "Cash vs accrual profit", icon: "🔀", blurb: "The same month's profit on a cash basis and on an accrual basis.", learn: { href: "/foundations/cash-vs-accrual", label: "Cash vs accrual" }, make: cashVsAccrual },
+  { key: "gst-return", group: "calculate", part: 3, title: "GST for a period", icon: "🧮", blurb: "Output tax minus input tax, leaving out what has no GST.", learn: { href: "/nz/gst-return", label: "The GST return" }, make: gstReturn },
+  { key: "imputation", group: "calculate", part: 4, title: "Dividends & imputation", icon: "🪙", blurb: "Imputation credits (28/72), the gross dividend, dividend RWT and the cash paid.", learn: { href: "/nz/shareholders", label: "Shareholders" }, make: imputation },
   { key: "ratios", group: "calculate", part: 2, title: "Ratios", icon: "📐", blurb: "Current, quick, working capital, margins and debt to equity, from Kōwhai's real statements.", learn: { href: "/explore/ratios", label: "Explore · Ratios" }, make: ratios },
 ];

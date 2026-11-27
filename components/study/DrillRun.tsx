@@ -4,24 +4,29 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ACCOUNTS } from "@/data/chartOfAccounts";
 import { DRILL_MAP } from "@/data/study/drills";
-import { $, formatAnswer, isRight, parseAnswer, type ChoiceQ, type EntryQ, type NumberQ, type Question } from "@/data/study/core";
+import { $, formatAnswer, isRight, newSeed, parseAnswer, seeded, shuffle, type ChoiceQ, type EntryQ, type NumberQ, type OrderQ, type Question } from "@/data/study/core";
 import { RichText } from "@/components/learn/RichText";
 import { SourceDoc } from "@/components/documents/SourceDoc";
 import { cx } from "@/lib/ui";
 
 const ACC = Object.fromEntries(ACCOUNTS.map((a) => [a.code, a]));
-const sig = (q: Question) => q.prompt + (q.kind === "choice" ? q.options[q.answer] : q.kind === "number" ? q.answer : "");
+const sig = (q: Question) => q.prompt + (q.kind === "choice" ? q.options[q.answer] : q.kind === "number" ? q.answer : q.kind === "order" ? q.items.join("|") : "");
 
-function makeSet(k: string): Question[] {
-  const d = DRILL_MAP[k];
-  const n = d.length ?? 10;
+/** one question: which drill, and the seed that regenerates it exactly */
+export interface RunItem { drill: string; seed: number }
+
+export const makeQuestion = (it: RunItem) => DRILL_MAP[it.drill].make(seeded(it.seed));
+
+/** a fresh set for one drill, with no repeats */
+export function makeSet(k: string, n = DRILL_MAP[k].length ?? 10): RunItem[] {
   const seen = new Set<string>();
-  const out: Question[] = [];
+  const out: RunItem[] = [];
   for (let tries = 0; out.length < n && tries < 300; tries++) {
-    const q = d.make(Math.random);
+    const it = { drill: k, seed: newSeed() };
+    const q = makeQuestion(it);
     if (seen.has(sig(q))) continue;
     seen.add(sig(q));
-    out.push(q);
+    out.push(it);
   }
   return out;
 }
@@ -30,21 +35,38 @@ function makeSet(k: string): Question[] {
 export function answerText(q: Question) {
   if (q.kind === "choice") return q.options[q.answer];
   if (q.kind === "number") return formatAnswer(q);
+  if (q.kind === "order") return q.items.map((x, n) => `${n + 1}. ${x}`).join(" · ");
   return q.lines.map((l) => `${l.side === "debit" ? "Dr" : "Cr"} ${ACC[l.account].name} ${$(l.amount)}`).join(" · ");
 }
 
-export function DrillRun({ k, onFinish, onExit }: { k: string; onFinish: (score: number, total: number) => void; onExit: () => void }) {
-  const d = DRILL_MAP[k];
-  const [qs, setQs] = useState<Question[]>(() => makeSet(k));
+interface RunProps {
+  title: string;
+  icon: string;
+  items: RunItem[];
+  /** questions from several drills: label each one with its drill */
+  mixed?: boolean;
+  learn?: { href: string; label: string };
+  onAnswer: (it: RunItem, right: boolean) => void;
+  onFinish: (score: number, total: number) => void;
+  onExit: () => void;
+  /** the main button on the score screen */
+  again?: { label: string; run: () => RunItem[] | void };
+}
+
+export function DrillRun({ title, icon, items: start, mixed, learn, onAnswer, onFinish, onExit, again }: RunProps) {
+  const [items, setItems] = useState(start);
+  const qs = useMemo(() => items.map(makeQuestion), [items]);
   const [i, setI] = useState(0);
   const [result, setResult] = useState<boolean | null>(null);
   const [results, setResults] = useState<boolean[]>([]);
   const q = qs[i];
+  const it = items[i];
 
   const answer = useCallback((right: boolean) => {
     setResult(right);
     setResults((r) => [...r, right]);
-  }, []);
+    onAnswer(it, right);
+  }, [it, onAnswer]);
   const next = useCallback(() => {
     if (result === null) return;
     if (i + 1 >= qs.length) onFinish(results.filter(Boolean).length, qs.length);
@@ -63,27 +85,35 @@ export function DrillRun({ k, onFinish, onExit }: { k: string; onFinish: (score:
 
   if (!q) {
     const score = results.filter(Boolean).length;
-    const missed = qs.filter((_, n) => !results[n]);
+    const missed = qs.map((m, n) => ({ m, it: items[n] })).filter((_, n) => !results[n]);
+    const restart = () => {
+      const fresh = again?.run();
+      if (!fresh) return;
+      setItems(fresh); setI(0); setResults([]); setResult(null);
+    };
     return (
       <div className="mx-auto max-w-3xl">
         <div className="rounded-2xl border border-stone-200 bg-white p-8 text-center">
           <div className="text-4xl">{score === qs.length ? "🏆" : score >= qs.length * 0.7 ? "👏" : "💪"}</div>
-          <h2 className="mt-2 text-2xl font-bold">{d.title}: {score} / {qs.length}</h2>
+          <h2 className="mt-2 text-2xl font-bold">{title}: {score} / {qs.length}</h2>
           <p className="mt-1 text-stone-600">{score === qs.length ? "Perfect." : score >= qs.length * 0.7 ? "Nearly there. Look over the ones you missed below." : "Worth another go after a look at the explanations below."}</p>
+          {missed.length > 0 && <p className="mt-1 text-sm text-stone-500">The {missed.length === 1 ? "one" : missed.length} you missed {missed.length === 1 ? "is" : "are"} saved and will come back in <strong>Today&apos;s review</strong> tomorrow.</p>}
           <div className="mt-5 flex flex-wrap justify-center gap-3">
-            <button onClick={() => { setQs(makeSet(k)); setI(0); setResults([]); setResult(null); }} className="rounded-xl bg-kowhai-400 px-5 py-2.5 font-bold text-ink hover:bg-kowhai-300">New set of {qs.length} →</button>
-            <button onClick={onExit} className="rounded-xl border border-stone-300 px-5 py-2.5 font-semibold hover:bg-stone-100">Back to drills</button>
-            <Link href={d.learn.href} className="rounded-xl border border-stone-300 px-5 py-2.5 font-semibold hover:bg-stone-100">Revise: {d.learn.label}</Link>
+            {again && <button onClick={restart} className="rounded-xl bg-kowhai-400 px-5 py-2.5 font-bold text-ink hover:bg-kowhai-300">{again.label}</button>}
+            <button onClick={onExit} className="rounded-xl border border-stone-300 px-5 py-2.5 font-semibold hover:bg-stone-100">Back to study</button>
+            {learn && <Link href={learn.href} className="rounded-xl border border-stone-300 px-5 py-2.5 font-semibold hover:bg-stone-100">Revise: {learn.label}</Link>}
           </div>
         </div>
         {missed.length > 0 && (
           <div className="mt-6 space-y-3">
             <h3 className="font-bold">The ones you missed</h3>
-            {missed.map((m, n) => (
+            {missed.map(({ m, it: mi }, n) => (
               <div key={n} className="rounded-xl border border-stone-200 bg-white p-4 text-[15px]">
+                {mixed && <div className="mb-1 text-xs font-semibold text-stone-500">{DRILL_MAP[mi.drill].icon} {DRILL_MAP[mi.drill].title}</div>}
                 <RichText text={m.prompt} />
                 <div className="mt-2 font-semibold text-emerald-700">Answer: {answerText(m)}</div>
                 <div className="mt-1 text-stone-700"><RichText text={m.explain} /></div>
+                {mixed && <Link href={DRILL_MAP[mi.drill].learn.href} className="mt-1 inline-block text-sm font-semibold text-kowhai-700 underline">Revise: {DRILL_MAP[mi.drill].learn.label}</Link>}
               </div>
             ))}
           </div>
@@ -92,26 +122,79 @@ export function DrillRun({ k, onFinish, onExit }: { k: string; onFinish: (score:
     );
   }
 
+  const d = DRILL_MAP[it.drill];
   return (
     <div className="mx-auto max-w-3xl">
       <div className="mb-3 flex items-center justify-between gap-3 text-sm text-stone-500">
-        <button onClick={onExit} className="shrink-0 underline">← Back to drills</button>
-        <span className="text-right">{d.icon} {d.title} · {i + 1} / {qs.length} · {results.filter(Boolean).length} right</span>
+        <button onClick={onExit} className="shrink-0 underline">← Back to study</button>
+        <span className="text-right">{icon} {title} · {i + 1} / {qs.length} · {results.filter(Boolean).length} right</span>
       </div>
       <div className="mb-4 h-1.5 overflow-hidden rounded-full bg-stone-200"><div className="h-full bg-kowhai-400 transition-all" style={{ width: `${(i / qs.length) * 100}%` }} /></div>
       <div className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm sm:p-8">
+        {mixed && <div className="mb-2 text-xs font-semibold uppercase tracking-wider text-stone-500">{d.icon} {d.title}</div>}
         <div className="text-lg leading-relaxed"><RichText text={q.prompt} /></div>
         {q.kind === "choice" && <ChoiceView key={i} q={q} onAnswer={answer} />}
         {q.kind === "number" && <NumberView key={i} q={q} onAnswer={answer} />}
         {q.kind === "entry" && <EntryView key={i} q={q} onAnswer={answer} />}
+        {q.kind === "order" && <OrderView key={i} q={q} seed={it.seed} onAnswer={answer} />}
         {result !== null && (
           <div className={cx("mt-5 rounded-xl px-4 py-3 text-[15px] leading-relaxed", result ? "bg-emerald-50" : "bg-rose-50")}>
-            <div className={cx("font-bold", result ? "text-emerald-800" : "text-rose-800")}>{result ? "✓ Right" : q.kind === "entry" ? "✗ Not quite: the correct entry is shown above" : `✗ Not quite: it's ${answerText(q)}`}</div>
+            <div className={cx("font-bold", result ? "text-emerald-800" : "text-rose-800")}>{result ? "✓ Right" : q.kind === "entry" || q.kind === "order" ? "✗ Not quite: the right answer is shown above" : `✗ Not quite: it's ${answerText(q)}`}</div>
             <div className="mt-1 text-stone-700"><RichText text={q.explain} /></div>
             <button onClick={next} className="mt-3 rounded-xl bg-ink px-5 py-2 font-bold text-white hover:bg-ink/85">{i + 1 >= qs.length ? "See your score →" : "Next →"} <span className="font-normal text-stone-400">(Enter)</span></button>
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+/* ───────────── put in order ───────────── */
+
+function OrderView({ q, seed, onAnswer }: { q: OrderQ; seed: number; onAnswer: (right: boolean) => void }) {
+  // start shuffled (never already in order), the same way each time for this question
+  const [order, setOrder] = useState(() => {
+    const rng = seeded(seed + 1);
+    let o = q.items.map((_, n) => n);
+    for (let t = 0; t < 10 && o.every((x, n) => x === n); t++) o = shuffle(rng, o);
+    return o;
+  });
+  const [done, setDone] = useState(false);
+  const move = (from: number, to: number) => {
+    if (done || to < 0 || to >= order.length) return;
+    setOrder((o) => { const a = [...o]; [a[from], a[to]] = [a[to], a[from]]; return a; });
+  };
+  const check = () => {
+    if (done) return;
+    setDone(true);
+    onAnswer(order.every((x, n) => x === n));
+  };
+  return (
+    <div className="mt-5">
+      <div className="mb-2 text-sm text-stone-500">Use the arrows to move each step up or down, first at the top.</div>
+      <ol className="space-y-2">
+        {order.map((x, n) => (
+          <li key={x} className={cx("flex items-center gap-2 rounded-xl px-3 py-2 ring-1", !done ? "bg-white ring-stone-300" : x === n ? "bg-emerald-50 ring-emerald-400" : "bg-rose-50 ring-rose-300")}>
+            <span className="num w-5 shrink-0 text-sm font-bold text-stone-400">{n + 1}</span>
+            <span className="min-w-0 flex-1 text-[15px]">{q.items[x]}</span>
+            {done ? (
+              <span className={cx("shrink-0 text-sm font-semibold", x === n ? "text-emerald-700" : "text-rose-700")}>{x === n ? "✓" : `✗ goes ${x + 1}${["st", "nd", "rd"][x] ?? "th"}`}</span>
+            ) : (
+              <span className="flex shrink-0 gap-1">
+                <button onClick={() => move(n, n - 1)} disabled={n === 0} aria-label={`Move "${q.items[x]}" up`} className="rounded-lg px-2.5 py-1 ring-1 ring-stone-300 hover:bg-stone-100 disabled:opacity-30">↑</button>
+                <button onClick={() => move(n, n + 1)} disabled={n === order.length - 1} aria-label={`Move "${q.items[x]}" down`} className="rounded-lg px-2.5 py-1 ring-1 ring-stone-300 hover:bg-stone-100 disabled:opacity-30">↓</button>
+              </span>
+            )}
+          </li>
+        ))}
+      </ol>
+      {!done && <button onClick={check} className="mt-4 rounded-xl bg-ink px-5 py-3 font-bold text-white hover:bg-ink/85">Check the order</button>}
+      {done && !order.every((x, n) => x === n) && (
+        <div className="mt-4 rounded-xl border border-stone-200 p-3 text-[15px]">
+          <div className="text-sm font-semibold text-stone-600">The right order</div>
+          <ol className="mt-1 list-decimal space-y-0.5 pl-5">{q.items.map((x) => <li key={x}>{x}</li>)}</ol>
+        </div>
+      )}
     </div>
   );
 }

@@ -67,16 +67,21 @@ export const isKnown = (c: CardState | undefined) => !!c && c.box >= KNOWN_BOX;
 
 export interface DrillStat { attempts: number; best: number; last: number; total: number; when: string }
 
+/** a drill question the learner got wrong: its seed regenerates exactly the same question */
+export interface MissedQ { drill: string; seed: number; state: CardState }
+
 export interface StudyData {
   version: 1;
   cards: Record<string, CardState>;
   drills: Record<string, DrillStat>;
+  /** missed drill questions, keyed "drill:seed", brought back by the same scheduler as the cards */
+  missed: Record<string, MissedQ>;
   /** days (yyyy-mm-dd) the learner studied, for the streak */
   days: string[];
 }
 
 export const STORAGE_KEY = "study-v1";
-export const emptyStudy = (): StudyData => ({ version: 1, cards: {}, drills: {}, days: [] });
+export const emptyStudy = (): StudyData => ({ version: 1, cards: {}, drills: {}, missed: {}, days: [] });
 
 export function loadStudy(raw: string | null): StudyData {
   if (!raw) return emptyStudy();
@@ -100,3 +105,35 @@ export function streak(days: string[], today: string) {
   while (set.has(day)) { n++; day = addDays(day, -1); }
   return n;
 }
+
+/* ───────────── missed drill questions ───────────── */
+
+export const MAX_MISSED = 200;
+export const missedKey = (drill: string, seed: number) => `${drill}:${seed}`;
+
+/**
+ * Record one drill answer.
+ * - Wrong: the question is saved (or kept) and comes back tomorrow.
+ * - Right on a saved question: it moves up a box; once it reaches "known"
+ *   (right twice, a day and then three days after the miss) it's dropped.
+ * - Right on a new question: nothing to save.
+ */
+export function recordAnswer(d: StudyData, drill: string, seed: number, right: boolean, today: string): StudyData {
+  const k = missedKey(drill, seed);
+  const prev = d.missed[k];
+  if (right && !prev) return d;
+  const missed = { ...d.missed };
+  if (right) {
+    const state = schedule(prev.state, "good", today);
+    if (state.box >= KNOWN_BOX) delete missed[k];
+    else missed[k] = { ...prev, state };
+  } else {
+    delete missed[k]; // re-insert so it counts as the newest
+    missed[k] = { drill, seed, state: { box: 1, due: addDays(today, 1), reps: (prev?.state.reps ?? 0) + 1, lapses: (prev?.state.lapses ?? 0) + 1 } };
+    const keys = Object.keys(missed);
+    for (const old of keys.slice(0, Math.max(0, keys.length - MAX_MISSED))) delete missed[old];
+  }
+  return { ...d, missed };
+}
+
+export const dueMissed = (d: StudyData, today: string) => Object.values(d.missed).filter((m) => m.state.due <= today);

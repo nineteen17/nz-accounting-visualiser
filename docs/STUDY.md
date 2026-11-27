@@ -35,17 +35,19 @@ A learner who finishes the course and keeps up with Study should be able to:
 | File | Role |
 |---|---|
 | `app/study/page.tsx` | The route. Static page; renders `<Study />`. |
-| `components/study/Study.tsx` | The dashboard and tabs (client component): `CardSession` (flashcards), the drills list grouped by kind, `Progress`. |
-| `components/study/DrillRun.tsx` | A drill run: `ChoiceView` (multiple choice), `NumberView` (typed amount), `EntryView` (build a journal entry), the end-of-run review. |
-| `lib/study/srs.ts` | Pure logic: the Leitner scheduler (`schedule`, `nextBox`, `intervalLabel`), the saved-data shape (`StudyData`), `loadStudy`, `markStudied`, `streak`. No React. |
-| `data/study/core.ts` | Shared types (`Question` = `ChoiceQ` / `NumberQ` / `EntryQ`, `Drill`, `DRILL_GROUPS`) and helpers: `mc`, `num`, `parseAnswer`, `isRight`, money formatting. |
+| `components/study/Study.tsx` | The dashboard and tabs (client component): Today's review, `CardSession` (term and memory-aid flashcards), the drills list grouped by kind, `Progress` (weakest topics, missed questions, known by Part). |
+| `components/study/DrillRun.tsx` | A run of questions from a list of `{ drill, seed }` items (one drill, Today's review, or missed questions): `ChoiceView`, `NumberView`, `EntryView`, `OrderView`, the end-of-run review. Also `makeSet`. |
+| `components/study/PractiseLinks.tsx` | The "Make it stick" box at the end of each lesson: the drills whose revise link is that lesson, and the Part's flashcards. |
+| `lib/study/srs.ts` | Pure logic: the Leitner scheduler (`schedule`, `nextBox`, `intervalLabel`), the saved-data shape (`StudyData`), `loadStudy`, `markStudied`, `streak`, and missed questions (`recordAnswer`, `dueMissed`). No React. |
+| `data/study/core.ts` | Shared types (`Question` = `ChoiceQ` / `NumberQ` / `EntryQ` / `OrderQ`, `Drill`, `DRILL_GROUPS`) and helpers: `seeded` (repeatable random numbers), `newSeed`, `mc`, `num`, `parseAnswer`, `isRight`, money formatting. |
 | `data/study/drills.ts` | The registry (`DRILLS`, `DRILL_MAP`) and the basic drills: debit or credit, element, current, statement, GST maths, due dates, match the term. Also `plain` and `maskTerm`. |
-| `data/study/entries.ts` | Build-the-entry drills (E1, E2): question pools from Kōwhai's real transactions and adjustments (one of each kind), mix-up accounts, `netLines`, `entryQuestion`. |
+| `data/study/entries.ts` | Build-the-entry drills (E1–E4): question pools from Kōwhai's real transactions and adjustments (one of each kind), closing entries from the real year-end balances, the year 2 pool, mix-up accounts, `netLines`, `entryQuestion`. |
 | `data/study/classify.ts` | "Sort it" drills (C1–C12): cash-flow sections, effect on the equation, TB errors (CROPOC), bank rec items, temporary/permanent, capital or revenue, GST type, deductibility, source documents, is it a transaction, owners & structures, US → NZ. Built from real transactions and the chart of accounts where possible; rule-based scenarios otherwise. |
+| `data/study/order.ts` | "Put it in order" (O1): the cycle steps from `data/cycle.ts`, and the course's processes (a transaction's journey, closing, a pay run, a GST period, the tax year). |
 | `data/docKinds.ts` | Names of the source-document types, shared by the document component and the drills. |
-| `data/study/calc.ts` | Typed-answer drills (N1–N8): apportioning, depreciation, COGS, payroll, holiday pay, taxable income, provisional tax, ratios. Uses `lib/nz/*` and the real statements. |
+| `data/study/calc.ts` | Typed-answer drills (N1–N12): apportioning, depreciation, COGS, payroll, holiday pay, taxable income, provisional tax, ratios, T-account balances, cash vs accrual, GST for a period, imputation and dividend RWT. Uses `lib/nz/*` and the real statements. |
 | `data/glossary.ts` | The flashcard source. Each term has `level` (essential / working / reference) and `part` (1–4). |
-| `data/memoryAids.ts` | Memory aids, shown on flashcards for matching terms. |
+| `data/memoryAids.ts` | Memory aids: shown on flashcards for matching terms, and cards of their own (`aidPart` gives each one a Part). |
 | `tests/study.test.ts` | Scheduler, streak and drill-generator tests. |
 | `tests/glossary.test.ts` | Glossary completeness: levels, parts, links, examples, mistakes. |
 
@@ -54,16 +56,19 @@ A learner who finishes the course and keeps up with Study should be able to:
 ```
  glossary.ts ──(level, part)──┐
  memoryAids.ts ───────────────┤
-                              ├──► Study.tsx ──► CardSession ──► srs.schedule() ──┐
- books / chart of accounts ───┤                 DrillRun ─────► drill stats ─────┤
- lib/nz/rates.ts ─────────────┘                                                  ▼
+                              ├──► Study.tsx ──► CardSession ──► srs.schedule() ──────┐
+ books / chart of accounts ───┤                 DrillRun ─────► drill stats ─────────┤
+ lib/nz/rates.ts ─────────────┘                    │                                 │
+                                                   └──► srs.recordAnswer() ──────────┤
+                                     (a missed question is saved as drill + seed,    │
+                                      and make(seeded(seed)) rebuilds it exactly)    ▼
                                                               localStorage "study-v1"
                                                               localStorage "study-settings-v1"
 ```
 
 ### Flashcards
-- **Card id**: `f:<term-key>` (term → meaning) or `r:<term-key>` (meaning → term, with the term masked).
-- **Scope**: the learner picks Parts and levels (default: all Parts, Essential only). New cards are introduced by Part, then level, then glossary order.
+- **Card id**: `f:<term-key>` (term → meaning), `r:<term-key>` (meaning → term, with the term masked) or `a:<aid-key>` (a memory aid: the hook on the front, what it stands for and why on the back).
+- **Scope**: the learner picks Parts and levels (default: all Parts, Essential only) and whether to include memory aids (default yes). New cards are introduced by Part, then level, then glossary order; a Part's memory aids come after its essential terms.
 - **Session**: due cards (shuffled), then up to N new ones (5/10/20/50). "Again" puts the card back at the end of the session.
 - **Scheduler**: Leitner boxes. Days until the next review: box 0 = again now, then 1, 3, 7, 14, 30, 60.
   - Again → box 0
@@ -75,14 +80,18 @@ A learner who finishes the course and keeps up with Study should be able to:
 ### Drills
 - **A drill** is `{ key, title, icon, blurb, part, group, learn, length?, make(rng) }`.
   - `group` decides where it appears on the Drills tab: **Record it**, **Work it out**, **Sort it**, or **NZ dates & words**.
-- **A question** is one of three kinds. All have `prompt` and `explain`, which support `**bold**` and `[[glossary]]` links. A link inside bold isn't rendered, so the tests forbid `**[[`.
+- **A question** is one of four kinds. All have `prompt` and `explain`, which support `**bold**` and `[[glossary]]` links. A link inside bold isn't rendered, so the tests forbid `**[[`.
   - `choice`: `options[]` and the `answer` index. Keys 1–4.
   - `number`: `answer`, `unit` ($ / % / none), `tolerance` (default 1 cent, or 0.1 for %) and `hint`. Accepts `$1,234.50`, `1234.5`, `70.3%`, `−150`.
   - `entry`: `story`, `doc`, account `options` (the right accounts plus likely mix-ups, in chart order) and the correct `lines` (netted per account).
     - Marked row by row: each account must have the right side and amount, or be left blank.
     - Live debit and credit totals show whether the entry balances.
     - When some amounts are only worked out by adding up the document (`amountsGiven: false`), the amounts are shown up front; otherwise they're behind a hint.
-- **A run** is 10 unique questions, or 5 for the entry drills. The end screen shows the score and the missed questions with their explanations.
+  - `order`: `items` in the right order. Shown shuffled (never already in order), moved with ↑/↓ buttons, marked position by position.
+- **Every question has a seed.** `make(seeded(seed))` always gives the same question, so a run is a list of `{ drill, seed }` and a missed question can be saved and regenerated exactly. A test checks this for every drill.
+- **A run** is 10 unique questions, or 5 for the entry and ordering drills. The end screen shows the score and the missed questions with their explanations.
+- **Missed questions** (`recordAnswer`): a wrong answer saves the question, due tomorrow. Right on a saved question moves it up a box (3 days); right again and it's dropped. Wrong again sends it back to tomorrow. At most 200 are kept, oldest dropped first.
+- **Today's review**: up to 10 due missed questions, then 5 new questions from different drills (the Parts in the flashcard settings; lowest last score first, with some randomness), then the due flashcards.
 - **Stats saved per drill**: tries, best score, last score, date.
 - **Entry pools**: one transaction of each kind, so the monthly ones aren't repeated. That's 79 everyday transactions and 17 adjustments from years 1 and 2; 56 and 12 of them have every amount written in the story or document.
 
@@ -92,20 +101,20 @@ A learner who finishes the course and keeps up with Study should be able to:
   version: 1,
   cards:  { [cardId]: { box, due: "yyyy-mm-dd", reps, lapses } },
   drills: { [drillKey]: { attempts, best, last, total, when } },
+  missed: { "<drill>:<seed>": { drill, seed, state: { box, due, reps, lapses } } },
   days:   ["yyyy-mm-dd", ...]      // days studied, for the streak (last 400 kept)
 }
-"study-settings-v1": { parts, levels, dir, newCount }
+"study-settings-v1": { parts, levels, dir, newCount, aids }
 ```
-Bad or old data loads as empty. **Any change to the shape needs a version bump plus a migration in `loadStudy`**, so learners don't lose progress.
+Bad data loads as empty. `missed` and `aids` were added without a version bump: they're new optional fields, and `loadStudy` / the settings loader fill them with defaults, so older saved progress still loads. **Any change to the shape needs a version bump plus a migration in `loadStudy`**, so learners don't lose progress.
 
 ### URL options
 - `/study?part=2` studies a single Part.
 - `/study?tab=drills` and `/study?tab=progress` open those tabs.
+- `/study?drill=<key>` starts that drill (the lessons' "Make it stick" links).
 
-### Planned architecture changes (see checklist)
-- **`order` question type**: put steps in order, e.g. the cycle (O1). The `choice`, `number` and `entry` types are done.
-- **Repeatable questions.** Each question is generated from a seed: `make(seededRng(seed))`. A missed question can then be saved as `q:<drill>:<seed>` and come back through the same scheduler as a flashcard, regenerated exactly.
-- **A "Today" mixed review**: due flashcards, missed drill questions and a few new questions together, so topics are mixed (interleaving).
+### Possible next changes
+See the open questions in section 5.
 
 ---
 
@@ -121,10 +130,10 @@ Bad or old data loads as empty. **Any change to the shape needs a version bump p
 | Accounting equation | ✅ | ✅ Effect on the equation (real transactions) | |
 | Double entry | ✅ | ✅ Build the journal entry | |
 | Debits & credits | ✅ | ✅ Debit or credit? | |
-| T-accounts | ✅ | ❌ | Balance a T-account (N9) |
+| T-accounts | ✅ | ✅ Balance a T-account | |
 | Chart of accounts | ✅ | ✅ Which element? / statement | |
 | Source documents | ✅ | ✅ Which source document? | |
-| Cash vs accrual | ✅ | ❌ | Cash vs accrual profit (N10) |
+| Cash vs accrual | ✅ | ✅ Cash vs accrual profit | |
 | US vs NZ | ✅ (reference) | ✅ US → NZ terms | |
 | Business structures | ✅ | ✅ Owners & business structures | |
 
@@ -133,22 +142,22 @@ Bad or old data loads as empty. **Any change to the shape needs a version bump p
 |---|---|---|---|
 | Identify / analyse | ✅ | ✅ Is it a transaction?, Build the journal entry | |
 | Journalise | ✅ | ✅ Build the journal entry (79 real transactions) | |
-| Post | ✅ | ❌ | T-account balance (N9) |
+| Post | ✅ | ✅ Balance a T-account, Put it in order | |
 | The year | – | ✅ via Build the journal entry | |
 | Unadjusted TB | ✅ | ✅ Trial balance errors (CROPOC, will it balance?) | |
 | Bank reconciliation | ✅ | ✅ Bank reconciliation items | |
 | Adjustments | ✅ | ✅ Year-end adjustments (17 real entries), Accruals & prepayments | |
 | Adjusted TB | ✅ | ❌ | |
 | Statements | ✅ | ✅ current / which statement, Ratios, Cost of goods sold, Operating/investing/financing | |
-| Closing | ✅ | 🟡 Temporary or permanent? | Closing entries (E3) |
-| Post-closing | ✅ | ❌ | |
-| Cycle order | memory aid only | ❌ | Put the steps in order (O1) |
+| Closing | ✅ | ✅ Closing entries (real balances), Temporary or permanent?, closing order | |
+| Post-closing | ✅ | 🟡 closing order in Put it in order | |
+| Cycle order | ✅ memory aid card | ✅ Put it in order | |
 
 ### Part 3 · NZ tax & rules
 | Topic | Flashcards | Drills | Gap / planned |
 |---|---|---|---|
 | GST | ✅ | ✅ GST maths, Standard / zero-rated / exempt | |
-| GST return | ✅ | 🟡 due dates, GST entries in E1 | GST payable for a period (N11) |
+| GST return | ✅ | ✅ GST for a period, GST period order, due dates, GST entries in E1 | |
 | PAYE | ✅ | ✅ Payroll, pay-run entries in E1 | |
 | KiwiSaver | ✅ | ✅ Payroll (employee and employer KS, ESCT) | |
 | Holidays | ✅ | ✅ Holiday pay | |
@@ -156,7 +165,7 @@ Bad or old data loads as empty. **Any change to the shape needs a version bump p
 | ACC | ✅ | 🟡 earners' levy is inside PAYE in Payroll | |
 | Income tax | ✅ | ✅ Taxable income & tax, Deductible for tax?, tax entries in E2 | |
 | Provisional tax | ✅ | ✅ Provisional tax, due dates | |
-| Shareholders | ✅ | ✅ Owners & business structures, entries in E1/E2 | Imputation maths (N12) |
+| Shareholders | ✅ | ✅ Dividends & imputation, Owners & business structures, entries in E1/E2/E4 | |
 | Depreciation | ✅ | ✅ Depreciation, Capital or revenue?, depreciation entry in E2 | |
 | Inventory | ✅ | ✅ Cost of goods sold, stocktake entries in E2 | |
 | Other taxes | ✅ | ❌ | |
@@ -166,11 +175,11 @@ Bad or old data loads as empty. **Any change to the shape needs a version bump p
 | Topic | Flashcards | Drills | Gap / planned |
 |---|---|---|---|
 | Year 1 tasks (236) | via terms | ✅ Build the journal entry / Year-end adjustments use year 1 | |
-| Year 2 tasks (226) | via terms | 🟡 E1/E2 include year 2's reversals, POS sale and dividend | A dedicated Part 4 drill (E4), imputation maths (N12) |
+| Year 2 tasks (226) | via terms | ✅ Year 2 entries (reversals, POS sale, dividend and RWT, annual leave, provisional tax), Dividends & imputation | |
 | Year 2 statements | ✅ | ✅ Ratios use both years | |
 
 ### Memory aids (18)
-Shown on flashcards; **not yet practised on their own** (M1).
+Shown on matching flashcards, and practised as cards of their own (`a:` cards, on by default).
 
 ---
 
@@ -217,19 +226,20 @@ Shown on flashcards; **not yet practised on their own** (M1).
 - [x] **D1** Full NZ calendar: two- and six-monthly GST, PAYE, payday filing, KiwiSaver, provisional and terminal tax (with and without an agent), IR4, annual return, record keeping
 - [x] **T2** Tests: cash-flow sections for known transactions, the equation balances for every transaction, temporary/permanent matches the account type, TB-error answers agree with their explanations, no internal documents, terminal tax and IR4 dates with and without an agent.
 
-### Phase 3: make it stick
-- [ ] **R1** Seeded, repeatable questions; missed drill questions are saved and come back through the scheduler.
-- [ ] **R2** "Today" mixed review: due cards + missed questions + a few new questions across topics.
-- [ ] **M1** Memory aids as flashcards (the hook → what it stands for / why).
-- [ ] **O1** `order` question type and ordering drills: the cycle steps, closing-entry order.
-- [ ] **E3** Closing entries.
-- [ ] **E4** Part 4 entries: reversing entries, asset disposal (gain and depreciation recovery), dividend with imputation and RWT.
-- [ ] **N9** Balance a T-account.
-- [ ] **N10** Cash-basis vs accrual-basis profit for a month.
-- [ ] **N11** GST payable for a period (output − input).
-- [ ] **N12** Imputation credits (28/72) and dividend RWT.
-- [ ] **P1** "Study this Part" links at the end of each Part and lesson, and "Practise this" links from lessons to the matching drill.
-- [ ] **P2** Weakest-topics view: drills and terms with the most misses.
+### Phase 3: make it stick ✅ done
+- [x] **R1** Seeded, repeatable questions; missed drill questions are saved and come back through the scheduler (tomorrow, then 3 days; dropped once right twice).
+- [x] **R2** Today's review: due missed questions, 5 new questions across drills (weakest first), then the due flashcards.
+- [x] **M1** Memory aids as flashcards: the hook on the front, the breakdown, why and the café example on the back.
+- [x] **O1** `order` question type and "Put it in order": the cycle steps, a transaction's journey, closing, a pay run, a GST period, the tax year.
+- [x] **E3** Closing entries from Kōwhai's real year-end balances (years 1 and 2), plus closing the income summary.
+- [x] **E4** Year 2 entries: reversing last year's accruals, the POS sale and its depreciation, the dividend and its RWT, annual leave, provisional tax.
+- [x] **N9** Balance a T-account.
+- [x] **N10** Cash-basis vs accrual-basis profit for a month.
+- [x] **N11** GST payable for a period (output − input, leaving out exempt fees and wages).
+- [x] **N12** Imputation credits (28/72), the gross dividend, dividend RWT and the cash paid.
+- [x] **P1** A "Make it stick" box at the end of every lesson (Foundations, cycle steps and overview, NZ topics, A year on the job, and the ratios tool) with its drills and the Part's flashcards; `/study?drill=` starts a drill.
+- [x] **P2** Weakest topics on Progress: drills with the lowest last score or open missed questions (each with Practise), cards forgotten most, and "Retry them now" for saved questions.
+- [x] **T3** Tests: every drill regenerates the same question from the same seed; every drill links to a page that exists; closing entries close income with a debit and expenses with a credit and close the real profit; the year 2 pool covers the Part 4 topics; T-account, imputation, RWT and GST-period answers re-worked independently; missed-question scheduling, the 200 cap, and old saved data still loading.
 
 ### Definition of done (each drill)
 - [ ] Generated from app data, with no hand-typed figures that could drift.
@@ -247,6 +257,7 @@ Shown on flashcards; **not yet practised on their own** (M1).
 - Progress export/import (JSON), since progress lives in one browser.
 
 ## 6. Log
+- **2026-11-27**: Phase 3 done. Missed questions come back (seeded questions), Today's review, memory-aid cards, "Put it in order", closing entries, year 2 entries, and four new calculations (T-accounts, cash vs accrual, GST for a period, imputation). "Make it stick" links on every lesson and a weakest-topics view. 36 drills in all; 103 tests.
 - **2026-11-27**: Phase 2 done. 12 "Sort it" drills (C1–C11; US → NZ is under NZ dates & words) and the full NZ calendar in "When is it due?". 29 drills in all; 90 tests.
 - **2026-11-27**: Phase 1 done. Three question types (choice, typed number, journal entry). Ten new drills: Build the journal entry, Year-end adjustments, Accruals & prepayments, Depreciation, Cost of goods sold, Payroll, Holiday pay, Taxable income & tax, Provisional tax, Ratios. GST maths is now typed. The drills tab is grouped into Record it / Work it out / Sort it / NZ dates & words. 17 drills in all; 75 tests.
 - **2026-11-27**: Glossary expanded to 179 terms with levels and Parts. Study tool v1: flashcards, 7 multiple-choice drills, progress. Coverage review found the gaps in recording, calculating and Part 4 practice; this tracker was created, and Phase 1 is next.
