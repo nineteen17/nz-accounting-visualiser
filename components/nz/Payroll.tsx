@@ -92,7 +92,7 @@ export function PayeTopic() {
             </Field>
             <label className="col-span-2 flex items-center gap-2 text-sm"><input type="checkbox" checked={sl} onChange={(e) => setSl(e.target.checked)} /> Has a student loan (SL)</label>
           </div>
-          <div className="mt-4 flex h-8 overflow-hidden rounded-lg">
+          <div className="mt-4 flex h-8 overflow-hidden rounded-lg" aria-hidden="true">
             {segments.filter((s) => s.v > 0).map((s) => <div key={s.l} className={cx(s.c, "border-r-2 border-white last:border-r-0")} style={{ width: `${(s.v / gross) * 100}%` }} title={`${s.l}: ${money(s.v)}`} />)}
           </div>
           <div className="mt-1 flex flex-wrap gap-3 text-xs text-stone-600">{segments.map((s) => <span key={s.l}><i className={cx("mr-1 inline-block h-2 w-2 rounded-sm", s.c)} />{s.l}</span>)}</div>

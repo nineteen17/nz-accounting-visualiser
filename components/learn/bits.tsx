@@ -38,6 +38,7 @@ export function Quiz({ q, options, answer, explain }: { q: string; options: stri
           <button
             key={i}
             onClick={() => setPicked(i)}
+            aria-pressed={picked === i}
             className={cx(
               "rounded-lg border px-3 py-1.5 text-sm transition",
               picked === null && "border-violet-300 bg-white hover:bg-violet-100",
@@ -50,12 +51,15 @@ export function Quiz({ q, options, answer, explain }: { q: string; options: stri
           </button>
         ))}
       </div>
-      {picked !== null && (
-        <div className={cx("mt-3 text-sm leading-relaxed", picked === answer ? "text-emerald-800" : "text-rose-800")}>
-          <strong>{picked === answer ? "Correct! " : "Not quite. "}</strong>
-          <RichText text={explain} inlineOnly />
-        </div>
-      )}
+      {/* always present, so screen readers announce the result when it appears */}
+      <div role="status" className={cx(picked !== null && "mt-3 text-sm leading-relaxed", picked === answer ? "text-emerald-800" : "text-rose-800")}>
+        {picked !== null && (
+          <>
+            <strong>{picked === answer ? "Correct! " : "Not quite. "}</strong>
+            <RichText text={explain} inlineOnly />
+          </>
+        )}
+      </div>
     </div>
   );
 }
@@ -94,6 +98,7 @@ export function Tabs<T extends string>({ tabs, value, onChange }: { tabs: { id: 
         <button
           key={t.id}
           onClick={() => onChange(t.id)}
+          aria-pressed={value === t.id}
           className={cx("rounded-lg px-3 py-1.5 text-sm font-medium transition", value === t.id ? "bg-white shadow-sm" : "text-stone-600 hover:text-ink")}
         >
           {t.label}

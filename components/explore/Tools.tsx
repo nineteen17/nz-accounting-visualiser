@@ -18,6 +18,8 @@ import { useOverlay } from "@/components/learn/Overlay";
 import { TxnDetail } from "@/components/cycle/steps/TheYear";
 import { RichText } from "@/components/learn/RichText";
 
+export { BudgetTool } from "./Budget";
+
 const input = "max-w-full rounded-lg border border-stone-300 bg-white px-2 py-1.5 text-sm";
 
 /* ───────────── Journal ───────────── */
@@ -36,11 +38,11 @@ export function JournalTool() {
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap gap-2">
-        <input placeholder="Search (e.g. GST, Mia, rent)…" value={q} onChange={(e) => setQ(e.target.value)} className={cx(input, "min-w-64 flex-1")} />
-        <select value={book} onChange={(e) => setBook(e.target.value)} className={input}>
+        <input aria-label="Search the journal" placeholder="Search (e.g. GST, Mia, rent)…" value={q} onChange={(e) => setQ(e.target.value)} className={cx(input, "min-w-64 flex-1")} />
+        <select aria-label="Which journal" value={book} onChange={(e) => setBook(e.target.value)} className={input}>
           <option value="all">All journals</option><option value="sales">Sales</option><option value="purchases">Purchases</option><option value="cash-receipts">Cash receipts</option><option value="cash-payments">Cash payments</option><option value="payroll">Payroll</option><option value="general">General</option>
         </select>
-        <select value={kind} onChange={(e) => setKind(e.target.value)} className={input}>
+        <select aria-label="Which kind of entry" value={kind} onChange={(e) => setKind(e.target.value)} className={input}>
           <option value="all">All kinds</option><option value="featured">★ Featured</option><option value="routine">Routine</option><option value="adjustment">Year-end adjustments</option><option value="closing">Closing entries</option>
         </select>
       </div>
@@ -81,11 +83,11 @@ export function LedgerTool() {
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-2">
-        <select value={code} onChange={(e) => { setCode(e.target.value); setParty(""); }} className={input}>
+        <select aria-label="Account" value={code} onChange={(e) => { setCode(e.target.value); setParty(""); }} className={input}>
           {ACCOUNTS.map((x) => <option key={x.code} value={x.code}>{x.code} {x.name}</option>)}
         </select>
         {ps.length > 0 && (
-          <select value={party} onChange={(e) => setParty(e.target.value)} className={input}>
+          <select aria-label="Customer, supplier or shareholder" value={party} onChange={(e) => setParty(e.target.value)} className={input}>
             <option value="">All (control account)</option>
             {ps.map((p) => <option key={p} value={p}>{p}</option>)}
           </select>
@@ -104,7 +106,7 @@ export function LedgerTool() {
                 <tr key={i} className="cursor-pointer border-t border-stone-100 hover:bg-kowhai-50" onClick={() => openCustom(r.txn.title, <TxnDetail t={r.txn} />)}>
                   <td className="num px-3 py-1">{nzDate(r.txn.date, false)}</td>
                   <td className="num text-stone-400">{r.txn.id}</td>
-                  <td className="max-w-[14rem] truncate">{r.line.memo ?? r.txn.title}</td>
+                  <td className="max-w-[14rem] truncate"><button type="button" onClick={(e) => { e.stopPropagation(); openCustom(r.txn.title, <TxnDetail t={r.txn} />); }} className="max-w-full truncate text-left hover:underline">{r.line.memo ?? r.txn.title}</button></td>
                   <td className="max-w-[10rem] truncate text-stone-500">{r.contra}</td>
                   <td className="num text-right">{r.debit ? num(r.debit) : ""}</td>
                   <td className="num text-right">{r.credit ? num(r.credit) : ""}</td>
@@ -140,7 +142,7 @@ export function TrialBalanceTool() {
       <Card>
         <div className="flex flex-wrap items-center gap-4">
           <span className="text-sm font-semibold">As at <span className="num">{nzDate(date)}</span></span>
-          <input type="range" min={0} max={DATES.length - 1} value={i} onChange={(e) => setI(Number(e.target.value))} className="flex-1 accent-kowhai-600" />
+          <input type="range" aria-label="Date" aria-valuetext={nzDate(DATES[i])} min={0} max={DATES.length - 1} value={i} onChange={(e) => setI(Number(e.target.value))} className="flex-1 accent-kowhai-600" />
           <label className={cx("flex items-center gap-2 text-sm", date !== "2027-03-31" && "opacity-40")}><input type="checkbox" disabled={date !== "2027-03-31"} checked={adj} onChange={(e) => setAdj(e.target.checked)} /> include year-end adjustments</label>
         </div>
       </Card>
@@ -164,7 +166,7 @@ export function StatementsTool() {
       <Card>
         <div className="flex flex-wrap items-center gap-4">
           <span className="text-sm font-semibold">Period 1 Apr 2026 → <span className="num">{nzDate(date)}</span></span>
-          <input type="range" min={0} max={DATES.length - 1} value={i} onChange={(e) => setI(Number(e.target.value))} className="flex-1 accent-kowhai-600" />
+          <input type="range" aria-label="Date" aria-valuetext={nzDate(DATES[i])} min={0} max={DATES.length - 1} value={i} onChange={(e) => setI(Number(e.target.value))} className="flex-1 accent-kowhai-600" />
         </div>
         {!final && <p className="mt-2 text-xs text-rose-700">Mid-year figures are <strong>before</strong> year-end adjustments: no depreciation, stocktake, accruals or tax. That&apos;s why profit looks higher. Slide to 31 March to see the final, adjusted statements.</p>}
       </Card>

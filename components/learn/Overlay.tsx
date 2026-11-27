@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence, MotionConfig, motion } from "motion/react";
 import { GLOSSARY_MAP } from "@/data/glossary";
 import { RichText } from "./RichText";
 import { MemoryAid } from "./MemoryAid";
@@ -60,6 +60,8 @@ export function OverlayProvider({ children }: { children: ReactNode }) {
 
   return (
     <OverlayCtx.Provider value={{ openTerm, openCustom }}>
+      {/* every animation on the site follows the device's "reduce motion" setting */}
+      <MotionConfig reducedMotion="user">
       {children}
       <AnimatePresence>
         {top && (
@@ -110,6 +112,7 @@ export function OverlayProvider({ children }: { children: ReactNode }) {
           </>
         )}
       </AnimatePresence>
+      </MotionConfig>
     </OverlayCtx.Provider>
   );
 }

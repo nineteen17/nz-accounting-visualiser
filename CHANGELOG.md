@@ -14,6 +14,23 @@ Dates are when the change was made. Rates and rules are for the 2026–27 NZ inc
 
 ## 2026-11-28
 
+### Budget vs actual, and the rest of the site made keyboard and screen-reader friendly
+- **New Explore tool: Budget vs actual** (`/explore/budget`). Year 2's budget sits beside what really happened, line by line, with each variance marked favourable (F) or unfavourable (U).
+  - The budget is built the way Aroha and Ben would have in March 2027, from year 1's actual figures plus what they knew: 5% sales growth, the pay rises, the fixed lease, interest from the loan schedule, and depreciation on the assets they owned. Every figure is worked out from the books (`data/books/budget.ts`).
+  - Every big variance has a reason taken from the year 2 books. Examples: the wedding catering; Mia's leave paid from last year's holiday pay accrual; the first full accountant's bill; the higher shareholder salaries; the POS sale and new POS.
+  - **Flex the budget**: resizes cost of sales and card fees to the actual sales. That exposes a real budgeting trap: year 1's cost of sales was flattered by the café stocking up for the first time ($3,800 of stock built up from nothing), so a budget copied from it was too low. Purchases were 31% of sales in both years.
+  - New drill, **Budget vs actual** (42 drills): favourable or unfavourable, the size of a variance, flexing, fixed or variable, and why. New glossary terms: budget, variance, flexible budget. Tests check the actual column is year 2's real P&L to the cent and that every big variance is explained.
+- **Accessibility pass across the site** (an automated check of all 58 pages, then fixes, tested with real key presses):
+  - A **Skip to content** link, and the sticky header no longer hides what has keyboard focus.
+  - Every dropdown, search box and slider now has a name a screen reader can read (journal, ledger, trial balance, statements, glossary, the T-accounts lesson, the cycle walkthrough).
+  - Ledger rows open from the keyboard (a real button in each row). A year on the job has a **Jump to a task** list, and the timeline's description says which task you're on.
+  - The cycle wheel's arrows are hidden from screen readers; each step link is named and marks the current one.
+  - The menu closes on Escape and marks the current section. Tab buttons and quiz answers say which is selected, and quiz results are announced.
+  - Glossary term tooltips show on keyboard focus, not just hover. Monthly chart bars read as "April 2026: sales $…".
+  - Decorative bars (equation bar, pay breakdown) are hidden from screen readers; their figures are already in text.
+  - Animations and smooth scrolling now follow the device's **reduce motion** setting.
+  - The footer's year comes from the rates file.
+
 ### Keyboard, drills mastered, typed recall, and rates you can change in one place
 - **Keyboard pass**. Every page now shows a clear outline on whatever has keyboard focus. In the study tool:
   - focus moves to each new question, then to **Next** once you've answered;

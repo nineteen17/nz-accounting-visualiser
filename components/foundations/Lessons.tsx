@@ -322,8 +322,8 @@ export function TAccounts() {
           <Callout kind="tip" title="Accountants still do this">Faced with a tricky entry, even experienced accountants sketch T-accounts on a notepad. It&apos;s the fastest way to see whether an entry makes sense.</Callout>
         </div>
         <div>
-          <label className="mb-2 block text-sm font-semibold">Pick any of Kōwhai&apos;s accounts in April:</label>
-          <select value={code} onChange={(e) => setCode(e.target.value)} className="mb-3 w-full rounded-lg border border-stone-300 bg-white px-2 py-1.5 text-sm">
+          <label htmlFor="t-account-pick" className="mb-2 block text-sm font-semibold">Pick any of Kōwhai&apos;s accounts in April:</label>
+          <select id="t-account-pick" value={code} onChange={(e) => setCode(e.target.value)} className="mb-3 w-full rounded-lg border border-stone-300 bg-white px-2 py-1.5 text-sm">
             {used.map((a) => <option key={a.code} value={a.code}>{a.code} {a.name}</option>)}
           </select>
           <TAccount code={code} txns={april} maxRows={14} />

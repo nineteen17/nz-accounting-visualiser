@@ -84,7 +84,7 @@ export function TheYear() {
           <div className="mb-2 text-sm font-semibold">Monthly sales (café + catering, excl GST)</div>
           <div className="flex h-36 items-end gap-1.5">
             {stats.map((s) => (
-              <button key={s.m} onClick={() => setYm(s.m)} className="group relative flex h-full flex-1 flex-col justify-end" aria-label={`${s.m} sales ${money(s.sales, { dp: 0 })}`}>
+              <button key={s.m} onClick={() => setYm(s.m)} className="group relative flex h-full flex-1 flex-col justify-end" aria-pressed={s.m === ym} aria-label={`${monthName(`${s.m}-01`)}: sales ${money(s.sales, { dp: 0 })}`}>
                 <span className="pointer-events-none absolute -top-1 left-1/2 z-10 hidden -translate-x-1/2 -translate-y-full whitespace-nowrap rounded bg-ink px-2 py-1 text-xs text-white group-hover:block">{monthName(`${s.m}-01`)}: {money(s.sales, { dp: 0 })}</span>
                 <span className={cx("block rounded-t-[4px] transition", s.m === ym ? "bg-emerald-700" : "bg-emerald-500/70 group-hover:bg-emerald-600")} style={{ height: `${(s.sales / maxSales) * 100}%` }} />
               </button>
@@ -96,7 +96,7 @@ export function TheYear() {
           <div className="mb-2 text-sm font-semibold">Bank balance at month end</div>
           <div className="flex h-36 items-end gap-1.5">
             {stats.map((s) => (
-              <button key={s.m} onClick={() => setYm(s.m)} className="group relative flex h-full flex-1 flex-col justify-end" aria-label={`${s.m} bank ${money(s.bank, { dp: 0 })}`}>
+              <button key={s.m} onClick={() => setYm(s.m)} className="group relative flex h-full flex-1 flex-col justify-end" aria-pressed={s.m === ym} aria-label={`${monthName(`${s.m}-01`)}: bank balance ${money(s.bank, { dp: 0 })}`}>
                 <span className="pointer-events-none absolute -top-1 left-1/2 z-10 hidden -translate-x-1/2 -translate-y-full whitespace-nowrap rounded bg-ink px-2 py-1 text-xs text-white group-hover:block">{monthName(`${s.m}-01`)}: {money(s.bank, { dp: 0 })}</span>
                 <span className={cx("block rounded-t-[4px] transition", s.m === ym ? "bg-sky-700" : "bg-sky-500/70 group-hover:bg-sky-600")} style={{ height: `${(s.bank / maxBank) * 100}%` }} />
               </button>

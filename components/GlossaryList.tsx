@@ -33,7 +33,7 @@ export function GlossaryList() {
   return (
     <div>
       <div className="mb-4 flex flex-wrap gap-2">
-        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search terms…" className="min-w-64 flex-1 rounded-lg border border-stone-300 bg-white px-3 py-2" />
+        <input aria-label="Search the glossary" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search terms…" className="min-w-64 flex-1 rounded-lg border border-stone-300 bg-white px-3 py-2" />
       </div>
       <div className="mb-6 flex flex-wrap gap-1">
         {[["all", "All"], ...Object.entries(CATS)].map(([k, v]) => (

@@ -135,6 +135,7 @@ export function Walkthrough({ txns, initialPhase = 0, storageKey = "walk" }: { t
           Transaction {idx + 1} of {txns.length}
         </div>
         <select
+          aria-label="Choose a transaction"
           value={idx}
           onChange={(e) => {
             setIdx(Number(e.target.value));

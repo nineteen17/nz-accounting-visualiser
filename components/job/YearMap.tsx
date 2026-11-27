@@ -95,7 +95,7 @@ function Timeline({ D, idx, onJump }: { D: JobYearData; idx: number; onJump: (i:
   const cur = POINTS[idx];
   return (
     <div className="overflow-x-auto">
-      <svg viewBox={`0 0 ${W} ${H}`} className="min-w-[720px] w-full select-none" role="img" aria-label="Every task of the year on a timeline, one row per kind of work">
+      <svg viewBox={`0 0 ${W} ${H}`} className="min-w-[720px] w-full select-none" role="img" aria-label={`Every task of the year on a timeline, one row per kind of work. You're on task ${idx + 1} of ${POINTS.length}: ${cur.s.title} (${nzDate(cur.s.date)}).`}>
         {/* lane backgrounds + labels */}
         {LANES.map((l, k) => (
           <g key={l.id}>
@@ -139,6 +139,12 @@ function Timeline({ D, idx, onJump }: { D: JobYearData; idx: number; onJump: (i:
         <span><span className="mr-1 inline-block h-2.5 w-2.5 rounded-full bg-kowhai-500 align-middle" />done</span>
         <span>Click any dot to jump to that task. Hover for its name.</span>
       </div>
+      <label className="mt-2 flex flex-wrap items-center gap-2 text-sm">
+        <span className="text-stone-600">Jump to a task:</span>
+        <select value={idx} onChange={(e) => onJump(Number(e.target.value))} className="min-w-0 max-w-full flex-1 rounded-lg border border-stone-300 bg-white px-2 py-1.5 text-sm">
+          {POINTS.map((p) => <option key={p.s.id} value={p.i}>{p.i + 1}. {nzDate(p.s.date)} · {p.s.title}</option>)}
+        </select>
+      </label>
     </div>
   );
 }

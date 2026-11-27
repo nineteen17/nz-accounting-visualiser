@@ -5,5 +5,6 @@ export const EXPLORE_TOOLS = [
   { slug: "statements", title: "Statements", icon: "📊", blurb: "Profit & loss and balance sheet for any date, from the first week to the final adjusted year end." },
   { slug: "ratios", title: "Ratios", icon: "🧮", blurb: "Margins, liquidity, efficiency and returns, explained with café benchmarks." },
   { slug: "loan", title: "Loan schedule", icon: "🏦", blurb: "The full 60-month repayment schedule, split into interest and principal." },
+  { slug: "budget", title: "Budget vs actual", icon: "🎯", blurb: "Year 2's plan beside what really happened: every variance, favourable or unfavourable, and why." },
   { slug: "break-even", title: "Break-even", icon: "☕", blurb: "How many customers does the café need each day to cover its costs?" },
 ];

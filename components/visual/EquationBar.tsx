@@ -40,7 +40,8 @@ export function EquationBar({ eq, prev, compact }: { eq: Equation; prev?: Equati
           <span className="ml-auto rounded-full bg-rose-100 px-2 py-0.5 text-xs font-semibold text-rose-800">✗ not balanced</span>
         )}
       </div>
-      <div className="space-y-1.5">
+      {/* the bars repeat the figures above as a picture */}
+      <div className="space-y-1.5" aria-hidden="true">
         <div className="flex h-6 overflow-hidden rounded-md bg-stone-100">
           <motion.div className="h-full bg-sky-600" animate={{ width: w(eq.assets) }} transition={{ type: "spring", damping: 25 }} title="Assets" />
         </div>

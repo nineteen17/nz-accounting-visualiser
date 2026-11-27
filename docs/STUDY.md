@@ -181,6 +181,7 @@ See the open questions in section 5.
 | Year 1 tasks (236) | via terms | ✅ Build the journal entry / Year-end adjustments use year 1 | |
 | Year 2 tasks (226) | via terms | ✅ Year 2 entries (reversals, POS sale, dividend and RWT, annual leave, provisional tax), Dividends & imputation | |
 | Year 2 statements | ✅ | ✅ Ratios use both years | |
+| Budget vs actual (Explore) | ✅ budget, variance, flexible budget | ✅ Budget vs actual (F/U, size, flexing, fixed or variable, why) | |
 
 ### Memory aids (18)
 Shown on matching flashcards, and practised as cards of their own (`a:` cards, on by default).
@@ -247,6 +248,7 @@ Shown on matching flashcards, and practised as cards of their own (`a:` cards, o
 - [x] **V1** IR4 due date checked against IRD (company tax return guide 2026 and the 2026–27 tax calendar): 7 July without an agent, 31 March the following year with one.
 - [x] **X2** Harder entry mode: hide the amounts, with the hint still available (from the open questions).
 - [x] **X3** Drills mastered: last set 80%+ and no open missed questions; shown on drill cards, the Drills tab and Progress. Known stays flashcards-only.
+- [x] **B1** Budget vs actual drill, from `data/books/budget.ts` (year 2 budget built from year 1 plus known changes). 42 drills.
 - [x] **X4** "Type it" for meaning → term cards, with a forgiving checker (`lib/study/recall.ts`) and a suggested grade.
 - [x] **K1** Keyboard pass: a visible focus outline everywhere; focus moves to each new question, to Next once answered, and follows a flashcard as it flips; number-key shortcuts ignore Ctrl/Alt/Cmd and typing; order-drill arrows keep focus and announce the new position; Dr/Cr buttons say whether they're pressed and jump to the amount; the explainer overlay takes focus, keeps Tab inside, and hands focus back on Escape.
 - [x] **X1** Export and import progress as a JSON file (Progress tab), so it can be backed up or moved to another browser or device. Import asks before replacing and refuses files that aren't a study export.
@@ -265,6 +267,7 @@ Shown on matching flashcards, and practised as cards of their own (`a:` cards, o
 - None open. Decided 2026-11-28: drills don't count towards Known; they have their own "mastered" (X3). Typed recall added as the "Type it" option for meaning → term cards (X4).
 
 ## 6. Log
+- **2026-11-28**: Budget vs actual tool (Explore) and its drill (B1); three glossary terms. Site-wide accessibility pass. 42 drills, 135 tests.
 - **2026-11-28**: Keyboard pass (K1), drills mastered (X3) and "Type it" recall (X4); both open questions settled. Payroll rates are now one set per income year (see CHANGELOG). 128 tests.
 - **2026-11-27**: IR4 dates verified against IRD (V1). Five drills for the last uncovered lessons (G4): every lesson now has practice. 41 drills; 111 tests.
 - **2026-11-27**: Harder entry mode (X2), from the open questions.

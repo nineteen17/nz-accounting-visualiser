@@ -47,7 +47,7 @@ export const OPENING_ENTRY: Transaction = {
 /* ───────────────────────── 1. This year's settings ───────────────────────── */
 
 /** Pay rises from the pay period starting 6 April 2027 */
-const RAISED: Employee[] = EMPLOYEES.map((e) => ({ ...e, rate: e.id === "mia" ? 27 : 25.5 }));
+export const RAISED: Employee[] = EMPLOYEES.map((e) => ({ ...e, rate: e.id === "mia" ? 27 : 25.5 }));
 const RAISE_FROM = "2027-04-21";
 
 /** Mia's annual leave: two fortnights, paid out of last year's holiday pay accrual */

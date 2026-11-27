@@ -19,6 +19,11 @@
   color-scheme: light;
 }
 
+/* keep whatever has keyboard focus clear of the sticky header */
+html {
+  scroll-padding-top: 5rem;
+}
+
 body {
   background: var(--color-paper);
   color: var(--color-ink);
@@ -107,6 +112,12 @@ input.outline-none:focus-visible {
 }
 @media (prefers-reduced-motion: reduce) {
   .fade-up { animation: none; }
+  /* "reduce motion" on the device: no sliding, growing or smooth scrolling */
+  *, ::before, ::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 /* Grid columns default to min-width:auto, so a wide table or document inside

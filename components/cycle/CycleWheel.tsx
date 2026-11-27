@@ -43,7 +43,7 @@ export function CycleWheel({ current, size = 520 }: { current?: string; size?: n
   return (
     <div ref={outer} className="mx-auto w-full" style={{ maxWidth: size, height: size * scale }}>
     <div className="relative origin-top-left" style={{ width: size, height: size, transform: scale < 1 ? `scale(${scale})` : undefined }}>
-      <svg viewBox={`0 0 ${size} ${size}`} className="absolute inset-0 h-full w-full">
+      <svg viewBox={`0 0 ${size} ${size}`} className="absolute inset-0 h-full w-full" aria-hidden="true">
         <defs>
           <marker id="arr" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
             <path d="M0,0 L10,5 L0,10 z" fill="#b44d12" />
@@ -78,6 +78,8 @@ export function CycleWheel({ current, size = 520 }: { current?: string; size?: n
               isCur ? "border-ink bg-ink text-white" : s.when === "during" ? "border-sky-300 bg-sky-50" : "border-kowhai-500 bg-white",
             )}
             title={s.blurb}
+            aria-label={`Step ${s.n}: ${s.short}${isCur ? " (this step)" : done ? " (visited)" : ""}`}
+            aria-current={isCur ? "page" : undefined}
           >
             <span className={cx("text-xs font-black", isCur ? "text-kowhai-300" : "text-kowhai-700")}>{s.n}{done && !isCur ? " ✓" : ""}</span>
             <span className="text-[11px] font-semibold leading-tight">{s.short}</span>

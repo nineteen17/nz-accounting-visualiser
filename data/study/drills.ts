@@ -15,6 +15,7 @@ import { CALC_DRILLS } from "./calc";
 import { CLASSIFY_DRILLS } from "./classify";
 import { ORDER_DRILLS } from "./order";
 import { GAP_DRILLS } from "./gaps";
+import { BUDGET_DRILLS } from "./budget";
 
 export type { Drill, Question, Rng } from "./core";
 /** any drill's key */
@@ -205,7 +206,7 @@ const BASIC_DRILLS: Drill[] = [
   },
 ];
 
-export const DRILLS: Drill[] = [...ENTRY_DRILLS, ...CALC_DRILLS, ...BASIC_DRILLS, ...CLASSIFY_DRILLS, ...ORDER_DRILLS, ...GAP_DRILLS];
+export const DRILLS: Drill[] = [...ENTRY_DRILLS, ...CALC_DRILLS, ...BASIC_DRILLS, ...CLASSIFY_DRILLS, ...ORDER_DRILLS, ...GAP_DRILLS, ...BUDGET_DRILLS];
 export const DRILL_MAP: Record<string, Drill> = Object.fromEntries(DRILLS.map((d) => [d.key, d]));
 
 /** glossary text without **bold** or [[link|label]] markup, for answer buttons */

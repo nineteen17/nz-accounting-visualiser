@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Link from "next/link";
 import "./globals.css";
+import { CURRENT_PAYROLL } from "@/lib/nz/rates";
 import { OverlayProvider } from "@/components/learn/Overlay";
 import { NavLinks } from "@/components/NavLinks";
 
@@ -18,6 +19,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html lang="en-NZ" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col font-sans">
         <OverlayProvider>
+          <a href="#main" className="sr-only z-50 rounded-lg bg-ink px-4 py-2 font-semibold text-white focus:not-sr-only focus:fixed focus:left-3 focus:top-3">Skip to content</a>
           <header className="sticky top-0 z-30 border-b border-stone-200 bg-paper/90 backdrop-blur">
             <div className="mx-auto flex max-w-7xl items-center gap-4 px-4 py-3">
               <Link href="/" className="flex items-center gap-2 font-bold">
@@ -27,9 +29,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
               <NavLinks />
             </div>
           </header>
-          <main className="flex-1">{children}</main>
+          <main id="main" tabIndex={-1} className="flex-1">{children}</main>
           <footer className="border-t border-stone-200 py-6 text-center text-sm text-stone-500">
-            A learning tool. Kōwhai Café Ltd and everyone in it are fictional. Rates are for the 2026–27 year: always check{" "}
+            A learning tool. Kōwhai Café Ltd and everyone in it are fictional. Rates are for the {CURRENT_PAYROLL.year} year: always check{" "}
             <a className="underline" href="https://www.ird.govt.nz" target="_blank" rel="noreferrer">ird.govt.nz</a> for current figures.
           </footer>
         </OverlayProvider>

@@ -83,7 +83,7 @@ export function DrillRun({ title, icon, items: start, mixed, learn, onAnswer, on
     if (i + 1 >= qs.length) onFinish(results.filter(Boolean).length, qs.length);
     setResult(null);
     setI((n) => n + 1);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    window.scrollTo({ top: 0, behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
   }, [result, i, qs.length, results, onFinish]);
 
   useEffect(() => {
