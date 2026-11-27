@@ -87,6 +87,7 @@ A learner who finishes the course and keeps up with Study should be able to:
     - Marked row by row: each account must have the right side and amount, or be left blank.
     - Live debit and credit totals show whether the entry balances.
     - When some amounts are only worked out by adding up the document (`amountsGiven: false`), the amounts are shown up front; otherwise they're behind a hint.
+    - **Harder mode** (checkbox under the entry, saved as `study-entry-hard-v1`): amounts are never shown up front, and a note says when some must be worked out (split off GST, add up payslips, net two figures). The hint button stays, because a few amounts (e.g. reversing last year's accrued wages, netted leave lines) can't be fully worked out from what's shown; using it is noted on the result.
   - `order`: `items` in the right order. Shown shuffled (never already in order), moved with ↑/↓ buttons, marked position by position.
 - **Every question has a seed.** `make(seeded(seed))` always gives the same question, so a run is a list of `{ drill, seed }` and a missed question can be saved and regenerated exactly. A test checks this for every drill.
 - **A run** is 10 unique questions, or 5 for the entry and ordering drills. The end screen shows the score and the missed questions with their explanations.
@@ -239,6 +240,7 @@ Shown on matching flashcards, and practised as cards of their own (`a:` cards, o
 - [x] **N12** Imputation credits (28/72), the gross dividend, dividend RWT and the cash paid.
 - [x] **P1** A "Make it stick" box at the end of every lesson (Foundations, cycle steps and overview, NZ topics, A year on the job, and the ratios tool) with its drills and the Part's flashcards; `/study?drill=` starts a drill.
 - [x] **P2** Weakest topics on Progress: drills with the lowest last score or open missed questions (each with Practise), cards forgotten most, and "Retry them now" for saved questions.
+- [x] **X2** Harder entry mode: hide the amounts, with the hint still available (from the open questions).
 - [x] **X1** Export and import progress as a JSON file (Progress tab), so it can be backed up or moved to another browser or device. Import asks before replacing and refuses files that aren't a study export.
 - [x] **T3** Tests: every drill regenerates the same question from the same seed; every drill links to a page that exists; closing entries close income with a debit and expenses with a credit and close the real profit; the year 2 pool covers the Part 4 topics; T-account, imputation, RWT and GST-period answers re-worked independently; missed-question scheduling, the 200 cap, and old saved data still loading.
 
@@ -252,11 +254,11 @@ Shown on matching flashcards, and practised as cards of their own (`a:` cards, o
 ---
 
 ## 5. Open questions
-- Entry questions whose amounts must be added up from the document show the amounts up front. Should a harder mode hide them?
 - Should drills count towards "known", or only flashcards? (Currently only flashcards.)
 - Typed recall for flashcards (type the term) as well as self-grading?
 
 ## 6. Log
+- **2026-11-27**: Harder entry mode (X2), from the open questions.
 - **2026-11-27**: Progress export and import (X1), from the open questions. 105 tests.
 - **2026-11-27**: Phase 3 done. Missed questions come back (seeded questions), Today's review, memory-aid cards, "Put it in order", closing entries, year 2 entries, and four new calculations (T-accounts, cash vs accrual, GST for a period, imputation). "Make it stick" links on every lesson and a weakest-topics view. 36 drills in all; 103 tests.
 - **2026-11-27**: Phase 2 done. 12 "Sort it" drills (C1–C11; US → NZ is under NZ dates & words) and the full NZ calendar in "When is it due?". 29 drills in all; 90 tests.

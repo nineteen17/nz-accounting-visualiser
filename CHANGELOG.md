@@ -13,6 +13,12 @@ Dates are when the change was made. Rates and rules are for the 2026–27 NZ inc
 
 ## 2026-11-27
 
+### Study: a harder mode for journal entries
+- The entry drills (Build the journal entry, Year-end adjustments, Closing entries, Year 2 entries) have a **Harder** checkbox: the amounts are never shown up front, so you work them out from the story and the source document (split off the GST, add up the payslips, net two figures).
+- It's off by default and remembered in this browser. When a question has amounts that aren't written anywhere, a note says so.
+- The "show the amounts" hint is still there, since a few amounts can't be fully worked out from what's shown (e.g. reversing last year's accrued wages); using it is noted on the result.
+- `docs/STUDY.md`: X2 added; the open question removed.
+
 ### Study: export and import your progress
 - **Progress → Keep your progress**: **Export progress** downloads a JSON file with your flashcards, drill scores, missed questions, streak days and flashcard settings. **Import progress…** loads one back, in this browser or another one.
 - Import checks the file first: anything that isn't a Kōwhai Café study export is refused with a message, broken entries are dropped, and it asks before replacing what's in the browser.

@@ -53,8 +53,14 @@ interface RunProps {
   again?: { label: string; run: () => RunItem[] | void };
 }
 
+/** harder entry mode: amounts are never shown up front (saved in this browser) */
+const HARD_KEY = "study-entry-hard-v1";
+
 export function DrillRun({ title, icon, items: start, mixed, learn, onAnswer, onFinish, onExit, again }: RunProps) {
   const [items, setItems] = useState(start);
+  // DrillRun only renders after the page has loaded in the browser, so localStorage is available here
+  const [hard, setHardState] = useState(() => typeof window !== "undefined" && localStorage.getItem(HARD_KEY) === "1");
+  const setHard = useCallback((v: boolean) => { setHardState(v); localStorage.setItem(HARD_KEY, v ? "1" : "0"); }, []);
   const qs = useMemo(() => items.map(makeQuestion), [items]);
   const [i, setI] = useState(0);
   const [result, setResult] = useState<boolean | null>(null);
@@ -135,7 +141,7 @@ export function DrillRun({ title, icon, items: start, mixed, learn, onAnswer, on
         <div className="text-lg leading-relaxed"><RichText text={q.prompt} /></div>
         {q.kind === "choice" && <ChoiceView key={i} q={q} onAnswer={answer} />}
         {q.kind === "number" && <NumberView key={i} q={q} onAnswer={answer} />}
-        {q.kind === "entry" && <EntryView key={i} q={q} onAnswer={answer} />}
+        {q.kind === "entry" && <EntryView key={i} q={q} hard={hard} onHard={setHard} onAnswer={answer} />}
         {q.kind === "order" && <OrderView key={i} q={q} seed={it.seed} onAnswer={answer} />}
         {result !== null && (
           <div className={cx("mt-5 rounded-xl px-4 py-3 text-[15px] leading-relaxed", result ? "bg-emerald-50" : "bg-rose-50")}>
@@ -276,10 +282,13 @@ function NumberView({ q, onAnswer }: { q: NumberQ; onAnswer: (right: boolean) =>
 
 type Row = { side: "" | "debit" | "credit"; amount: string };
 
-function EntryView({ q, onAnswer }: { q: EntryQ; onAnswer: (right: boolean) => void }) {
+function EntryView({ q, hard, onHard, onAnswer }: { q: EntryQ; hard: boolean; onHard: (v: boolean) => void; onAnswer: (right: boolean) => void }) {
   const [rows, setRows] = useState<Record<string, Row>>(() => Object.fromEntries(q.options.map((c) => [c, { side: "", amount: "" }])));
   const [done, setDone] = useState(false);
-  const [hint, setHint] = useState(!q.amountsGiven);
+  // normal mode shows the amounts up front when some have to be worked out; harder mode never does
+  const [hint, setHint] = useState(!q.amountsGiven && !hard);
+  const [askedHint, setAskedHint] = useState(false);
+  const toggleHard = (v: boolean) => { onHard(v); if (!askedHint) setHint(!q.amountsGiven && !v); };
   const expected = useMemo(() => Object.fromEntries(q.lines.map((l) => [l.account, l])), [q]);
   const set = (c: string, r: Partial<Row>) => setRows((all) => ({ ...all, [c]: { ...all[c], ...r } }));
   const total = (side: "debit" | "credit") => Object.values(rows).reduce((s, r) => s + (r.side === side ? parseAnswer(r.amount) ?? 0 : 0), 0);
@@ -345,11 +354,19 @@ function EntryView({ q, onAnswer }: { q: EntryQ; onAnswer: (right: boolean) => v
         <span className="num">Debits <strong>{$(dr)}</strong></span>
         <span className="num">Credits <strong>{$(cr)}</strong></span>
         {dr > 0 && <span className={cx("font-semibold", Math.abs(dr - cr) < 0.005 ? "text-emerald-700" : "text-amber-700")}>{Math.abs(dr - cr) < 0.005 ? "Balanced ✓" : `Out by ${$(Math.abs(dr - cr))}`}</span>}
-        {!done && !hint && <button onClick={() => setHint(true)} className="ml-auto text-sm font-semibold text-kowhai-700 underline">Hint: show the amounts</button>}
+        {!done && !hint && <button onClick={() => { setHint(true); setAskedHint(true); }} className="ml-auto text-sm font-semibold text-kowhai-700 underline">Hint: show the amounts</button>}
+        {done && askedHint && <span className="ml-auto text-xs text-stone-500">You used the amounts hint</span>}
       </div>
-      {hint && !done && <div className="mt-2 flex flex-wrap items-center gap-2 text-sm"><span className="text-stone-500">{q.amountsGiven ? "The amounts in this entry:" : "Some amounts here have to be added up from the document, so here they all are:"}</span>{amounts.map((a) => <span key={a} className="num rounded-full bg-kowhai-100 px-2.5 py-0.5 font-semibold text-kowhai-700">{$(a)}</span>)}</div>}
+      {hard && !hint && !done && !q.amountsGiven && <div className="mt-2 text-sm text-stone-500">Some amounts here aren&apos;t written anywhere: work them out from the story and the document (split off the GST, add up the payslips, net two figures).</div>}
+      {hint && !done && <div className="mt-2 flex flex-wrap items-center gap-2 text-sm"><span className="text-stone-500">{q.amountsGiven || askedHint ? "The amounts in this entry:" : "Some amounts here have to be added up from the document, so here they all are:"}</span>{amounts.map((a) => <span key={a} className="num rounded-full bg-kowhai-100 px-2.5 py-0.5 font-semibold text-kowhai-700">{$(a)}</span>)}</div>}
 
-      {!done && <button onClick={check} disabled={!used} className="mt-4 rounded-xl bg-ink px-5 py-3 font-bold text-white hover:bg-ink/85 disabled:opacity-40">Check my entry</button>}
+      <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-3">
+        {!done && <button onClick={check} disabled={!used} className="rounded-xl bg-ink px-5 py-3 font-bold text-white hover:bg-ink/85 disabled:opacity-40">Check my entry</button>}
+        <label className="flex cursor-pointer items-center gap-2 text-sm text-stone-600">
+          <input type="checkbox" checked={hard} onChange={(e) => toggleHard(e.target.checked)} className="h-4 w-4 accent-kowhai-600" />
+          <span><strong>Harder:</strong> work out the amounts yourself (they&apos;re never shown up front)</span>
+        </label>
+      </div>
 
       {done && (
         <div className="mt-5 overflow-x-auto rounded-xl border border-stone-200">
