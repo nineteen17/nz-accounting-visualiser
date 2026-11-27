@@ -8,8 +8,9 @@
 import type { JournalLine, Transaction } from "@/lib/engine/types";
 import type { GstPeriod, GstReturn } from "@/lib/engine/gst";
 import type { Balances } from "@/lib/engine/ledger";
-import { r2, nzDate } from "@/lib/money";
-import { calcPay, type AccLevy, type Employee, type PayResult } from "@/lib/nz/payroll";
+import { pct, r2, nzDate } from "@/lib/money";
+import { calcPay, type Employee, type PayResult } from "@/lib/nz/payroll";
+import { HOLIDAYS, type PayrollRates } from "@/lib/nz/rates";
 import { BUSINESS, PURCHASE_MIX, SUPPLIERS } from "../business";
 import { ACCOUNTS } from "../chartOfAccounts";
 import { EFTPOS_SHARE, LOAN_SCHEDULE, MERCHANT_FEE } from "./april";
@@ -38,7 +39,8 @@ export interface YearConfig {
   firstPayDate: string;
   employeesOn: (payDate: string) => Employee[];
   hoursFor: (employeeId: string, payDate: string) => number;
-  acc: AccLevy;
+  /** payroll rates for this income year (lib/nz/rates.ts) */
+  rates: PayrollRates;
   payId: (i: number, date: string) => string;
   payExtras?: Record<string, PayExtra>;
   /** holiday pay owed at the start of the year (taken leave is paid out of this first) */
@@ -75,14 +77,15 @@ export function payRuns(cfg: YearConfig): PayRun[] {
     date,
     periodFrom: addDays(date, -15),
     periodTo: addDays(date, -2),
-    results: cfg.employeesOn(date).map((e) => calcPay(e, cfg.hoursFor(e.id, date), cfg.acc)),
+    results: cfg.employeesOn(date).map((e) => calcPay(e, cfg.hoursFor(e.id, date), cfg.rates)),
   }));
 }
 
 const sumBy = (rs: PayResult[], k: keyof PayResult) => r2(rs.reduce((a, r) => a + (r[k] as number), 0));
 
-function payrollLines(run: PayRun, leave?: { name: string; pay: number; fromAccrual: number }): JournalLine[] {
+function payrollLines(run: PayRun, rates: PayrollRates, leave?: { name: string; pay: number; fromAccrual: number }): JournalLine[] {
   const rs = run.results;
+  const er = pct(rates.kiwiSaver.employerMinimum), sl = rates.studentLoan;
   const gross = sumBy(rs, "gross");
   const wageLines: JournalLine[] = leave
     ? [
@@ -93,17 +96,18 @@ function payrollLines(run: PayRun, leave?: { name: string; pay: number; fromAccr
     : [{ account: "600", debit: gross, memo: "Gross wages – " + rs.map((r) => `${r.employee.name.split(" ")[0]} ${money2(r.gross)}`).join(", "), why: "The full wage earned (before deductions) is the café's expense." }];
   return [
     ...wageLines,
-    { account: "601", debit: sumBy(rs, "ksEmployerGross"), memo: "Employer KiwiSaver 3.5% (gross)", why: "The café's own KiwiSaver contribution is an extra employment cost on top of wages." },
+    { account: "601", debit: sumBy(rs, "ksEmployerGross"), memo: `Employer KiwiSaver ${er} (gross)`, why: "The café's own KiwiSaver contribution is an extra employment cost on top of wages." },
     ...rs.map((r) => ({ account: "100", credit: r.net, party: r.employee.name, memo: `Net pay – ${r.employee.name}`, why: "Take-home pay transferred to the employee's bank account." })),
     { account: "215", credit: sumBy(rs, "paye"), memo: "PAYE (incl ACC earners' levy)", why: "Tax deducted from staff pay. The café collects it for IRD, so it's a liability." },
-    ...(sumBy(rs, "studentLoan") ? [{ account: "215", credit: sumBy(rs, "studentLoan"), memo: "Student loan deductions", why: "12% of Mia's pay above the threshold, owed to IRD." }] : []),
-    { account: "215", credit: sumBy(rs, "ksEmployee"), memo: "KiwiSaver – employee 3.5%", why: "Deducted from staff pay and passed to IRD for their KiwiSaver." },
+    ...(sumBy(rs, "studentLoan") ? [{ account: "215", credit: sumBy(rs, "studentLoan"), memo: "Student loan deductions", why: `${pct(sl.rate)} of Mia's pay above the threshold, owed to IRD.` }] : []),
+    { account: "215", credit: sumBy(rs, "ksEmployee"), memo: `KiwiSaver – employee ${pct(rs.find((r) => r.employee.kiwiSaver)?.employee.kiwiSaver ?? rates.kiwiSaver.employeeDefault)}`, why: "Deducted from staff pay and passed to IRD for their KiwiSaver." },
     { account: "215", credit: sumBy(rs, "ksEmployerNet"), memo: "KiwiSaver – employer (net of ESCT)", why: "The café's contribution, after tax, goes to IRD → KiwiSaver provider." },
     { account: "215", credit: sumBy(rs, "esct"), memo: "ESCT on employer contribution", why: "Employer superannuation contribution tax is taken out of the employer's contribution." },
   ];
 }
 
-export function payslip(r: PayResult, run: PayRun, acc: AccLevy, leaveHours = 0) {
+export function payslip(r: PayResult, run: PayRun, rates: PayrollRates, leaveHours = 0) {
+  const sl = rates.studentLoan;
   return {
     kind: "payslip" as const,
     title: "Payslip",
@@ -116,14 +120,14 @@ export function payslip(r: PayResult, run: PayRun, acc: AccLevy, leaveHours = 0)
       leaveHours
         ? { label: `Annual leave ${leaveHours} hrs × ${money2(r.employee.rate)}`, value: money2(r.ordinary) }
         : { label: `Ordinary time ${r.hours} hrs × ${money2(r.employee.rate)}`, value: money2(r.ordinary) },
-      ...(r.holidayPay ? [{ label: "Holiday pay 8% (pay-as-you-go)", value: money2(r.holidayPay) }] : []),
+      ...(r.holidayPay ? [{ label: `Holiday pay ${pct(HOLIDAYS.payAsYouGoRate)} (pay-as-you-go)`, value: money2(r.holidayPay) }] : []),
       { label: "GROSS PAY", value: money2(r.gross), strong: true },
       { label: "PAYE (income tax)", value: "−" + money2(r.incomeTax) },
-      { label: `ACC earners' levy (${(acc.rate * 100).toFixed(2)}%)`, value: "−" + money2(r.accLevy) },
-      ...(r.studentLoan ? [{ label: "Student loan (12% over $928/fn)", value: "−" + money2(r.studentLoan) }] : []),
-      { label: "KiwiSaver employee 3.5%", value: "−" + money2(r.ksEmployee) },
+      { label: `ACC earners' levy (${pct(rates.acc.rate, 2)})`, value: "−" + money2(r.accLevy) },
+      ...(r.studentLoan ? [{ label: `Student loan (${pct(sl.rate)} over ${money2(sl.fortnightlyThreshold).replace(".00", "")}/fn)`, value: "−" + money2(r.studentLoan) }] : []),
+      { label: `KiwiSaver employee ${pct(r.employee.kiwiSaver ?? 0)}`, value: "−" + money2(r.ksEmployee) },
       { label: "NET PAY", value: money2(r.net), strong: true },
-      { label: "Employer KiwiSaver 3.5% (gross)", value: money2(r.ksEmployerGross) },
+      { label: `Employer KiwiSaver ${pct(rates.kiwiSaver.employerMinimum)} (gross)`, value: money2(r.ksEmployerGross) },
       { label: `less ESCT @ ${(r.esctRate * 100).toFixed(1)}%`, value: "−" + money2(r.esct) },
       { label: "Employer KiwiSaver paid to your fund", value: money2(r.ksEmployerNet) },
     ],
@@ -153,10 +157,10 @@ export function payrollTxns(cfg: YearConfig, runs: PayRun[]): Transaction[] {
       book: "payroll",
       month: run.date.slice(0, 7),
       story: first
-        ? `Payday. Mia (full-time barista) and Leo (casual kitchen hand) are paid fortnightly. This is where NZ payroll gets detailed.\n\nThe café doesn't just pay staff their wage. From each [[gross-pay]] it deducts [[paye]] (which includes the [[acc-earners-levy]]), [[student-loan]] repayments and the employee's [[kiwisaver]] contribution, and passes them all to IRD. On top of the wage, the café must contribute 3.5% to KiwiSaver, minus [[esct]].\n\nLeo is casual, so instead of building up annual leave he gets 8% [[holiday-pay]] added to every pay ("pay-as-you-go").\n\nWithin 2 working days the café must file the [[payday-filing]] (employment information) with IRD. The deductions are paid to IRD by the 20th of next month.`
+        ? `Payday. Mia (full-time barista) and Leo (casual kitchen hand) are paid fortnightly. This is where NZ payroll gets detailed.\n\nThe café doesn't just pay staff their wage. From each [[gross-pay]] it deducts [[paye]] (which includes the [[acc-earners-levy]]), [[student-loan]] repayments and the employee's [[kiwisaver]] contribution, and passes them all to IRD. On top of the wage, the café must contribute ${pct(cfg.rates.kiwiSaver.employerMinimum)} to KiwiSaver, minus [[esct]].\n\nLeo is casual, so instead of building up annual leave he gets ${pct(HOLIDAYS.payAsYouGoRate)} [[holiday-pay]] added to every pay ("pay-as-you-go").\n\nWithin 2 working days the café must file the [[payday-filing]] (employment information) with IRD. The deductions are paid to IRD by the 20th of next month.`
         : extra?.story ?? `Fortnightly pay run. Mia ${mia.hours} hrs, Leo ${run.results[1].hours} hrs. Same structure as the first pay run.`,
       doc: first || extra?.leave
-        ? payslip(extra?.leave ? run.results.find((x) => x.employee.id === extra.leave!.employeeId)! : mia, run, cfg.acc, extra?.leave?.hours)
+        ? payslip(extra?.leave ? run.results.find((x) => x.employee.id === extra.leave!.employeeId)! : mia, run, cfg.rates, extra?.leave?.hours)
         : {
             kind: "internal",
             title: "Pay run summary",
@@ -167,7 +171,7 @@ export function payrollTxns(cfg: YearConfig, runs: PayRun[]): Transaction[] {
               { label: `${r.employee.name} – net`, value: money2(r.net) },
             ]),
           },
-      lines: payrollLines(run, leave),
+      lines: payrollLines(run, cfg.rates, leave),
       notes: first
         ? [
             `Leo's payslip: gross ${money2(run.results[1].gross)} (incl ${money2(run.results[1].holidayPay)} holiday pay), PAYE ${money2(run.results[1].paye)}, KiwiSaver ${money2(run.results[1].ksEmployee)}, net ${money2(run.results[1].net)}.`,

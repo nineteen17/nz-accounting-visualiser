@@ -2,13 +2,13 @@ import type { Transaction } from "@/lib/engine/types";
 import { balances, byDate } from "@/lib/engine/ledger";
 import { GST_PERIODS, gstReturn } from "@/lib/engine/gst";
 import { ACCOUNTS } from "../chartOfAccounts";
-import { r2 } from "@/lib/money";
+import { pct, r2 } from "@/lib/money";
 import { assetYearOne } from "@/lib/nz/assets";
 import { calcPay } from "@/lib/nz/payroll";
 import { taxComputation } from "@/lib/nz/incomeTax";
 import { BUSINESS, CLOSING_STOCK, CUSTOMERS, EMPLOYEES, FIXED_ASSETS, SHAREHOLDERS } from "../business";
 import { APRIL } from "./april";
-import { LATER_EVENTS, LEO_HOURS, MIA_HOURS, PAY_RUNS, ROUTINE_AND_PAYROLL, supplierPayments } from "./year";
+import { LATER_EVENTS, LEO_HOURS, MIA_HOURS, PAY_RUNS, ROUTINE_AND_PAYROLL, YEAR1, supplierPayments } from "./year";
 import { money2 } from "./helpers";
 import { closingEntries, gstSettlement } from "./generator";
 
@@ -37,9 +37,10 @@ const entertainmentEx = pre["623"];
 const entAdj = r2(entertainmentEx * 1.15 * 0.5 * (3 / 23));
 
 const accrualDays = 9; // 23–31 March worked, paid 7 April
-const fortnight = EMPLOYEES.map((e) => calcPay(e, e.id === "mia" ? MIA_HOURS : LEO_HOURS["03"]));
+const fortnight = EMPLOYEES.map((e) => calcPay(e, e.id === "mia" ? MIA_HOURS : LEO_HOURS["03"], YEAR1.rates));
 const accruedGross = r2(fortnight.reduce((s, p) => s + p.gross, 0) * (accrualDays / 14));
-const accruedKs = r2(accruedGross * 0.035);
+const employerKs = YEAR1.rates.kiwiSaver.employerMinimum;
+const accruedKs = r2(accruedGross * employerKs);
 
 const miaYearGross = r2(PAY_RUNS.reduce((s, run) => s + run.results[0].gross, 0));
 const miaAccruedGross = r2(fortnight[0].gross * (accrualDays / 14));
@@ -114,8 +115,8 @@ const ADJ_BEFORE_TAX: Transaction[] = [
   adj({
     id: "ADJ06",
     title: "Accrued wages for 23–31 March",
-    story: `Staff worked 23–31 March, but that time is paid on 7 April. The work happened this year, so the cost belongs here: ${money2(accruedGross)} of wages (${accrualDays}/14 of a fortnight) plus 3.5% employer KiwiSaver.`,
-    doc: { kind: "internal", title: "Wages accrual working", issuer: BUSINESS.name, date: YE, rows: [{ label: "Fortnightly gross (Mia + Leo)", value: money2(fortnight.reduce((s, p) => s + p.gross, 0)) }, { label: `× ${accrualDays}/14 days`, value: money2(accruedGross) }, { label: "Employer KiwiSaver 3.5%", value: money2(accruedKs) }, { label: "Total accrued", value: money2(accruedGross + accruedKs), strong: true }] },
+    story: `Staff worked 23–31 March, but that time is paid on 7 April. The work happened this year, so the cost belongs here: ${money2(accruedGross)} of wages (${accrualDays}/14 of a fortnight) plus ${pct(employerKs)} employer KiwiSaver.`,
+    doc: { kind: "internal", title: "Wages accrual working", issuer: BUSINESS.name, date: YE, rows: [{ label: "Fortnightly gross (Mia + Leo)", value: money2(fortnight.reduce((s, p) => s + p.gross, 0)) }, { label: `× ${accrualDays}/14 days`, value: money2(accruedGross) }, { label: `Employer KiwiSaver ${pct(employerKs)}`, value: money2(accruedKs) }, { label: "Total accrued", value: money2(accruedGross + accruedKs), strong: true }] },
     lines: [
       { account: "600", debit: accruedGross },
       { account: "601", debit: accruedKs },

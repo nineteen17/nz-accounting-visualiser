@@ -8,18 +8,19 @@ import { DRILLS, DRILL_MAP, maskTerm } from "@/data/study/drills";
 import { DRILL_GROUPS, type DrillGroup } from "@/data/study/core";
 import { DrillRun, makeSet, type RunItem } from "./DrillRun";
 import {
-  KNOWN_BOX, STORAGE_KEY, dueMissed, emptyStudy, exportStudy, parseImport, intervalLabel, isDue, isKnown, loadStudy, markStudied, recordAnswer, schedule, streak, todayLocal,
+  KNOWN_BOX, MASTERED_SCORE, STORAGE_KEY, dueMissed, isMastered, emptyStudy, exportStudy, parseImport, intervalLabel, isDue, isKnown, loadStudy, markStudied, recordAnswer, schedule, streak, todayLocal,
   type Grade, type StudyData,
 } from "@/lib/study/srs";
+import { checkRecall, type RecallResult } from "@/lib/study/recall";
 import { RichText } from "@/components/learn/RichText";
 import { MemoryAid } from "@/components/learn/MemoryAid";
-import { cx } from "@/lib/ui";
+import { cx, pageKey } from "@/lib/ui";
 
 type Level = GlossaryEntry["level"];
 type Dir = "forward" | "reverse" | "both";
-interface Settings { parts: number[]; levels: Level[]; dir: Dir; newCount: number; aids: boolean }
+interface Settings { parts: number[]; levels: Level[]; dir: Dir; newCount: number; aids: boolean; typed: boolean }
 const SETTINGS_KEY = "study-settings-v1";
-const DEFAULT_SETTINGS: Settings = { parts: [1, 2, 3, 4], levels: ["essential"], dir: "forward", newCount: 10, aids: true };
+const DEFAULT_SETTINGS: Settings = { parts: [1, 2, 3, 4], levels: ["essential"], dir: "forward", newCount: 10, aids: true, typed: false };
 
 /** settings from an imported file: keep only the known fields with sensible values */
 function cleanSettings(raw: Record<string, unknown> | undefined, base: Settings): Settings {
@@ -32,6 +33,7 @@ function cleanSettings(raw: Record<string, unknown> | undefined, base: Settings)
     dir: raw.dir === "forward" || raw.dir === "reverse" || raw.dir === "both" ? raw.dir : base.dir,
     newCount: [5, 10, 20, 50].includes(raw.newCount as number) ? (raw.newCount as number) : base.newCount,
     aids: typeof raw.aids === "boolean" ? raw.aids : base.aids,
+    typed: typeof raw.typed === "boolean" ? raw.typed : base.typed,
   };
 }
 
@@ -59,6 +61,8 @@ interface Run {
 
 const TODAY_NEW = 5;
 const MAX_TODAY_MISSED = 10;
+/** a toggle button: aria-pressed tells screen readers whether it's on */
+const chipProps = (on: boolean) => ({ "aria-pressed": on, className: chip(on) });
 const chip = (on: boolean) => cx("rounded-lg px-3 py-1.5 text-sm font-medium transition", on ? "bg-ink text-white" : "bg-white ring-1 ring-stone-200 hover:bg-stone-100");
 
 export function Study() {
@@ -138,6 +142,7 @@ export function Study() {
         queue={session}
         data={data}
         today={today}
+        typed={settings.typed}
         onGrade={(id, g) => update((d) => markStudied({ ...d, cards: { ...d.cards, [id]: schedule(d.cards[id], g, today) } }, today))}
         onExit={() => setSession(null)}
       />
@@ -188,7 +193,7 @@ export function Study() {
 
       <div className="mb-6 flex flex-wrap gap-2 border-b border-stone-200 pb-3">
         {([["cards", "🃏 Flashcards"], ["drills", "🎯 Drills"], ["progress", "📈 Progress"]] as const).map(([k, l]) => (
-          <button key={k} onClick={() => setTab(k)} className={cx("rounded-lg px-4 py-2 text-sm font-semibold", tab === k ? "bg-ink text-white" : "bg-white ring-1 ring-stone-200 hover:bg-stone-100")}>{l}</button>
+          <button key={k} onClick={() => setTab(k)} aria-pressed={tab === k} className={cx("rounded-lg px-4 py-2 text-sm font-semibold", tab === k ? "bg-ink text-white" : "bg-white ring-1 ring-stone-200 hover:bg-stone-100")}>{l}</button>
         ))}
       </div>
 
@@ -196,19 +201,22 @@ export function Study() {
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
           <div className="space-y-5 rounded-2xl border border-stone-200 bg-white p-5">
             <Field label="Which Parts?" hint="Study the terms from the Parts you've done.">
-              {[1, 2, 3, 4].map((p) => <button key={p} className={chip(settings.parts.includes(p))} onClick={() => changeSettings({ ...settings, parts: toggle(settings.parts, p) })}>{PARTS[p]}</button>)}
+              {[1, 2, 3, 4].map((p) => <button key={p} {...chipProps(settings.parts.includes(p))} onClick={() => changeSettings({ ...settings, parts: toggle(settings.parts, p) })}>{PARTS[p]}</button>)}
             </Field>
             <Field label="Which levels?" hint="Start with Essential: the terms to know cold.">
-              {(Object.keys(LEVELS) as Level[]).map((l) => <button key={l} className={chip(settings.levels.includes(l))} onClick={() => changeSettings({ ...settings, levels: toggle(settings.levels, l) })}>{LEVELS[l]}</button>)}
+              {(Object.keys(LEVELS) as Level[]).map((l) => <button key={l} {...chipProps(settings.levels.includes(l))} onClick={() => changeSettings({ ...settings, levels: toggle(settings.levels, l) })}>{LEVELS[l]}</button>)}
             </Field>
             <Field label="Which way round?" hint="Meaning → term is harder: try it once a term is known.">
-              {([["forward", "Term → meaning"], ["reverse", "Meaning → term"], ["both", "Both"]] as const).map(([d, l]) => <button key={d} className={chip(settings.dir === d)} onClick={() => changeSettings({ ...settings, dir: d })}>{l}</button>)}
+              {([["forward", "Term → meaning"], ["reverse", "Meaning → term"], ["both", "Both"]] as const).map(([d, l]) => <button key={d} {...chipProps(settings.dir === d)} onClick={() => changeSettings({ ...settings, dir: d })}>{l}</button>)}
+            </Field>
+            <Field label="Meaning → term: think it or type it?" hint={settings.dir === "forward" ? "For the Meaning → term cards (pick that above to use it)." : "Typing the term makes you produce it, not just recognise it. It's checked for you; small typos are fine."}>
+              {([[false, "Think it"], [true, "Type it"]] as const).map(([v, l]) => <button key={l} {...chipProps(settings.typed === v)} onClick={() => changeSettings({ ...settings, typed: v })}>{l}</button>)}
             </Field>
             <Field label="Memory aids too?" hint="The memory hooks (like DEAD CLIC) as cards of their own.">
-              {([[true, "Yes"], [false, "No"]] as const).map(([v, l]) => <button key={l} className={chip(settings.aids === v)} onClick={() => changeSettings({ ...settings, aids: v })}>{l}</button>)}
+              {([[true, "Yes"], [false, "No"]] as const).map(([v, l]) => <button key={l} {...chipProps(settings.aids === v)} onClick={() => changeSettings({ ...settings, aids: v })}>{l}</button>)}
             </Field>
             <Field label="New cards per session">
-              {[5, 10, 20, 50].map((n) => <button key={n} className={chip(settings.newCount === n)} onClick={() => changeSettings({ ...settings, newCount: n })}>{n}</button>)}
+              {[5, 10, 20, 50].map((n) => <button key={n} {...chipProps(settings.newCount === n)} onClick={() => changeSettings({ ...settings, newCount: n })}>{n}</button>)}
             </Field>
             <button onClick={start} disabled={!due.length && !fresh.length} className="w-full rounded-xl bg-kowhai-400 px-5 py-3 font-bold text-ink hover:bg-kowhai-300 disabled:opacity-50">
               {due.length || fresh.length ? `Start: ${due.length} to review + ${Math.min(settings.newCount, fresh.length)} new →` : "All done for today ✓"}
@@ -221,6 +229,7 @@ export function Study() {
       {tab === "drills" && (
         <div className="space-y-8">
           <p className="max-w-3xl text-stone-600">Questions marked straight away, with the reason for every answer. They&apos;re made from Kōwhai&apos;s own books and the NZ rules the course uses, so there&apos;s always a fresh set.</p>
+          <p className="text-sm text-stone-600"><strong className="num">{DRILLS.filter((d) => isMastered(data, d.key)).length} of {DRILLS.length}</strong> drills mastered: your last set scored {Math.round(MASTERED_SCORE * 100)}% or more, with no missed questions left to fix.</p>
           {(Object.keys(DRILL_GROUPS) as DrillGroup[]).map((g) => (
             <section key={g}>
               <h3 className="text-lg font-bold">{DRILL_GROUPS[g].title}</h3>
@@ -235,7 +244,9 @@ export function Study() {
                       <span className="mt-1 flex-1 text-sm text-stone-600">{d.blurb}</span>
                       <span className="mt-3 flex items-center justify-between gap-2 text-xs">
                         <span className="rounded-full bg-stone-100 px-2 py-0.5 font-semibold text-stone-500">{PARTS[d.part]}</span>
-                        <span className="font-semibold text-kowhai-700">{st ? `Best ${st.best}/${st.total}` : `${d.length ?? 10} questions`}</span>
+                        {isMastered(data, d.key)
+                          ? <span className="font-semibold text-emerald-700">✓ Mastered</span>
+                          : <span className="font-semibold text-kowhai-700">{st ? `Best ${st.best}/${st.total}` : `${d.length ?? 10} questions`}</span>}
                       </span>
                     </button>
                   );
@@ -302,7 +313,7 @@ function HowItWorks() {
         <li><strong>Spaced repetition.</strong> Cards you know come back less often (1 day, 3 days, a week, two weeks, a month…). Cards you forget come back straight away. A term is <strong>known</strong> once you&apos;ve recalled it well for a week or more.</li>
         <li><strong>A little often.</strong> Ten minutes a day beats an hour once a week. Your progress is saved in this browser.</li>
       </ol>
-      <p className="mt-3 text-sm">Keys: <kbd className="rounded bg-white px-1.5 ring-1 ring-stone-300">Space</kbd> to show the answer, <kbd className="rounded bg-white px-1.5 ring-1 ring-stone-300">1</kbd>–<kbd className="rounded bg-white px-1.5 ring-1 ring-stone-300">4</kbd> to mark it.</p>
+      <p className="mt-3 text-sm">Keys: <kbd className="rounded bg-white px-1.5 ring-1 ring-stone-300">Space</kbd> to show the answer, <kbd className="rounded bg-white px-1.5 ring-1 ring-stone-300">1</kbd>–<kbd className="rounded bg-white px-1.5 ring-1 ring-stone-300">4</kbd> to mark it. With <em>Type it</em> on, type the term and press <kbd className="rounded bg-white px-1.5 ring-1 ring-stone-300">Enter</kbd>.</p>
     </div>
   );
 }
@@ -316,7 +327,7 @@ const GRADES: { g: Grade; label: string; cls: string }[] = [
   { g: "easy", label: "Easy", cls: "bg-sky-100 text-sky-800 hover:bg-sky-200" },
 ];
 
-function CardSession({ queue: start, data, today, onGrade, onExit }: { queue: string[]; data: StudyData; today: string; onGrade: (id: string, g: Grade) => void; onExit: () => void }) {
+function CardSession({ queue: start, data, today, typed, onGrade, onExit }: { queue: string[]; data: StudyData; today: string; typed: boolean; onGrade: (id: string, g: Grade) => void; onExit: () => void }) {
   const [queue, setQueue] = useState(start);
   const [i, setI] = useState(0);
   const [shown, setShown] = useState(false);
@@ -325,6 +336,22 @@ function CardSession({ queue: start, data, today, onGrade, onExit }: { queue: st
   const aid = id?.startsWith("a:") ? AID_MAP[cardKey(id)] : undefined;
   const e = id && !aid ? GLOSSARY_MAP[cardKey(id)] : undefined;
   const reverse = id?.startsWith("r:");
+  // "Type it": meaning → term cards ask you to type the term, and check it before you mark yourself
+  const typing = typed && reverse && !!e;
+  const [answer, setAnswer] = useState("");
+  const [recall, setRecall] = useState<RecallResult | null>(null);
+  const suggested: Grade | null = recall === "wrong" ? "again" : recall ? "good" : null;
+  const reveal = (text = answer) => {
+    if (typing) setRecall(text.trim() ? checkRecall(e!.term, text) : "wrong");
+    setShown(true);
+  };
+  const front = useRef<HTMLDivElement>(null);
+  const back = useRef<HTMLDivElement>(null);
+  // focus follows the card: its question when it appears, the answer once shown
+  useEffect(() => {
+    if (!shown && typing) document.getElementById("typed-term")?.focus({ preventScroll: true });
+    else (shown ? back : front).current?.focus({ preventScroll: true });
+  }, [i, shown, typing]);
 
   const grade = useCallback((g: Grade) => {
     if (!id || !shown) return;
@@ -332,19 +359,20 @@ function CardSession({ queue: start, data, today, onGrade, onExit }: { queue: st
     setTally((t) => ({ ...t, [g]: t[g] + 1 }));
     if (g === "again") setQueue((q) => [...q, id]); // see it again before the session ends
     setShown(false);
+    setAnswer("");
+    setRecall(null);
     setI((n) => n + 1);
   }, [id, shown, onGrade]);
 
   useEffect(() => {
     const onKey = (ev: KeyboardEvent) => {
-      if ((ev.target as HTMLElement)?.tagName?.match(/INPUT|SELECT|TEXTAREA|BUTTON/) && ev.key !== " ") return;
-      if ((ev.key === " " || ev.key === "Enter") && !shown) { ev.preventDefault(); setShown(true); }
+      if ((ev.key === " " || ev.key === "Enter") && !shown && !typing && pageKey(ev, true)) { ev.preventDefault(); setShown(true); }
       const n = Number(ev.key);
-      if (shown && n >= 1 && n <= 4) grade(GRADES[n - 1].g);
+      if (shown && n >= 1 && n <= 4 && pageKey(ev)) grade(GRADES[n - 1].g);
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [shown, grade]);
+  }, [shown, grade, typing]);
 
   if (!e && !aid) {
     const total = Object.values(tally).reduce((a, b) => a + b, 0);
@@ -373,6 +401,7 @@ function CardSession({ queue: start, data, today, onGrade, onExit }: { queue: st
           <span className="rounded-full bg-stone-100 px-2 py-0.5 text-stone-500">{PARTS[aid ? aidPart(aid) : e!.part]}</span>
           <span className={cx("rounded-full px-2 py-0.5", aid ? "bg-teal-100 text-teal-700" : "bg-kowhai-100 text-kowhai-700")}>{aid ? "🧠 Memory aid" : LEVELS[e!.level]}</span>
         </div>
+        <div ref={front} tabIndex={-1}>
         {aid ? (
           <>
             <div className="mt-4 text-sm font-semibold uppercase tracking-wider text-stone-500">What does this help you remember, and how?</div>
@@ -386,16 +415,30 @@ function CardSession({ queue: start, data, today, onGrade, onExit }: { queue: st
               : <div className="mt-2 text-3xl font-bold tracking-tight">{e!.term}</div>}
           </>
         )}
+        </div>
 
-        {!shown ? (
+        {!shown && typing ? (
+          <form className="mt-6 flex flex-wrap gap-2" onSubmit={(ev) => { ev.preventDefault(); reveal(); }}>
+            <input id="typed-term" value={answer} onChange={(ev) => setAnswer(ev.target.value)} autoComplete="off" autoCapitalize="off" spellCheck={false}
+              placeholder="Type the term" aria-label="Type the term"
+              className="min-w-0 flex-1 basis-56 rounded-xl bg-white px-4 py-3 text-lg ring-2 ring-stone-300 focus:ring-kowhai-500 outline-none" />
+            <button type="submit" className="rounded-xl bg-ink px-5 py-3 font-bold text-white hover:bg-ink/85">Check <span className="font-normal text-stone-400">(Enter)</span></button>
+            <button type="button" onClick={() => reveal("")} className="rounded-xl px-4 py-3 font-semibold text-stone-600 ring-1 ring-stone-300 hover:bg-stone-100">I don&apos;t know</button>
+          </form>
+        ) : !shown ? (
           <button onClick={() => setShown(true)} className="mt-8 w-full rounded-xl bg-ink px-5 py-3 font-bold text-white hover:bg-ink/85">Show answer <span className="font-normal text-stone-400">(Space)</span></button>
         ) : (
-          <div className="mt-6 border-t border-stone-200 pt-5">
+          <div ref={back} tabIndex={-1} className="mt-6 border-t border-stone-200 pt-5">
+            {recall && (
+              <div role="status" className={cx("mb-4 rounded-lg px-4 py-2.5 text-[15px] font-semibold", recall === "wrong" ? "bg-rose-50 text-rose-800" : "bg-emerald-50 text-emerald-800")}>
+                {recall === "right" ? "✓ Right" : recall === "close" ? <>✓ Close enough: you typed <span className="font-mono">{answer.trim()}</span>. Check the spelling below.</> : answer.trim() ? <>✗ You typed <span className="font-mono">{answer.trim()}</span>.</> : "The answer:"}
+              </div>
+            )}
             {aid ? <MemoryAid k={aid.key} className="my-0" /> : <CardBack e={e!} reverse={reverse} />}
-            <div className="mt-6 text-sm font-semibold text-stone-600">How well did you remember it?</div>
+            <div className="mt-6 text-sm font-semibold text-stone-600">How well did you remember it?{suggested && <span className="font-normal text-stone-500"> Suggested: {suggested === "again" ? "Again, so it comes back soon" : "Good (or Easy if it came instantly)"}.</span>}</div>
             <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
               {GRADES.map(({ g, label, cls }, n) => (
-                <button key={g} onClick={() => grade(g)} className={cx("rounded-xl px-3 py-2.5 text-center font-bold", cls)}>
+                <button key={g} onClick={() => grade(g)} className={cx("rounded-xl px-3 py-2.5 text-center font-bold", cls, suggested === g && "ring-2 ring-ink")}>
                   <span className="block">{n + 1} · {label}</span>
                   <span className="block text-xs font-medium opacity-80">{intervalLabel(prev, g)}</span>
                 </button>
@@ -444,7 +487,7 @@ function Progress({ data, today, settings, onImport, onDrill, onRetry, onReset }
   // weakest drills: the lowest last score, then the most questions still to fix
   const weakDrills = DRILLS.filter((d) => data.drills[d.key] || missedBy[d.key])
     .map((d) => { const st = data.drills[d.key]; return { d, pct: st ? st.last / st.total : 1, open: missedBy[d.key] ?? 0 }; })
-    .filter((x) => x.pct < 0.8 || x.open > 0)
+    .filter((x) => x.pct < MASTERED_SCORE || x.open > 0)
     .sort((a, b) => a.pct - b.pct || b.open - a.open)
     .slice(0, 6);
   // weakest cards: forgotten most often, then still in the lowest box
@@ -530,6 +573,7 @@ function Progress({ data, today, settings, onImport, onDrill, onRetry, onReset }
       </div>
       <div className="rounded-2xl border border-stone-200 bg-white p-5">
         <h3 className="font-bold">Drills</h3>
+        <p className="text-sm text-stone-500"><strong className="num text-emerald-700">{DRILLS.filter((d) => isMastered(data, d.key)).length} of {DRILLS.length} mastered</strong>: last set {Math.round(MASTERED_SCORE * 100)}% or more and no missed questions left. Drills don&apos;t change the flashcard <em>Known</em> count, which is about recalling terms over time.</p>
         <div className="mt-3 overflow-x-auto">
           <table className="w-full min-w-[28rem] text-sm">
             <thead><tr className="border-b border-stone-200 text-left text-xs uppercase tracking-wider text-stone-500"><th className="py-1">Drill</th><th className="py-1 text-right">Tries</th><th className="py-1 text-right">Best</th><th className="py-1 text-right">Last</th></tr></thead>
@@ -538,7 +582,7 @@ function Progress({ data, today, settings, onImport, onDrill, onRetry, onReset }
                 const st = data.drills[d.key];
                 return (
                   <tr key={d.key} className="border-b border-stone-100">
-                    <td className="py-1.5">{d.icon} {d.title}</td>
+                    <td className="py-1.5">{d.icon} {d.title}{isMastered(data, d.key) && <span className="ml-1.5 text-xs font-semibold text-emerald-700">✓ Mastered</span>}</td>
                     <td className="num py-1.5 text-right">{st?.attempts ?? 0}</td>
                     <td className="num py-1.5 text-right">{st ? `${st.best}/${st.total}` : "–"}</td>
                     <td className="num py-1.5 text-right">{st ? `${st.last}/${st.total}` : "–"}</td>

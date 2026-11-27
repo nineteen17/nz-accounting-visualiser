@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { addDays, loadStudy, markStudied, schedule, streak, emptyStudy, intervalLabel, recordAnswer, dueMissed, missedKey, exportStudy, parseImport } from "@/lib/study/srs";
+import { addDays, loadStudy, markStudied, schedule, streak, emptyStudy, intervalLabel, recordAnswer, dueMissed, missedKey, exportStudy, parseImport, isMastered, type StudyData } from "@/lib/study/srs";
+import { acceptedAnswers, checkRecall } from "@/lib/study/recall";
+import { GLOSSARY } from "@/data/glossary";
 import { DRILLS, DRILL_MAP, maskTerm, plain } from "@/data/study/drills";
 import { $, $$, parseAnswer, seeded as coreSeeded, type Question } from "@/data/study/core";
 import { ADJUSTMENT_POOL, EVERYDAY_POOL, PART4_POOL, closingQuestion, entryQuestion } from "@/data/study/entries";
@@ -361,5 +363,42 @@ describe("drills", () => {
     expect(plain("A [[debit|debit]] **entry** in the [[ledger]]")).toBe("A debit entry in the ledger");
     const e = GLOSSARY_MAP["accounts-receivable"];
     expect(maskTerm(e, "Accounts receivable (debtors) are debtors.")).not.toMatch(/receivable|debtors/i);
+  });
+});
+
+describe("typed recall (meaning → term cards)", () => {
+  it("accepts the term, the short form, or either half, ignoring capitals and punctuation", () => {
+    expect(checkRecall("PAYE (Pay As You Earn)", "paye")).toBe("right");
+    expect(checkRecall("PAYE (Pay As You Earn)", "pay as you earn")).toBe("right");
+    expect(checkRecall("Accounts receivable (debtors)", "Debtors")).toBe("right");
+    expect(checkRecall("Profit & loss (Statement of Financial Performance)", "profit and loss")).toBe("right");
+    expect(checkRecall("Kōwhai", "kowhai")).toBe("right");
+    expect(checkRecall("Depreciation", "the depreciation")).toBe("right");
+  });
+  it("lets a small typo through as close, but not a different term", () => {
+    expect(checkRecall("Depreciation", "depreciaton")).toBe("close");
+    expect(checkRecall("Accrued expense", "accrued income")).toBe("wrong");
+    expect(checkRecall("Asset", "assett")).toBe("wrong"); // too short to guess at
+    expect(checkRecall("GST (Goods and Services Tax)", "gsy")).toBe("wrong");
+    expect(checkRecall("Debit (Dr)", "")).toBe("wrong");
+  });
+  it("gives every glossary term an answer that can be typed, and its own term always counts", () => {
+    for (const e of GLOSSARY) {
+      expect(acceptedAnswers(e.term).length, e.term).toBeGreaterThan(0);
+      expect(checkRecall(e.term, e.term), e.term).toBe("right");
+    }
+  });
+});
+
+describe("drills mastered", () => {
+  it("needs a last score of 80% or more and no missed questions left", () => {
+    const t = "2026-11-28";
+    let d: StudyData = { ...emptyStudy(), drills: { gst: { attempts: 1, best: 9, last: 8, total: 10, when: t } } };
+    expect(isMastered(d, "gst")).toBe(true);
+    expect(isMastered(d, "paye")).toBe(false);
+    d = recordAnswer(d, "gst", 42, false, t);
+    expect(isMastered(d, "gst")).toBe(false);
+    d = { ...d, missed: {}, drills: { gst: { attempts: 2, best: 9, last: 7, total: 10, when: t } } };
+    expect(isMastered(d, "gst")).toBe(false);
   });
 });

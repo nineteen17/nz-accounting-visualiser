@@ -63,6 +63,19 @@ export function intervalLabel(prev: CardState | undefined, grade: Grade) {
 export const isDue = (c: CardState | undefined, today: string) => !!c && c.due <= today;
 export const isKnown = (c: CardState | undefined) => !!c && c.box >= KNOWN_BOX;
 
+/** a drill is mastered when its last full set scored this much or more */
+export const MASTERED_SCORE = 0.8;
+
+/**
+ * Drills count separately from flashcards: "known" stays a flashcard idea (recalled well a week apart).
+ * A drill is mastered when the last set scored 80% or more and none of its missed questions are still open.
+ */
+export function isMastered(d: Pick<StudyData, "drills" | "missed">, drill: string) {
+  const st = d.drills[drill];
+  if (!st || !st.total || st.last / st.total < MASTERED_SCORE) return false;
+  return !Object.values(d.missed).some((m) => m.drill === drill);
+}
+
 /* ───────────── saved progress ───────────── */
 
 export interface DrillStat { attempts: number; best: number; last: number; total: number; when: string }

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { GLOSSARY_MAP } from "@/data/glossary";
 import { RichText } from "./RichText";
@@ -25,8 +25,35 @@ export function OverlayProvider({ children }: { children: ReactNode }) {
   const back = () => setStack((s) => s.slice(0, -1));
   const top = stack[stack.length - 1];
 
+  const panel = useRef<HTMLElement>(null);
+  const opener = useRef<HTMLElement | null>(null);
+  const open = stack.length > 0;
+  // keyboard users: focus moves into the explainer when it opens, and back to what opened it when it closes
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setStack([]);
+    if (open) {
+      opener.current = document.activeElement as HTMLElement | null;
+      requestAnimationFrame(() => panel.current?.focus());
+    } else {
+      opener.current?.focus?.();
+      opener.current = null;
+    }
+  }, [open]);
+  // each new panel (a term linked from a term) starts at its top
+  useEffect(() => { if (stack.length) panel.current?.focus(); }, [stack.length]);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setStack([]);
+      // Tab cycles within the explainer while it's open
+      if (e.key === "Tab" && panel.current) {
+        const items = [...panel.current.querySelectorAll<HTMLElement>("a[href], button:not(:disabled), summary, input, [tabindex='0']")];
+        if (!items.length) return;
+        const first = items[0], last = items[items.length - 1];
+        const inside = panel.current.contains(document.activeElement);
+        if (e.shiftKey && (document.activeElement === first || document.activeElement === panel.current || !inside)) { e.preventDefault(); last.focus(); }
+        else if (!e.shiftKey && (document.activeElement === last || !inside)) { e.preventDefault(); first.focus(); }
+      }
+    };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, []);
@@ -47,8 +74,11 @@ export function OverlayProvider({ children }: { children: ReactNode }) {
             />
             <motion.aside
               key="panel"
+              ref={panel}
+              tabIndex={-1}
               role="dialog"
               aria-modal="true"
+              aria-label={top.kind === "term" ? `Explainer: ${GLOSSARY_MAP[top.key]?.term ?? top.key}` : top.title}
               className="fixed right-0 top-0 z-50 flex h-full w-full max-w-xl flex-col bg-white shadow-2xl"
               initial={{ x: "100%" }}
               animate={{ x: 0 }}

@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { PAY_RUNS } from "@/data/books/year";
 import { EMPLOYEES } from "@/data/business";
-import { ACC_EARNERS_LEVY, ESCT_BANDS, HOLIDAYS, IETC, INDIVIDUAL_TAX_BRACKETS, KIWISAVER, MINIMUM_WAGE, STUDENT_LOAN } from "@/lib/nz/rates";
+import { ACC_EARNERS_LEVY, CURRENT_PAYROLL, ESCT_BANDS, HOLIDAYS, IETC, INDIVIDUAL_TAX_BRACKETS, KIWISAVER, MINIMUM_WAGE, STUDENT_LOAN } from "@/lib/nz/rates";
 import { TAX_CODES, esctRateFor, ietcFor, progressiveTax, type TaxCode } from "@/lib/nz/payroll";
 import { money, pct, r2 } from "@/lib/money";
 import { cx } from "@/lib/ui";
@@ -27,7 +27,7 @@ export function PayeTopic() {
   const [freq, setFreq] = useState(26);
   const [code, setCode] = useState<TaxCode>("ME");
   const [sl, setSl] = useState(true);
-  const [ks, setKs] = useState(0.035);
+  const [ks, setKs] = useState(KIWISAVER.employeeDefault);
   const annual = gross * freq;
   const flat = TAX_CODES[code].flat;
   const pt = progressiveTax(annual);
@@ -73,7 +73,7 @@ export function PayeTopic() {
             <div><strong className="inline-block w-12">+ SL</strong>Has a student loan: deduct {pct(STUDENT_LOAN.rate)} of earnings over {money(STUDENT_LOAN.annualThreshold, { dp: 0 })}/yr.</div>
           </div>
                   <UsNote>
-            <p>There&apos;s no <strong>FICA</strong> (Social Security and Medicare) in NZ, and the employer pays no social-security tax or unemployment tax on wages. The employee&apos;s <strong>PAYE</strong> covers income tax and the ACC earners&apos; levy. The employer&apos;s extra cost is the compulsory <strong>3.5% KiwiSaver</strong> contribution (and the annual ACC work levy).</p>
+            <p>There&apos;s no <strong>FICA</strong> (Social Security and Medicare) in NZ, and the employer pays no social-security tax or unemployment tax on wages. The employee&apos;s <strong>PAYE</strong> covers income tax and the ACC earners&apos; levy. The employer&apos;s extra cost is the compulsory <strong>{pct(KIWISAVER.employerMinimum)} KiwiSaver</strong> contribution (and the annual ACC work levy).</p>
             <p>Instead of a <strong>W-4</strong>, NZ employees fill in an <strong>IR330</strong>. Instead of a year-end <strong>W-2</strong>, employers report every pay run to IRD through payday filing. And most NZ employees never file a tax return, because PAYE is designed to deduct exactly the right amount.</p>
           </UsNote>
         </div>
@@ -153,8 +153,8 @@ export function KiwiSaverTopic() {
         <p><Term k="kiwisaver">KiwiSaver</Term> is NZ&apos;s workplace retirement savings scheme. New employees aged 18–65 are automatically enrolled and can opt out between weeks 2 and 8.</p>
         <h3>Contribution rates (from 1 April 2026)</h3>
         <ul>
-          <li><strong>Employee</strong>: chooses {KIWISAVER.otherEmployeeRates.map((r) => pct(r)).join(", ")} of gross pay. The default rose from 3% to <strong>3.5%</strong> on 1 April 2026 and will be 4% from {KIWISAVER.futureRate.from}. Employees can apply for a temporary rate reduction to stay at 3%.</li>
-          <li><strong>Employer</strong>: at least <strong>3.5%</strong> of gross pay on top of wages, for members aged 16 and over who are contributing.</li>
+          <li><strong>Employee</strong>: chooses {KIWISAVER.otherEmployeeRates.map((r) => pct(r)).join(", ")} of gross pay. The default rose from {pct(KIWISAVER.previousDefault)} to <strong>{pct(KIWISAVER.employeeDefault)}</strong> on 1 April 2026 and will be 4% from {KIWISAVER.futureRate.from}. Employees can apply for a temporary rate reduction to stay at {pct(KIWISAVER.previousDefault)}.</li>
+          <li><strong>Employer</strong>: at least <strong>{pct(KIWISAVER.employerMinimum)}</strong> of gross pay on top of wages, for members aged 16 and over who are contributing.</li>
           <li>The test is the <strong>pay date</strong>: pays dated on or after 1 April 2026 use the new rate.</li>
         </ul>
         <h3>ESCT: tax on the employer contribution</h3>
@@ -180,7 +180,7 @@ export function KiwiSaverTopic() {
           </tbody>
         </table>
         <div className="mt-4 rounded-lg bg-stone-50 p-3 text-sm">
-          <div className="flex justify-between"><span>Employer contribution 3.5%</span><span className="num">{money(er)}/yr</span></div>
+          <div className="flex justify-between"><span>Employer contribution {pct(KIWISAVER.employerMinimum)}</span><span className="num">{money(er)}/yr</span></div>
           <div className="flex justify-between"><span>ESCT @ {pct(rate)}</span><span className="num">−{money(er * rate)}</span></div>
           <div className="flex justify-between font-semibold"><span>Reaches the KiwiSaver account</span><span className="num">{money(er * (1 - rate))}</span></div>
         </div>
@@ -274,7 +274,7 @@ export function AccTopic() {
     <div className="prose-learn max-w-4xl text-[16px]">
       <p>ACC (the Accident Compensation Corporation) provides no-fault injury cover for everyone in NZ. Businesses meet it in two ways:</p>
       <h2>1. Earners&apos; levy: through PAYE</h2>
-      <p>Funds non-work injury cover for employees. It&apos;s included in PAYE: {pct(ACC_EARNERS_LEVY.rate, 2)} of earnings (incl GST) for 2026–27, up to maximum liable earnings of {money(ACC_EARNERS_LEVY.maxLiableEarnings, { dp: 0 })}. The employer just deducts it with PAYE. There&apos;s no separate entry.</p>
+      <p>Funds non-work injury cover for employees. It&apos;s included in PAYE: {pct(ACC_EARNERS_LEVY.rate, 2)} of earnings (incl GST) for {CURRENT_PAYROLL.year}, up to maximum liable earnings of {money(ACC_EARNERS_LEVY.maxLiableEarnings, { dp: 0 })}. The employer just deducts it with PAYE. There&apos;s no separate entry.</p>
       <h2>2. Work levy: invoiced to the business</h2>
       <p>Covers workplace injuries. ACC invoices the business once a year based on total payroll (and, for shareholder-employees, their shareholder salaries) and the business&apos;s <strong>levy risk classification</strong> (cafés have their own code). There&apos;s also the Working Safer levy.</p>
       <ul>

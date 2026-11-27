@@ -4,7 +4,8 @@ import { ALL as Y1_ALL, BEFORE_CLOSING as Y1_BEFORE, NET_PROFIT as Y1_NET } from
 import * as Y2 from "@/data/books/year2";
 import { balances } from "@/lib/engine/ledger";
 import { profitAndLoss } from "@/lib/engine/statements";
-import { money, nzDate } from "@/lib/money";
+import { money, nzDate, pct } from "@/lib/money";
+import { KIWISAVER, MINIMUM_WAGE, PAYROLL_2026_27, PAYROLL_2027_28 as Y2R, PROVISIONAL_TAX, RWT } from "@/lib/nz/rates";
 import { ChangesInEquityY2, ComparativeBS, ComparativeCashFlow, ComparativePL } from "@/components/visual/Comparatives";
 import { TaxRecView } from "@/components/cycle/steps/End";
 import { Callout, UsNote } from "@/components/learn/bits";
@@ -71,7 +72,7 @@ export default function SecondYearPage() {
             ["Annual leave taken", "Mia takes the leave she earned last year. It's paid out of the holiday pay accrual, not expensed again. For tax, it's deductible now that it's paid.", `/on-the-job?year=2&step=PAY-2027-07-28`],
             ["Selling an asset", `The old POS system sells for ${money(Y2.DISPOSAL.price, { dp: 0 })}: a ${money(Y2.DISPOSAL.accountingGain, { dp: 0 })} gain in the accounts, ${money(Y2.DISPOSAL.recovered, { dp: 0 })} of depreciation recovery for tax.`, "/on-the-job?year=2&step=B10"],
             ["A dividend", `${money(Y2.DIVIDEND.cash, { dp: 0 })} cash, fully imputed (${money(Y2.DIVIDEND.ic, { dp: 0 })} of credits), with ${money(Y2.DIVIDEND.rwt, { dp: 0 })} of dividend RWT. The directors sign a solvency certificate first.`, "/on-the-job?year=2&step=B17"],
-            ["Pay rises & new levy rate", "Mia $27/hr and Leo $25.50/hr. The ACC earners' levy rises to 1.83% on 1 April 2027.", "/on-the-job?year=2&step=PAY-2027-04-21"],
+            ["Pay rises & new levy rate", `Mia $27/hr and Leo $25.50/hr. The ACC earners' levy rises to ${pct(Y2R.acc.rate, 2)} on 1 April 2027.`, "/on-the-job?year=2&step=PAY-2027-04-21"],
             ["Comparatives", "Every statement shows last year beside this year, so the reader can see what changed.", "#statements"],
           ].map(([t, d, href]) => (
             <Link key={t} href={href} className="group rounded-2xl border border-stone-200 bg-white p-5 transition hover:border-kowhai-500">
@@ -155,7 +156,7 @@ export default function SecondYearPage() {
         <div className="mt-3 max-w-3xl"><UsNote>US tax also &quot;recaptures&quot; depreciation on a sale, but US rules let you depreciate in the year of sale (under the MACRS conventions). NZ allows no tax depreciation in the year an asset is sold.</UsNote></div>
       </Section>
 
-      <Callout kind="nz" title="Rates used in year 2">ACC earners&apos; levy 1.83% (max liable earnings $160,244) from 1 April 2027; KiwiSaver stays 3.5% until 1 April 2028; dividend RWT 33%; provisional tax standard uplift 5%. The minimum wage from 1 April 2027 hadn&apos;t been announced when this was written; both staff are paid above $23.95. Individual tax brackets and the student loan threshold ($24,128) are assumed unchanged.</Callout>
+      <Callout kind="nz" title="Rates used in year 2">ACC earners&apos; levy {pct(Y2R.acc.rate, 2)} (max liable earnings {money(Y2R.acc.maxLiableEarnings, { dp: 0 })}) from 1 April 2027; KiwiSaver stays {pct(Y2R.kiwiSaver.employerMinimum)} until {KIWISAVER.futureRate.from}; dividend RWT {pct(RWT.dividendRate, 0)}; provisional tax standard uplift {pct(PROVISIONAL_TAX.standardUplift, 0)}. Both staff are paid above the adult minimum wage ({money(MINIMUM_WAGE.adult)} from {MINIMUM_WAGE.from}).{Y2R.toConfirm.length > 0 && <> Not yet announced for {Y2R.year} when this was written, so carried forward from {PAYROLL_2026_27.year}: {Y2R.toConfirm.join(", ")}.</>}</Callout>
     </div>
   );
 }

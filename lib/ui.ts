@@ -9,4 +9,17 @@ export const TYPE_STYLE: Record<AccountType, { bg: string; soft: string; text: s
   expense: { bg: "bg-amber-600", soft: "bg-amber-50", text: "text-amber-800", border: "border-amber-300", bar: "#d97706", label: "Expense" },
 };
 
+/**
+ * Is this key press meant for the page's own shortcuts? Not when typing in a field, not inside an open
+ * explainer, and not with Ctrl/Alt/Cmd (browser shortcuts such as Alt+← for Back).
+ * `activates`: for Enter and Space, which already press a focused button or link.
+ */
+export function pageKey(ev: KeyboardEvent, activates = false) {
+  if (ev.ctrlKey || ev.metaKey || ev.altKey) return false;
+  const t = ev.target instanceof Element ? ev.target : null;
+  if (t?.closest("input, textarea, select, [contenteditable], [role=dialog]")) return false;
+  if (activates && t?.closest("button, a, summary")) return false;
+  return true;
+}
+
 export const cx = (...xs: (string | number | false | null | undefined)[]) => xs.filter(Boolean).join(" ");

@@ -1,7 +1,10 @@
 /**
  * Every NZ rate and threshold the app uses lives in this one file.
- * Figures are for the 2026–27 income year (1 April 2026 – 31 March 2027),
- * which is the year Kōwhai Café Ltd trades in.
+ * Figures are for the 2026–27 income year (1 April 2026 – 31 March 2027), Kōwhai Café Ltd's
+ * first year. Payroll rates have one set per income year (see PAYROLL_2026_27 / PAYROLL_2027_28):
+ * the café's books use the set for their own dates, and the lessons use CURRENT_PAYROLL.
+ * Lesson text reads figures from here too, so a change here is the only change needed
+ * (tests/rates.test.ts fails if a figure gets typed in somewhere else).
  *
  * Checked November 2026. Rates change every year, so always confirm on
  * ird.govt.nz / employment.govt.nz / acc.co.nz before relying on them.
@@ -17,60 +20,92 @@ export const GST = {
   source: "https://www.ird.govt.nz/gst",
 };
 
-/** Individual income tax brackets (unchanged since 1 April 2025) */
-export const INDIVIDUAL_TAX_BRACKETS: { upTo: number; rate: number }[] = [
-  { upTo: 15_600, rate: 0.105 },
-  { upTo: 53_500, rate: 0.175 },
-  { upTo: 78_100, rate: 0.3 },
-  { upTo: 180_000, rate: 0.33 },
-  { upTo: Infinity, rate: 0.39 },
-];
-
+/** Company income tax rate */
 export const COMPANY_TAX_RATE = 0.28;
 
-/** Independent earner tax credit: $10/week ($520/yr) for $24,000–$70,000, abating from $66,000 */
-export const IETC = { annual: 520, from: 24_000, abateFrom: 66_000, to: 70_000, abatementRate: 0.13 };
+/* ───────────── payroll rates, one set per income year ─────────────
+ *
+ * Payroll figures change on 1 April. Each income year has its own set, and each of the café's
+ * years uses the set for its own dates, so new rates never rewrite an earlier year's books.
+ *
+ * When a new year's rates are announced:
+ *   1. fill in (or correct) that year's set below and empty its `toConfirm` list;
+ *   2. from 1 April, point CURRENT_PAYROLL at it: the lessons, calculators and drills follow.
+ */
 
-/** ACC earners' levy 2026–27: $1.75 per $100 incl GST, capped at max liable earnings */
+export interface PayrollRates {
+  /** income year, 1 April – 31 March */
+  year: string;
+  /** individual income tax brackets */
+  brackets: { upTo: number; rate: number }[];
+  /** independent earner tax credit: $10/week for $24,000–$70,000, abating from $66,000 */
+  ietc: { annual: number; from: number; abateFrom: number; to: number; abatementRate: number };
+  /** ACC earners' levy (per $1 of earnings, incl GST), capped at max liable earnings */
+  acc: { rate: number; maxLiableEarnings: number };
+  studentLoan: { rate: number; annualThreshold: number; fortnightlyThreshold: number; weeklyThreshold: number };
+  /** KiwiSaver default employee rate and compulsory employer minimum */
+  kiwiSaver: { employeeDefault: number; employerMinimum: number };
+  /** ESCT bands: employee's salary + gross employer contributions for the previous year */
+  esct: { upTo: number; rate: number }[];
+  /** figures carried forward from the year before because they hadn't been announced yet */
+  toConfirm: string[];
+}
+
+export const PAYROLL_2026_27: PayrollRates = {
+  year: "2026–27",
+  // unchanged since 1 April 2025
+  brackets: [
+    { upTo: 15_600, rate: 0.105 },
+    { upTo: 53_500, rate: 0.175 },
+    { upTo: 78_100, rate: 0.3 },
+    { upTo: 180_000, rate: 0.33 },
+    { upTo: Infinity, rate: 0.39 },
+  ],
+  ietc: { annual: 520, from: 24_000, abateFrom: 66_000, to: 70_000, abatementRate: 0.13 },
+  // $1.75 per $100
+  acc: { rate: 0.0175, maxLiableEarnings: 156_641 },
+  studentLoan: { rate: 0.12, annualThreshold: 24_128, fortnightlyThreshold: 928, weeklyThreshold: 464 },
+  // the default rose from 3% to 3.5% on 1 April 2026
+  kiwiSaver: { employeeDefault: 0.035, employerMinimum: 0.035 },
+  esct: [
+    { upTo: 18_720, rate: 0.105 },
+    { upTo: 64_200, rate: 0.175 },
+    { upTo: 93_720, rate: 0.3 },
+    { upTo: 216_000, rate: 0.33 },
+    { upTo: Infinity, rate: 0.39 },
+  ],
+  toConfirm: [],
+};
+
+/** the café's second year. ACC's levy was set for 2025–28; KiwiSaver stays 3.5% until 1 April 2028 */
+export const PAYROLL_2027_28: PayrollRates = {
+  ...PAYROLL_2026_27,
+  year: "2027–28",
+  // $1.83 per $100
+  acc: { rate: 0.0183, maxLiableEarnings: 160_244 },
+  toConfirm: ["tax brackets", "IETC", "student loan threshold", "ESCT bands"],
+};
+
+/** the income year the lessons, calculators and drills teach: move it on each 1 April */
+export const CURRENT_PAYROLL = PAYROLL_2026_27;
+
+/* the current year's figures, under the names the lessons use */
+
+export const INDIVIDUAL_TAX_BRACKETS = CURRENT_PAYROLL.brackets;
+export const IETC = CURRENT_PAYROLL.ietc;
 export const ACC_EARNERS_LEVY = {
-  rate: 0.0175,
-  rateExGst: 0.0152,
-  maxLiableEarnings: 156_641,
+  ...CURRENT_PAYROLL.acc,
   source: "https://www.acc.co.nz/for-business/received-an-invoice/calculate-your-levies/",
 };
-
-/** ACC earners' levy 2027–28 (used for the café's second year): $1.83 per $100, max liable earnings $160,244 */
-export const ACC_EARNERS_LEVY_2027_28 = {
-  rate: 0.0183,
-  maxLiableEarnings: 160_244,
-  source: "https://www.ird.govt.nz/income-tax/income-tax-for-individuals/acc-clients-and-carers/acc-earners-levy-rates",
-};
-
-/** KiwiSaver default minimum contribution rose from 3% to 3.5% on 1 April 2026 (4% from 1 April 2028) */
 export const KIWISAVER = {
-  employeeDefault: 0.035,
-  employerMinimum: 0.035,
+  ...CURRENT_PAYROLL.kiwiSaver,
   otherEmployeeRates: [0.035, 0.04, 0.06, 0.08, 0.1],
+  previousDefault: 0.03,
   futureRate: { rate: 0.04, from: "1 April 2028" },
   source: "https://www.ird.govt.nz/kiwisaver-changes",
 };
-
-/** ESCT bands: based on employee's salary + gross employer contributions for the previous year */
-export const ESCT_BANDS: { upTo: number; rate: number }[] = [
-  { upTo: 18_720, rate: 0.105 },
-  { upTo: 64_200, rate: 0.175 },
-  { upTo: 93_720, rate: 0.3 },
-  { upTo: 216_000, rate: 0.33 },
-  { upTo: Infinity, rate: 0.39 },
-];
-
-export const STUDENT_LOAN = {
-  rate: 0.12,
-  annualThreshold: 24_128,
-  fortnightlyThreshold: 928,
-  weeklyThreshold: 464,
-  source: "https://www.ird.govt.nz/student-loans",
-};
+export const ESCT_BANDS = CURRENT_PAYROLL.esct;
+export const STUDENT_LOAN = { ...CURRENT_PAYROLL.studentLoan, source: "https://www.ird.govt.nz/student-loans" };
 
 export const MINIMUM_WAGE = {
   adult: 23.95,
@@ -78,6 +113,8 @@ export const MINIMUM_WAGE = {
   training: 19.16,
   from: "1 April 2026",
   previousAdult: 23.5,
+  /** starting-out and training rates are 80% of the adult rate */
+  youthShare: 0.8,
   source: "https://www.employment.govt.nz/pay-and-hours/pay-and-wages/minimum-wage",
 };
 
@@ -93,7 +130,8 @@ export const PROVISIONAL_TAX = {
   ritThreshold: 5_000,
   standardUplift: 0.05,
   safeHarbourRit: 60_000,
-  /** use-of-money interest from 16 January 2026 */
+  /** use-of-money interest from 16 January 2026 (IRD reviews these rates through the year) */
+  uomiFrom: "16 January 2026",
   uomiUnderpaid: 0.0897,
   uomiOverpaid: 0.0225,
   /** 31 March balance date, standard / estimation method */

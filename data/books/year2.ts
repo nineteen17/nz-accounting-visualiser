@@ -8,11 +8,11 @@
 import type { JournalLine, Transaction } from "@/lib/engine/types";
 import { balances, byDate, type Balances } from "@/lib/engine/ledger";
 import { GST_PERIODS, gstPeriodsFor, gstReturn } from "@/lib/engine/gst";
-import { r2, nzDate } from "@/lib/money";
+import { pct, r2, nzDate } from "@/lib/money";
 import { assetYear, assetYearOne, disposal, type FixedAsset } from "@/lib/nz/assets";
 import { calcPay, type Employee } from "@/lib/nz/payroll";
 import { taxFromItems, type TaxAssetRow, type TaxItem } from "@/lib/nz/incomeTax";
-import { ACC_EARNERS_LEVY_2027_28, COMPANY_TAX_RATE, PROVISIONAL_TAX, RWT } from "@/lib/nz/rates";
+import { MINIMUM_WAGE, PAYROLL_2027_28, COMPANY_TAX_RATE, PROVISIONAL_TAX, RWT } from "@/lib/nz/rates";
 import { ACCOUNTS } from "../chartOfAccounts";
 import { BUSINESS, CUSTOMERS, EMPLOYEES, FIXED_ASSETS, SHAREHOLDERS } from "../business";
 import { ADJUSTMENTS as Y1_ADJUSTMENTS, ALL as Y1_ALL, NET_PROFIT as Y1_NET_PROFIT, TAX as Y1_TAX, YEAR_FACTS as Y1_FACTS } from "./index";
@@ -60,7 +60,7 @@ export const YEAR2: YearConfig = {
   firstPayDate: "2027-04-07",
   employeesOn: (date) => (date < RAISE_FROM ? EMPLOYEES : RAISED),
   hoursFor: (id, date) => (id === "mia" ? 80 : LEO_HOURS[date.slice(5, 7)]),
-  acc: ACC_EARNERS_LEVY_2027_28,
+  rates: PAYROLL_2027_28,
   payId: (_, date) => `PAY-${date}`,
   openingHolidayAccrual: Y1_FACTS.holidayAccrual,
   payExtras: {
@@ -71,7 +71,7 @@ export const YEAR2: YearConfig = {
     },
     "2027-04-21": {
       title: "Pay rises take effect",
-      story: "Aroha gives both staff a pay rise from the pay period starting 6 April: Mia $26 → $27 an hour and Leo $24.50 → $25.50. Both are above the adult minimum wage. (The rate from 1 April 2027 hadn't been announced when this example was written, so this assumes it stays at or below $23.95.)",
+      story: `Aroha gives both staff a pay rise from the pay period starting 6 April: Mia $26 → $27 an hour and Leo $24.50 → $25.50. Both are above the adult minimum wage (${money2(MINIMUM_WAGE.adult)} an hour from ${MINIMUM_WAGE.from}).`,
     },
     [LEAVE_DATES[0]]: {
       title: "Mia takes annual leave",
@@ -485,10 +485,10 @@ const prepaidIns = 1_300;
 
 const ACCRUAL_DAYS = 11; // 21–31 March worked, paid 5 April 2028
 const lastRun = RUNS[RUNS.length - 1];
-const fortnight = RAISED.map((e) => calcPay(e, YEAR2.hoursFor(e.id, "2028-04-05"), YEAR2.acc));
+const fortnight = RAISED.map((e) => calcPay(e, YEAR2.hoursFor(e.id, "2028-04-05"), YEAR2.rates));
 const fortnightGross = r2(fortnight.reduce((s, p) => s + p.gross, 0));
 const accruedGross = r2(fortnightGross * (ACCRUAL_DAYS / 14));
-const accruedKs = r2(accruedGross * 0.035);
+const accruedKs = r2(accruedGross * YEAR2.rates.kiwiSaver.employerMinimum);
 
 const miaYearGross = r2(RUNS.reduce((s, run) => s + run.results[0].gross, 0));
 const miaAccruedGross = r2(fortnight[0].gross * (ACCRUAL_DAYS / 14));
@@ -544,8 +544,8 @@ const ADJ_BEFORE_TAX: Transaction[] = [
   adj({
     id: "Y2-ADJ04",
     title: `Accrued wages for 21–31 March`,
-    story: `The next pay (5 April 2028) covers 21 March – 3 April. ${ACCRUAL_DAYS} of those days are in this year: ${money2(accruedGross)} of wages (${ACCRUAL_DAYS}/14 of a fortnight at the new rates) plus 3.5% employer KiwiSaver.`,
-    doc: { kind: "internal", title: "Wages accrual working", issuer: BUSINESS.name, date: YE, rows: [{ label: "Fortnightly gross (Mia + Leo)", value: money2(fortnightGross) }, { label: `× ${ACCRUAL_DAYS}/14 days`, value: money2(accruedGross) }, { label: "Employer KiwiSaver 3.5%", value: money2(accruedKs) }, { label: "Total accrued", value: money2(accruedGross + accruedKs), strong: true }] },
+    story: `The next pay (5 April 2028) covers 21 March – 3 April. ${ACCRUAL_DAYS} of those days are in this year: ${money2(accruedGross)} of wages (${ACCRUAL_DAYS}/14 of a fortnight at the new rates) plus ${pct(YEAR2.rates.kiwiSaver.employerMinimum)} employer KiwiSaver.`,
+    doc: { kind: "internal", title: "Wages accrual working", issuer: BUSINESS.name, date: YE, rows: [{ label: "Fortnightly gross (Mia + Leo)", value: money2(fortnightGross) }, { label: `× ${ACCRUAL_DAYS}/14 days`, value: money2(accruedGross) }, { label: `Employer KiwiSaver ${pct(YEAR2.rates.kiwiSaver.employerMinimum)}`, value: money2(accruedKs) }, { label: "Total accrued", value: money2(accruedGross + accruedKs), strong: true }] },
     lines: [
       { account: "600", debit: accruedGross },
       { account: "601", debit: accruedKs },

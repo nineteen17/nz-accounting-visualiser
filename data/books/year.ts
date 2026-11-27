@@ -1,6 +1,6 @@
 import type { Transaction } from "@/lib/engine/types";
 import { r2 } from "@/lib/money";
-import { ACC_EARNERS_LEVY } from "@/lib/nz/rates";
+import { PAYROLL_2026_27 } from "@/lib/nz/rates";
 import { BUSINESS, CUSTOMERS, EMPLOYEES, MONTHLY_SALES } from "../business";
 import { buyLines, money2, monthsBetween, salesInvoice, supplierInvoice } from "./helpers";
 import { monthlyRoutine, payePayments, payRuns, payrollTxns, supplierPayments as payAll, type YearConfig } from "./generator";
@@ -22,7 +22,7 @@ export const YEAR1: YearConfig = {
   firstPayDate: "2026-04-22",
   employeesOn: () => EMPLOYEES,
   hoursFor: (id, date) => (id === "mia" ? MIA_HOURS : LEO_HOURS[date.slice(5, 7)]),
-  acc: ACC_EARNERS_LEVY,
+  rates: PAYROLL_2026_27,
   payId: (i) => `PAY-${String(i + 1).padStart(2, "0")}`,
   sales: MONTHLY_SALES,
   skipRoutineMonths: ["2026-04"], // the rest of April is featured, entry by entry

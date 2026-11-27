@@ -1,13 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ACCOUNTS } from "@/data/chartOfAccounts";
 import { DRILL_MAP } from "@/data/study/drills";
 import { $, formatAnswer, isRight, newSeed, parseAnswer, seeded, shuffle, type ChoiceQ, type EntryQ, type NumberQ, type OrderQ, type Question } from "@/data/study/core";
 import { RichText } from "@/components/learn/RichText";
 import { SourceDoc } from "@/components/documents/SourceDoc";
-import { cx } from "@/lib/ui";
+import { cx, pageKey } from "@/lib/ui";
 
 const ACC = Object.fromEntries(ACCOUNTS.map((a) => [a.code, a]));
 const sig = (q: Question) => q.prompt + (q.kind === "choice" ? q.options[q.answer] : q.kind === "number" ? q.answer : q.kind === "order" ? q.items.join("|") : "");
@@ -67,6 +67,11 @@ export function DrillRun({ title, icon, items: start, mixed, learn, onAnswer, on
   const [results, setResults] = useState<boolean[]>([]);
   const q = qs[i];
   const it = items[i];
+  const promptRef = useRef<HTMLDivElement>(null);
+  const nextRef = useRef<HTMLButtonElement>(null);
+  // keyboard and screen-reader users start each question at its prompt (a typed answer focuses its own box)
+  useEffect(() => { if (q && q.kind !== "number") promptRef.current?.focus({ preventScroll: true }); }, [i, q]);
+  useEffect(() => { if (result !== null) nextRef.current?.focus(); }, [result]);
 
   const answer = useCallback((right: boolean) => {
     setResult(right);
@@ -83,7 +88,7 @@ export function DrillRun({ title, icon, items: start, mixed, learn, onAnswer, on
 
   useEffect(() => {
     const onKey = (ev: KeyboardEvent) => {
-      if (ev.key === "Enter" && result !== null) { ev.preventDefault(); next(); }
+      if (ev.key === "Enter" && result !== null && pageKey(ev, true)) { ev.preventDefault(); next(); }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -138,16 +143,16 @@ export function DrillRun({ title, icon, items: start, mixed, learn, onAnswer, on
       <div className="mb-4 h-1.5 overflow-hidden rounded-full bg-stone-200"><div className="h-full bg-kowhai-400 transition-all" style={{ width: `${(i / qs.length) * 100}%` }} /></div>
       <div className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm sm:p-8">
         {mixed && <div className="mb-2 text-xs font-semibold uppercase tracking-wider text-stone-500">{d.icon} {d.title}</div>}
-        <div className="text-lg leading-relaxed"><RichText text={q.prompt} /></div>
+        <div ref={promptRef} tabIndex={-1} className="text-lg leading-relaxed"><RichText text={q.prompt} /></div>
         {q.kind === "choice" && <ChoiceView key={i} q={q} onAnswer={answer} />}
         {q.kind === "number" && <NumberView key={i} q={q} onAnswer={answer} />}
         {q.kind === "entry" && <EntryView key={i} q={q} hard={hard} onHard={setHard} onAnswer={answer} />}
         {q.kind === "order" && <OrderView key={i} q={q} seed={it.seed} onAnswer={answer} />}
         {result !== null && (
-          <div className={cx("mt-5 rounded-xl px-4 py-3 text-[15px] leading-relaxed", result ? "bg-emerald-50" : "bg-rose-50")}>
+          <div role="status" className={cx("mt-5 rounded-xl px-4 py-3 text-[15px] leading-relaxed", result ? "bg-emerald-50" : "bg-rose-50")}>
             <div className={cx("font-bold", result ? "text-emerald-800" : "text-rose-800")}>{result ? "✓ Right" : q.kind === "entry" || q.kind === "order" ? "✗ Not quite: the right answer is shown above" : `✗ Not quite: it's ${answerText(q)}`}</div>
             <div className="mt-1 text-stone-700"><RichText text={q.explain} /></div>
-            <button onClick={next} className="mt-3 rounded-xl bg-ink px-5 py-2 font-bold text-white hover:bg-ink/85">{i + 1 >= qs.length ? "See your score →" : "Next →"} <span className="font-normal text-stone-400">(Enter)</span></button>
+            <button ref={nextRef} onClick={next} className="mt-3 rounded-xl bg-ink px-5 py-2 font-bold text-white hover:bg-ink/85">{i + 1 >= qs.length ? "See your score →" : "Next →"} <span className="font-normal text-stone-400">(Enter)</span></button>
           </div>
         )}
       </div>
@@ -166,9 +171,15 @@ function OrderView({ q, seed, onAnswer }: { q: OrderQ; seed: number; onAnswer: (
     return o;
   });
   const [done, setDone] = useState(false);
+  const [moved, setMoved] = useState("");
+  const list = useRef<HTMLOListElement>(null);
   const move = (from: number, to: number) => {
     if (done || to < 0 || to >= order.length) return;
+    const x = order[from];
     setOrder((o) => { const a = [...o]; [a[from], a[to]] = [a[to], a[from]]; return a; });
+    setMoved(`"${q.items[x]}" moved to step ${to + 1} of ${order.length}`);
+    // at the top or bottom that arrow turns off, so keep focus on the step with its other arrow
+    if (to === 0 || to === order.length - 1) requestAnimationFrame(() => list.current?.querySelector<HTMLButtonElement>(`[data-step="${x}"] button:not(:disabled)`)?.focus());
   };
   const check = () => {
     if (done) return;
@@ -178,9 +189,10 @@ function OrderView({ q, seed, onAnswer }: { q: OrderQ; seed: number; onAnswer: (
   return (
     <div className="mt-5">
       <div className="mb-2 text-sm text-stone-500">Use the arrows to move each step up or down, first at the top.</div>
-      <ol className="space-y-2">
+      <div aria-live="polite" className="sr-only">{moved}</div>
+      <ol ref={list} className="space-y-2">
         {order.map((x, n) => (
-          <li key={x} className={cx("flex items-center gap-2 rounded-xl px-3 py-2 ring-1", !done ? "bg-white ring-stone-300" : x === n ? "bg-emerald-50 ring-emerald-400" : "bg-rose-50 ring-rose-300")}>
+          <li key={x} data-step={x} className={cx("flex items-center gap-2 rounded-xl px-3 py-2 ring-1", !done ? "bg-white ring-stone-300" : x === n ? "bg-emerald-50 ring-emerald-400" : "bg-rose-50 ring-rose-300")}>
             <span className="num w-5 shrink-0 text-sm font-bold text-stone-400">{n + 1}</span>
             <span className="min-w-0 flex-1 text-[15px]">{q.items[x]}</span>
             {done ? (
@@ -215,7 +227,7 @@ function ChoiceView({ q, onAnswer }: { q: ChoiceQ; onAnswer: (right: boolean) =>
     onAnswer(n === q.answer);
   }, [picked, q, onAnswer]);
   useEffect(() => {
-    const onKey = (ev: KeyboardEvent) => { const n = Number(ev.key); if (n >= 1 && n <= 4) choose(n - 1); };
+    const onKey = (ev: KeyboardEvent) => { const n = Number(ev.key); if (n >= 1 && n <= 4 && pageKey(ev)) choose(n - 1); };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [choose]);
@@ -328,15 +340,20 @@ function EntryView({ q, hard, onHard, onAnswer }: { q: EntryQ; hard: boolean; on
               </div>
               <div className="flex overflow-hidden rounded-lg ring-1 ring-stone-300">
                 {(["debit", "credit"] as const).map((s) => (
-                  <button key={s} disabled={done} onClick={() => set(c, { side: r.side === s ? "" : s })}
+                  <button key={s} disabled={done} aria-pressed={r.side === s} aria-label={`${s === "debit" ? "Debit" : "Credit"} ${ACC[c].name}`}
+                    onClick={() => {
+                      set(c, { side: r.side === s ? "" : s });
+                      // picking a side opens the amount box: go straight to it
+                      if (r.side !== s) requestAnimationFrame(() => document.getElementById(`amt-${c}`)?.focus());
+                    }}
                     className={cx("px-3 py-1.5 text-sm font-semibold", r.side === s ? (s === "debit" ? "bg-sky-600 text-white" : "bg-violet-600 text-white") : "bg-white text-stone-600 hover:bg-stone-100")}>
                     {s === "debit" ? "Dr" : "Cr"}
                   </button>
                 ))}
               </div>
-              <label className={cx("flex items-center rounded-lg px-2 ring-1", r.side ? "bg-white ring-stone-300" : "bg-stone-50 ring-stone-200")}>
+              <label className={cx("flex items-center rounded-lg px-2 ring-1 focus-within:ring-2 focus-within:ring-kowhai-500", r.side ? "bg-white ring-stone-300" : "bg-stone-50 ring-stone-200")}>
                 <span className="text-stone-400">$</span>
-                <input inputMode="decimal" disabled={done || !r.side} value={r.amount} onChange={(ev) => set(c, { amount: ev.target.value })}
+                <input id={`amt-${c}`} inputMode="decimal" disabled={done || !r.side} value={r.amount} onChange={(ev) => set(c, { amount: ev.target.value })}
                   onKeyDown={(ev) => { if (ev.key === "Enter") { ev.preventDefault(); ev.stopPropagation(); check(); } }}
                   className="num w-28 bg-transparent px-1 py-1.5 outline-none" aria-label={`Amount for ${ACC[c].name}`} />
               </label>

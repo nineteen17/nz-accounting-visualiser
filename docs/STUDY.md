@@ -76,7 +76,9 @@ A learner who finishes the course and keeps up with Study should be able to:
   - Hard → stays in its box (at least box 1)
   - Good → up one box
   - Easy → up two boxes
-- **Known**: box ≥ 3 (recalled well with a week or more between reviews).
+- **Known**: box ≥ 3 (recalled well with a week or more between reviews). Flashcards only.
+- **Mastered** (drills): the last full set scored 80% or more and none of that drill's missed questions are still open (`isMastered`). Shown on the drill cards, the Drills tab and Progress. Kept separate from Known on purpose: Known is about recalling a term over time, mastered is about doing a task.
+- **Type it** (setting): meaning → term cards ask you to type the term. `lib/study/recall.ts` accepts the full term, the part before the brackets, what's in them ("PAYE" or "Pay As You Earn"), either half of "A / B", ignores capitals, punctuation, macrons and "&"/"and", and lets one small typo per six letters through as "close" (abbreviations must be exact). You still grade yourself; the suggested grade is outlined.
 
 ### Drills
 - **A drill** is `{ key, title, icon, blurb, part, group, learn, length?, make(rng) }`.
@@ -106,9 +108,9 @@ A learner who finishes the course and keeps up with Study should be able to:
   missed: { "<drill>:<seed>": { drill, seed, state: { box, due, reps, lapses } } },
   days:   ["yyyy-mm-dd", ...]      // days studied, for the streak (last 400 kept)
 }
-"study-settings-v1": { parts, levels, dir, newCount, aids }
+"study-settings-v1": { parts, levels, dir, newCount, aids, typed }
 ```
-Bad data loads as empty. **Export / import** (Progress tab): `exportStudy` writes `{ app: "kowhai-cafe-study", exported, study, settings }` as a JSON file; `parseImport` refuses anything that isn't that (or is a different version), drops broken entries, and the settings are checked field by field before anything is replaced. `missed` and `aids` were added without a version bump: they're new optional fields, and `loadStudy` / the settings loader fill them with defaults, so older saved progress still loads. **Any change to the shape needs a version bump plus a migration in `loadStudy`**, so learners don't lose progress.
+Bad data loads as empty. **Export / import** (Progress tab): `exportStudy` writes `{ app: "kowhai-cafe-study", exported, study, settings }` as a JSON file; `parseImport` refuses anything that isn't that (or is a different version), drops broken entries, and the settings are checked field by field before anything is replaced. `missed`, `aids` and `typed` were added without a version bump: they're new optional fields, and `loadStudy` / the settings loader fill them with defaults, so older saved progress still loads. **Any change to the shape needs a version bump plus a migration in `loadStudy`**, so learners don't lose progress.
 
 ### URL options
 - `/study?part=2` studies a single Part.
@@ -244,6 +246,9 @@ Shown on matching flashcards, and practised as cards of their own (`a:` cards, o
 - [x] **G4** Drills for the last uncovered lessons: The worksheet, After closing, Employment basics, ACC levies, RWT/FBT/withholding tax. Every lesson now has a drill. Tests check the worksheet columns balance with the real profit, retained earnings after closing, and the adjusted balances asked for.
 - [x] **V1** IR4 due date checked against IRD (company tax return guide 2026 and the 2026–27 tax calendar): 7 July without an agent, 31 March the following year with one.
 - [x] **X2** Harder entry mode: hide the amounts, with the hint still available (from the open questions).
+- [x] **X3** Drills mastered: last set 80%+ and no open missed questions; shown on drill cards, the Drills tab and Progress. Known stays flashcards-only.
+- [x] **X4** "Type it" for meaning → term cards, with a forgiving checker (`lib/study/recall.ts`) and a suggested grade.
+- [x] **K1** Keyboard pass: a visible focus outline everywhere; focus moves to each new question, to Next once answered, and follows a flashcard as it flips; number-key shortcuts ignore Ctrl/Alt/Cmd and typing; order-drill arrows keep focus and announce the new position; Dr/Cr buttons say whether they're pressed and jump to the amount; the explainer overlay takes focus, keeps Tab inside, and hands focus back on Escape.
 - [x] **X1** Export and import progress as a JSON file (Progress tab), so it can be backed up or moved to another browser or device. Import asks before replacing and refuses files that aren't a study export.
 - [x] **T3** Tests: every drill regenerates the same question from the same seed; every drill links to a page that exists; closing entries close income with a debit and expenses with a credit and close the real profit; the year 2 pool covers the Part 4 topics; T-account, imputation, RWT and GST-period answers re-worked independently; missed-question scheduling, the 200 cap, and old saved data still loading.
 
@@ -257,10 +262,10 @@ Shown on matching flashcards, and practised as cards of their own (`a:` cards, o
 ---
 
 ## 5. Open questions
-- Should drills count towards "known", or only flashcards? (Currently only flashcards.)
-- Typed recall for flashcards (type the term) as well as self-grading?
+- None open. Decided 2026-11-28: drills don't count towards Known; they have their own "mastered" (X3). Typed recall added as the "Type it" option for meaning → term cards (X4).
 
 ## 6. Log
+- **2026-11-28**: Keyboard pass (K1), drills mastered (X3) and "Type it" recall (X4); both open questions settled. Payroll rates are now one set per income year (see CHANGELOG). 128 tests.
 - **2026-11-27**: IR4 dates verified against IRD (V1). Five drills for the last uncovered lessons (G4): every lesson now has practice. 41 drills; 111 tests.
 - **2026-11-27**: Harder entry mode (X2), from the open questions.
 - **2026-11-27**: Progress export and import (X1), from the open questions. 105 tests.

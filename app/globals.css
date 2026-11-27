@@ -24,6 +24,20 @@ body {
   color: var(--color-ink);
 }
 
+/* a clear outline on whatever has keyboard focus (mouse clicks don't show it) */
+:focus-visible {
+  outline: 2px solid var(--color-kowhai-700);
+  outline-offset: 2px;
+}
+/* where a box draws its own ring around an input, the ring shows focus instead */
+input.outline-none:focus-visible {
+  outline: none;
+}
+/* headings that take focus so a new question is read out first: no outline */
+[tabindex="-1"]:focus-visible {
+  outline: none;
+}
+
 /* tabular numbers everywhere money is shown */
 .num {
   font-variant-numeric: tabular-nums;

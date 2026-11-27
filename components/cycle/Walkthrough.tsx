@@ -7,7 +7,7 @@ import { account } from "@/data/chartOfAccounts";
 import type { Transaction } from "@/lib/engine/types";
 import { balances, equation } from "@/lib/engine/ledger";
 import { money, nzDate } from "@/lib/money";
-import { TYPE_STYLE, cx } from "@/lib/ui";
+import { TYPE_STYLE, cx, pageKey } from "@/lib/ui";
 import { EquationBar } from "@/components/visual/EquationBar";
 import { JournalEntry } from "@/components/visual/JournalEntry";
 import { TAccount } from "@/components/visual/TAccount";
@@ -119,7 +119,7 @@ export function Walkthrough({ txns, initialPhase = 0, storageKey = "walk" }: { t
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if ((e.target as HTMLElement).tagName === "SELECT") return;
+      if (!pageKey(e)) return;
       if (e.key === "ArrowRight") next();
       if (e.key === "ArrowLeft") prev();
     };

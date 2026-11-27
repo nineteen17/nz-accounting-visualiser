@@ -8,7 +8,7 @@ import { balances, equation, trialBalance } from "@/lib/engine/ledger";
 import { bankReconciliation } from "@/lib/engine/bankrec";
 import { gstReturn } from "@/lib/engine/gst";
 import { money, num, nzDate } from "@/lib/money";
-import { cx } from "@/lib/ui";
+import { cx, pageKey } from "@/lib/ui";
 import { EquationBar } from "@/components/visual/EquationBar";
 import { JournalEntry } from "@/components/visual/JournalEntry";
 import { TAccount } from "@/components/visual/TAccount";
@@ -158,7 +158,7 @@ export function JobYear({ year = 1 }: { year?: YearNo }) {
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if ((e.target as HTMLElement)?.tagName?.match(/INPUT|SELECT|TEXTAREA/)) return;
+      if (!pageKey(e)) return;
       if (e.key === "ArrowRight") go(idx + 1);
       if (e.key === "ArrowLeft") go(idx - 1);
     };

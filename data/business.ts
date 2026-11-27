@@ -1,4 +1,5 @@
 import type { Employee } from "@/lib/nz/payroll";
+import { PAYROLL_2026_27 } from "@/lib/nz/rates";
 import type { FixedAsset } from "@/lib/nz/assets";
 
 /** All names, numbers and addresses are made up for teaching. */
@@ -35,7 +36,7 @@ export const EMPLOYEES: Employee[] = [
     rate: 26.0,
     code: "ME",
     studentLoan: true,
-    kiwiSaver: 0.035,
+    kiwiSaver: PAYROLL_2026_27.kiwiSaver.employeeDefault,
     casual: false,
     irdNumber: "111-222-333 (example)",
   },
@@ -46,7 +47,7 @@ export const EMPLOYEES: Employee[] = [
     rate: 24.5,
     code: "M",
     studentLoan: false,
-    kiwiSaver: 0.035,
+    kiwiSaver: PAYROLL_2026_27.kiwiSaver.employeeDefault,
     casual: true,
     irdNumber: "444-555-666 (example)",
   },

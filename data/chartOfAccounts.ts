@@ -1,4 +1,6 @@
 import type { Account, AccountType, CashFlowTag, GstTreatment, Subtype } from "@/lib/engine/types";
+import { CURRENT_PAYROLL } from "@/lib/nz/rates";
+import { pct } from "@/lib/money";
 
 function acc(
   code: string,
@@ -131,7 +133,7 @@ export const ACCOUNTS: Account[] = [
   acc("600", "Wages", "expense", "operating-expense", "none", "employees",
     "Gross wages of employees (before PAYE and other deductions).", { group: "Employment costs" }),
   acc("601", "KiwiSaver employer contributions", "expense", "operating-expense", "none", "employees",
-    "The café's compulsory 3.5% KiwiSaver contribution for employees (gross, before ESCT).", { group: "Employment costs" }),
+    `The café's compulsory ${pct(CURRENT_PAYROLL.kiwiSaver.employerMinimum)} KiwiSaver contribution for employees (gross, before ESCT).`, { group: "Employment costs" }),
   acc("602", "Holiday pay expense", "expense", "operating-expense", "none", "employees",
     "Annual leave earned by staff during the year (accrued at year end).", { group: "Employment costs" }),
   acc("605", "Shareholder salaries", "expense", "operating-expense", "none", "shareholders",

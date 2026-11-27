@@ -1,7 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { money } from "@/lib/money";
+import { money, pct } from "@/lib/money";
+import { KIWISAVER, MINIMUM_WAGE } from "@/lib/nz/rates";
+
+const KS = pct(KIWISAVER.employerMinimum);
+/** the $1,000 example: PAYE is illustrative, KiwiSaver follows the current rates so the entry always balances */
+const EG = { paye: 152, ksEe: 1000 * KIWISAVER.employeeDefault, ksEr: 1000 * KIWISAVER.employerMinimum };
 import { cx } from "@/lib/ui";
 import { Callout, Quiz } from "@/components/learn/bits";
 
@@ -68,7 +73,7 @@ const TERMS: [string, string, string][] = [
 const QUIZ: { q: string; options: string[]; answer: number; explain: string }[] = [
   { q: "An American textbook tells you to debit “Withdrawals” when Aroha takes $500. Kōwhai is a company. What does Kōwhai debit?", options: ["Withdrawals", "Drawings expense", "Aroha's shareholder current account"], answer: 2, explain: "In a company, money taken by a shareholder is recorded against their current account (what the company owes them, or they owe it). For a sole trader it would be Drawings." },
   { q: "Kōwhai buys $100 of beans plus $15 GST. A US café buys $100 of beans plus $8 sales tax. Who records the tax as a separate asset they can claim back?", options: ["Both", "Only Kōwhai", "Only the US café"], answer: 1, explain: "GST paid on purchases is claimed back from IRD, so Kōwhai debits the GST account. US sales tax on business purchases is just part of the cost." },
-  { q: "Mia's gross pay is $2,080. Which of these does the café NOT have in NZ?", options: ["Employer KiwiSaver contribution", "Employer social-security (FICA-style) tax", "PAYE deducted from Mia's pay"], answer: 1, explain: "NZ has no employer social-security tax. The employer's extra cost is the compulsory 3.5% KiwiSaver contribution (and the annual ACC work levy)." },
+  { q: "Mia's gross pay is $2,080. Which of these does the café NOT have in NZ?", options: ["Employer KiwiSaver contribution", "Employer social-security (FICA-style) tax", "PAYE deducted from Mia's pay"], answer: 1, explain: `NZ has no employer social-security tax. The employer's extra cost is the compulsory ${KS} KiwiSaver contribution (and the annual ACC work levy).` },
   { q: "Which of these is the same in the US and NZ?", options: ["How debits and credits work", "The name of the statement showing assets and liabilities", "The tax year"], answer: 0, explain: "Double entry is universal. The balance sheet is formally the “statement of financial position” in NZ, and the NZ tax year runs 1 April – 31 March." },
 ];
 
@@ -106,7 +111,7 @@ function WorkedExamples() {
           title="Paying an employee $1,000 gross"
           story="Each café pays a barista $1,000 gross for a fortnight. Figures are simplified to show the structure, not exact tax tables."
           us={<MiniJournal flag="🇺🇸" title="Seattle café: payroll" lines={[["Wages expense", 1000, null], ["Payroll tax expense (employer FICA 7.65% + unemployment)", 90, null], ["Federal income tax withheld", null, 80], ["FICA payable (employee 7.65% + employer 7.65%)", null, 153], ["Unemployment taxes payable", null, 13.5], ["Cash (net pay)", null, 843.5]]} note="The employer pays its own 7.65% FICA on top of wages. Washington State has no state income tax; most states do." />}
-          nz={<MiniJournal flag="🇳🇿" title="Kōwhai: payroll" lines={[["Wages", 1000, null], ["KiwiSaver employer contributions (3.5%)", 35, null], ["PAYE & deductions payable (PAYE incl ACC levy, employee KiwiSaver 3.5%, employer KiwiSaver incl ESCT)", null, 222], ["Bank (net pay)", null, 813]]} note="Illustrative: PAYE about $152 (incl ACC levy), employee KiwiSaver $35, employer KiwiSaver $35. No employer social-security tax. Everything deducted is paid to IRD by the 20th of next month." />}
+          nz={<MiniJournal flag="🇳🇿" title="Kōwhai: payroll" lines={[["Wages", 1000, null], [`KiwiSaver employer contributions (${KS})`, EG.ksEr, null], [`PAYE & deductions payable (PAYE incl ACC levy, employee KiwiSaver ${pct(KIWISAVER.employeeDefault)}, employer KiwiSaver incl ESCT)`, null, EG.paye + EG.ksEe + EG.ksEr], ["Bank (net pay)", null, 1000 - EG.paye - EG.ksEe]]} note={`Illustrative: PAYE about ${money(EG.paye, { dp: 0 })} (incl ACC levy), employee KiwiSaver ${money(EG.ksEe, { dp: 0 })}, employer KiwiSaver ${money(EG.ksEr, { dp: 0 })}. No employer social-security tax. Everything deducted is paid to IRD by the 20th of next month.`} />}
           takeaway={<>The structure is the same: <strong>expense at gross, deductions become liabilities, net goes out of the bank</strong>. The taxes are different. NZ has <strong>PAYE</strong> (which includes the ACC levy) and <strong>KiwiSaver</strong>; the US has <strong>FICA</strong>, income-tax withholding and unemployment taxes.</>}
         />
 
@@ -193,11 +198,11 @@ const SECTIONS: Section[] = [
     summary: "Completely different taxes and entitlements. The journal entry has the same shape: expense at gross, deductions become liabilities, net to the bank.",
     rows: [
       { topic: "Taxes deducted from pay", us: "Federal income tax withholding, state (and sometimes city) income tax, and employee FICA: 6.2% Social Security + 1.45% Medicare.", nz: "PAYE, which includes income tax and the 1.75% ACC earners' levy. Plus student loan (12% over the threshold) and KiwiSaver if they apply.", cafe: "Mia's payslip: PAYE $304.79 + ACC levy $36.40, student loan $138.24, KiwiSaver $72.80." },
-      { topic: "Employer's own taxes and costs", us: "Employer matches FICA (7.65%), plus federal and state unemployment taxes, and buys workers' compensation insurance.", nz: "No employer social-security or unemployment tax. Compulsory 3.5% KiwiSaver for members (less ESCT), and the annual ACC work levy.", cafe: "Kōwhai's extra cost on Mia's $2,080 is $72.80 KiwiSaver." },
+      { topic: "Employer's own taxes and costs", us: "Employer matches FICA (7.65%), plus federal and state unemployment taxes, and buys workers' compensation insurance.", nz: `No employer social-security or unemployment tax. Compulsory ${KS} KiwiSaver for members (less ESCT), and the annual ACC work levy.`, cafe: "Kōwhai's extra cost on Mia's $2,080 is $72.80 KiwiSaver." },
       { topic: "Forms and reporting", us: "W-4 from the employee; quarterly Form 941; year-end W-2 to each employee.", nz: "IR330 tax code declaration from the employee; payday filing to IRD within 2 working days of every payday; PAYE paid by the 20th of the next month." },
       { topic: "Personal tax returns", us: "Almost every worker files an annual return (Form 1040).", nz: "Most employees don't need to. PAYE is designed to be exactly right, and IRD auto-calculates refunds.", cafe: "Mia and Leo don't file returns. Aroha and Ben do (IR3), because of their shareholder salaries." },
       { topic: "Paid leave", us: "No federal requirement for paid vacation or public holidays. It depends on the employer and the state.", nz: "Holidays Act 2003: 4 weeks' annual leave, 12 public holidays (time and a half plus a day in lieu if worked), 10 days' sick leave and bereavement leave.", cafe: "Kōwhai accrues holiday pay for Mia and pays Leo 8% on top of each pay." },
-      { topic: "Minimum wage and overtime", us: "Federal minimum $7.25 an hour, with higher state and city rates. Time and a half for hours over 40 a week (FLSA).", nz: "$23.95 an hour nationally (from 1 April 2026). No legal overtime premium: it's whatever the employment agreement says. Time and a half is required only on public holidays." },
+      { topic: "Minimum wage and overtime", us: "Federal minimum $7.25 an hour, with higher state and city rates. Time and a half for hours over 40 a week (FLSA).", nz: `${money(MINIMUM_WAGE.adult)} an hour nationally (from ${MINIMUM_WAGE.from}). No legal overtime premium: it's whatever the employment agreement says. Time and a half is required only on public holidays.` },
       { topic: "Workplace injury", us: "Employer-bought workers' compensation insurance, regulated by each state. Employees can sometimes sue.", nz: "ACC: a no-fault government scheme for everyone, funded by levies. You generally can't sue for personal injury." },
       { topic: "Retirement savings", us: "401(k) plans are optional for employers; any employer match is voluntary.", nz: "KiwiSaver: new employees are automatically enrolled (they can opt out), and employer contributions are compulsory for members." },
       { topic: "Pay frequency", us: "Biweekly or semi-monthly are common.", nz: "Weekly or fortnightly are common. A “fortnight” is NZ's biweekly.", cafe: "Kōwhai pays fortnightly." },

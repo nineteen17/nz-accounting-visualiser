@@ -7,9 +7,25 @@ Dates are when the change was made. Rates and rules are for the 2026–27 NZ inc
 
 ## Proposed / not yet done
 
+- **2027–28 rates (from early 2027)**. When IRD, ACC and MBIE announce them: fill in `PAYROLL_2027_28` in `lib/nz/rates.ts` and clear its `toConfirm` list (tax brackets, IETC, student loan threshold and ESCT bands are carried forward for now); update `MINIMUM_WAGE`; then on 1 April 2027 point `CURRENT_PAYROLL` at 2027–28. Year 1's books keep the 2026–27 rates.
 - **global-law MCP**. The `claude mcp add` entry was saved with a trailing "." in the URL and fails to connect. Fix: `claude mcp remove global-law`, then re-add with `https://global-law.lexifina.com/mcp`. Note: the NZ law data it uses has no tax Acts (see 2026-11-26).
 
 ---
+
+## 2026-11-28
+
+### Keyboard, drills mastered, typed recall, and rates you can change in one place
+- **Keyboard pass**. Every page now shows a clear outline on whatever has keyboard focus. In the study tool:
+  - focus moves to each new question, then to **Next** once you've answered;
+  - flashcards: focus follows the card as you show the answer;
+  - the 1–4 shortcuts no longer fire with Ctrl/Alt/Cmd (Ctrl+1 switches browser tab) or while typing;
+  - in "Put it in order", the arrows keep focus on the step you're moving, and a screen reader announces its new position;
+  - Dr/Cr buttons say whether they're pressed, and picking one jumps to its amount box (which now shows focus).
+  - Explainer overlays take focus when they open, keep Tab inside, and give focus back to the term on Escape.
+  - The ←/→ keys on the cycle walkthrough and A year on the job no longer fire inside the explainer or with Alt (Alt+← is the browser's Back).
+- **Drills mastered**: a drill is mastered when your last set scored 80% or more and none of its missed questions are left. Shown as "✓ Mastered" on the drill cards and on Progress. Flashcard *Known* is unchanged.
+- **Type it** (flashcard setting): meaning → term cards ask you to type the term. It's checked for you: capitals, punctuation and a small typo don't count against you, and either the abbreviation or the full name is accepted ("PAYE" or "Pay As You Earn"). You still grade yourself, with a suggested grade outlined.
+- **Rates in one place**. Payroll rates are now one set per income year in `lib/nz/rates.ts` (`PAYROLL_2026_27`, `PAYROLL_2027_28`), and `CURRENT_PAYROLL` says which year the lessons teach. Each of the café's years uses its own set, so new rates never rewrite an earlier year's books. About 25 figures that were typed into lesson text, the glossary, payslips and the US vs NZ page (minimum wage, KiwiSaver %, ACC levy, student loan threshold, IETC, UOMI, secondary tax code bands) now read from the rates file. A test fails if any of them is typed in again. No figures changed.
 
 ## 2026-11-27
 
