@@ -2,10 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { ALL, BEFORE_CLOSING, TAX } from "@/data/books";
-import { SHAREHOLDERS } from "@/data/business";
+import { CLOSING_STOCK, SHAREHOLDERS } from "@/data/business";
 import { GST_PERIODS, gstReturn } from "@/lib/engine/gst";
-import { ledger } from "@/lib/engine/ledger";
-import { COMPANY_TAX_RATE, DEPRECIATION, GST, INDIVIDUAL_TAX_BRACKETS, PROVISIONAL_TAX, RATES_AS_AT, RECORD_KEEPING_YEARS, RWT } from "@/lib/nz/rates";
+import { balances, ledger } from "@/lib/engine/ledger";
+import { COMPANY_TAX_RATE, DEPRECIATION, GST, INDIVIDUAL_TAX_BRACKETS, PROVISIONAL_TAX, RATES_AS_AT, RECORD_KEEPING_YEARS, RWT, TRADING_STOCK } from "@/lib/nz/rates";
+import { BEAN_EXAMPLE, fifo, totalCost, totalQty, weightedAverage, type Purchase } from "@/lib/nz/stock";
 import { disposal, schedule } from "@/lib/nz/assets";
 import { progressiveTax } from "@/lib/nz/payroll";
 import { money, nzDate, num, pct, r2 } from "@/lib/money";
@@ -494,25 +495,24 @@ export function DepreciationTopic() {
 
 /* ───────────── Inventory ───────────── */
 
+
 export function InventoryTopic() {
-  const buys = [
-    { d: "1 Mar", kg: 20, price: 36 },
-    { d: "10 Mar", kg: 30, price: 38 },
-    { d: "20 Mar", kg: 25, price: 40 },
-  ];
-  const sold = 37;
-  const totalKg = buys.reduce((s, b) => s + b.kg, 0);
-  const totalCost = buys.reduce((s, b) => s + b.kg * b.price, 0);
-  const closingKg = totalKg - sold;
-  const fifoClosing = [...buys].reverse().reduce(
-    (acc, b) => {
-      const take = Math.min(acc.left, b.kg);
-      return { left: acc.left - take, value: acc.value + take * b.price };
-    },
-    { left: closingKg, value: 0 },
-  ).value;
-  const wac = totalCost / totalKg;
-  const wacClosing = closingKg * wac;
+  const [rising, setRising] = useState(true);
+  // falling prices: the same purchases, with the prices in the opposite order
+  const buys: Purchase[] = rising ? BEAN_EXAMPLE : BEAN_EXAMPLE.map((b, i, all) => ({ ...b, price: all[all.length - 1 - i].price }));
+  const bought = totalQty(buys);
+  const [used, setUsed] = useState(37);
+  const closingKg = bought - used;
+  const f = fifo(buys, closingKg);
+  const w = weightedAverage(buys, closingKg);
+  const gap = r2(f.closing - w.closing);
+  const b1 = balances(BEFORE_CLOSING);
+  const y1Sales = r2(-((b1["400"] ?? 0) + (b1["410"] ?? 0)));
+  const y1Stock = CLOSING_STOCK.reduce((t, x) => t + x.value, 0);
+  const lv = TRADING_STOCK.lowValue;
+  const qualifies = y1Sales < lv.salesUnder && y1Stock < lv.stockEstimateUnder;
+  const $0 = (x: number) => money(x, { dp: 0 });
+
   return (
     <div className="space-y-8">
       <div className="prose-learn max-w-4xl text-[16px]">
@@ -523,43 +523,75 @@ export function InventoryTopic() {
           <li><strong>Perpetual</strong>: every sale updates stock and COGS in real time (needs recipes linked to the POS). You can compare &quot;what should be there&quot; with the count to measure <strong>wastage and theft</strong>.</li>
         </ul>
         <h2>Valuing closing stock: FIFO vs weighted average</h2>
-        <p>Prices change during the year. Which cost do you use for the stock that&apos;s left? Here&apos;s Kōwhai&apos;s coffee beans in March (an illustration):</p>
+        <p>Prices change during the year. When beans bought at different prices are mixed in the bin, which cost belongs to the beans left at the end? There are two allowed answers, <Term k="fifo">FIFO</Term> and <Term k="weighted-average-cost">weighted average</Term>. Here are Kōwhai&apos;s coffee beans in March (an illustration). Change how many kilos were used, or turn the prices around:</p>
       </div>
+
+      <div className="flex flex-wrap items-center gap-x-6 gap-y-3 rounded-2xl bg-stone-100 px-4 py-3 text-sm">
+        <div role="group" aria-label="Bean prices through March" className="flex gap-1">
+          {[true, false].map((r) => (
+            <button key={String(r)} type="button" aria-pressed={rising === r} onClick={() => setRising(r)}
+              className={cx("rounded-lg px-3 py-1.5", rising === r ? "bg-ink text-white" : "bg-white hover:bg-stone-200")}>
+              {r ? "Prices rising" : "Prices falling"}
+            </button>
+          ))}
+        </div>
+        <label className="flex w-full min-w-0 items-center gap-3 sm:w-auto sm:flex-1">
+          <span className="shrink-0">Used in March: <strong className="num">{used} kg</strong></span>
+          <input type="range" min={0} max={bought} value={used} onChange={(e) => setUsed(Number(e.target.value))} aria-valuetext={`${used} kilograms used, ${closingKg} left`} className="min-w-0 flex-1 accent-kowhai-600" />
+        </label>
+      </div>
+
       <div className="grid gap-6 lg:grid-cols-3">
         <Card>
           <h3 className="mb-2 font-bold">Purchases</h3>
           <table className="w-full text-sm"><tbody>
-            {buys.map((b) => <tr key={b.d} className="border-b border-stone-100"><td className="py-1">{b.d}</td><td className="num text-right">{b.kg} kg</td><td className="num text-right">@ {money(b.price)}</td><td className="num text-right">{money(b.kg * b.price)}</td></tr>)}
-            <tr className="font-semibold"><td className="py-1">Total</td><td className="num text-right">{totalKg} kg</td><td /><td className="num text-right">{money(totalCost)}</td></tr>
+            {f.layers.map((b) => (
+              <tr key={b.label} className="border-b border-stone-100">
+                <td className="py-1">{b.label}</td><td className="num text-right">{b.qty} kg</td><td className="num text-right">@ {money(b.price)}</td><td className="num text-right">{money(b.qty * b.price)}</td>
+              </tr>
+            ))}
+            <tr className="font-semibold"><td className="py-1">Total</td><td className="num text-right">{bought} kg</td><td /><td className="num text-right">{money(totalCost(buys))}</td></tr>
           </tbody></table>
-          <p className="mt-2 text-sm">Used: <strong>{sold} kg</strong>. Left on the shelf: <strong>{closingKg} kg</strong>.</p>
+          <p className="mt-2 text-sm">Used: <strong>{used} kg</strong>. Left on the shelf: <strong>{closingKg} kg</strong>.</p>
         </Card>
         <Card>
           <h3 className="mb-1 font-bold">FIFO (first in, first out)</h3>
-          <p className="text-sm text-stone-600">Assumes the oldest beans are used first, so what&apos;s left is the <em>newest, dearest</em> stock.</p>
-          <div className="mt-3 text-sm">Closing stock: <strong className="num">{money(fifoClosing)}</strong></div>
-          <div className="text-sm">COGS: <strong className="num">{money(totalCost - fifoClosing)}</strong></div>
+          <p className="text-sm text-stone-600">The oldest beans are used first, so what&apos;s left is from the <em>latest</em> purchases.</p>
+          <ul className="mt-2 space-y-0.5 text-sm">
+            {f.layers.filter((l) => l.kept > 0).map((l) => <li key={l.label} className="num">{l.kept} kg from {l.label} @ {money(l.price)} = {money(l.kept * l.price)}</li>)}
+            {closingKg === 0 && <li className="text-stone-500">Nothing left.</li>}
+          </ul>
+          <div className="mt-3 text-sm">Closing stock: <strong className="num">{money(f.closing)}</strong></div>
+          <div className="text-sm">COGS: <strong className="num">{money(f.cogs)}</strong></div>
         </Card>
         <Card>
           <h3 className="mb-1 font-bold">Weighted average cost</h3>
-          <p className="text-sm text-stone-600">Average cost = {money(totalCost)} ÷ {totalKg} kg = {money(wac)}/kg.</p>
-          <div className="mt-3 text-sm">Closing stock: <strong className="num">{money(wacClosing)}</strong></div>
-          <div className="text-sm">COGS: <strong className="num">{money(totalCost - wacClosing)}</strong></div>
+          <p className="text-sm text-stone-600">Every kilo costs the same: {money(totalCost(buys))} ÷ {bought} kg = {money(w.unit)}/kg.</p>
+          <div className="mt-3 text-sm">Closing stock: {closingKg} kg × {money(w.unit)} = <strong className="num">{money(w.closing)}</strong></div>
+          <div className="text-sm">COGS: <strong className="num">{money(w.cogs)}</strong></div>
         </Card>
       </div>
+
       <div className="prose-learn max-w-4xl text-[16px]">
-        <p>When prices are rising, FIFO gives a higher closing stock and higher profit. Both methods are acceptable. Pick one and use it consistently. (LIFO isn&apos;t allowed in NZ.) Stock is valued at the <strong>lower of cost and net realisable value</strong>: if milk is about to expire, it&apos;s worth nothing.</p>
+        <p aria-live="polite">
+          {Math.abs(gap) < 0.005
+            ? "With nothing left (or everything left), both methods give the same answer: the choice only matters for stock bought at different prices that's still on the shelf."
+            : <>With prices <strong>{rising ? "rising" : "falling"}</strong>, FIFO leaves the {rising ? "dearer" : "cheaper"} beans on the shelf, so its closing stock is <strong>{money(Math.abs(gap))} {gap > 0 ? "higher" : "lower"}</strong>. A {gap > 0 ? "higher" : "lower"} closing stock means a {gap > 0 ? "lower" : "higher"} cost of goods sold, so FIFO&apos;s profit is {money(Math.abs(gap))} {gap > 0 ? "higher" : "lower"} this period. Over time it evens out: the closing stock is next period&apos;s opening stock.</>}
+        </p>
+        <p>Both methods are allowed. Pick one and use it consistently. Stock is valued at the <Term k="net-realisable-value">lower of cost and net realisable value</Term>: if milk is about to expire and can&apos;t be sold, it&apos;s worth nothing, whatever it cost.</p>
         <UsNote>
           <p>US GAAP allows <strong>LIFO</strong> (last in, first out), and American textbooks often teach it alongside FIFO. <strong>LIFO isn&apos;t allowed in NZ</strong>, so use FIFO or weighted average.</p>
           <p>Also, under US GAAP a stock write-down can never be reversed. Under NZ IFRS it can be reversed (up to original cost) if the value recovers.</p>
         </UsNote>
         <h2>IRD trading stock rules</h2>
         <ul>
-          <li>Trading stock must be valued at balance date. Options include cost, discounted selling price and market selling value.</li>
-          <li><strong>Low-turnover concession</strong>: if turnover is $1.3m or less and closing stock is reasonably estimated at under $10,000, you can use <strong>opening stock value</strong> as closing value instead of doing a full valuation. Kōwhai (about $440k turnover, $3,800 stock) qualifies but chose to count anyway.</li>
-          <li><strong>Stock taken for private use</strong> (Aroha takes beans home): treated as sold at market value, with GST payable.</li>
+          <li>Trading stock must be valued at balance date. The closing value is taxable income and the opening value is a deduction, so the stock in hand is taxed when it&apos;s sold, not when it&apos;s bought.</li>
+          <li><strong>Low value trading stock</strong>: if sales for the year are under {$0(lv.salesUnder)} and a reasonable estimate of closing stock is under {$0(lv.stockEstimateUnder)}, closing stock can be valued at its <strong>opening value</strong>, with no stocktake at year end. {qualifies ? <>Kōwhai qualifies (year 1 sales {$0(y1Sales)}, stock {$0(y1Stock)}) but chose to count anyway, to know its true margin.</> : null}</li>
+          <li><strong>Low-turnover traders</strong> (sales under {$0(TRADING_STOCK.lowTurnoverSalesUnder)}) get simpler options within each valuation method.</li>
+          <li><strong>Stock taken for private use</strong> (Aroha takes beans home) is usually taxed as if it were sold at market value.</li>
           <li><strong>Wastage</strong> (expired milk, dropped cakes) is simply not in the count, so it ends up in COGS automatically.</li>
         </ul>
+        <p className="text-sm text-stone-500">Source: <a className="underline" href={TRADING_STOCK.source} target="_blank" rel="noreferrer">IRD, Valuing trading stock</a>.</p>
         <Callout kind="tip" title="Café rule of thumb">Most cafés aim for a COGS of 28–35% of sales. Kōwhai&apos;s is about 30%. If it creeps up, look at wastage, portion sizes, supplier prices and menu prices.</Callout>
       </div>
     </div>

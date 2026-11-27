@@ -230,6 +230,10 @@ export function Study() {
         <div className="space-y-8">
           <p className="max-w-3xl text-stone-600">Questions marked straight away, with the reason for every answer. They&apos;re made from Kōwhai&apos;s own books and the NZ rules the course uses, so there&apos;s always a fresh set.</p>
           <p className="text-sm text-stone-600"><strong className="num">{DRILLS.filter((d) => isMastered(data, d.key)).length} of {DRILLS.length}</strong> drills mastered: your last set scored {Math.round(MASTERED_SCORE * 100)}% or more, with no missed questions left to fix.</p>
+          <Link href="/study/year-end" className="block rounded-2xl bg-kowhai-50 p-4 ring-1 ring-kowhai-200 hover:ring-kowhai-500">
+            <span className="font-bold">📒 Do the year-end yourself</span>
+            <span className="mt-0.5 block text-sm text-stone-600">Start from Kōwhai&apos;s real unadjusted trial balance, post every year-end adjustment, and see your profit beside the real one.</span>
+          </Link>
           {(Object.keys(DRILL_GROUPS) as DrillGroup[]).map((g) => (
             <section key={g}>
               <h3 className="text-lg font-bold">{DRILL_GROUPS[g].title}</h3>

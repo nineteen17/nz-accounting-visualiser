@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ACCOUNTS } from "@/data/chartOfAccounts";
 import { DRILL_MAP } from "@/data/study/drills";
-import { $, formatAnswer, isRight, newSeed, parseAnswer, seeded, shuffle, type ChoiceQ, type EntryQ, type NumberQ, type OrderQ, type Question } from "@/data/study/core";
+import { $, formatAnswer, isRight, newSeed, parseAnswer, seeded, shuffle, type ChoiceQ, type EntryLine, type EntryQ, type NumberQ, type OrderQ, type Question } from "@/data/study/core";
 import { RichText } from "@/components/learn/RichText";
 import { SourceDoc } from "@/components/documents/SourceDoc";
 import { cx, pageKey } from "@/lib/ui";
@@ -294,7 +294,8 @@ function NumberView({ q, onAnswer }: { q: NumberQ; onAnswer: (right: boolean) =>
 
 type Row = { side: "" | "debit" | "credit"; amount: string };
 
-function EntryView({ q, hard, onHard, onAnswer }: { q: EntryQ; hard: boolean; onHard: (v: boolean) => void; onAnswer: (right: boolean) => void }) {
+/** a journal-entry question; onAnswer also gets the lines as entered (used by the year-end exercise) */
+export function EntryView({ q, hard, onHard, onAnswer }: { q: EntryQ; hard: boolean; onHard: (v: boolean) => void; onAnswer: (right: boolean, entered: EntryLine[]) => void }) {
   const [rows, setRows] = useState<Record<string, Row>>(() => Object.fromEntries(q.options.map((c) => [c, { side: "", amount: "" }])));
   const [done, setDone] = useState(false);
   // normal mode shows the amounts up front when some have to be worked out; harder mode never does
@@ -315,7 +316,10 @@ function EntryView({ q, hard, onHard, onAnswer }: { q: EntryQ; hard: boolean; on
   const check = () => {
     if (done || !used) return;
     setDone(true);
-    onAnswer(q.options.every(rowRight));
+    const entered = Object.entries(rows)
+      .filter(([, r]) => r.side && parseAnswer(r.amount) !== null)
+      .map(([account, r]) => ({ account, side: r.side as "debit" | "credit", amount: parseAnswer(r.amount)! }));
+    onAnswer(q.options.every(rowRight), entered);
   };
   const amounts = [...new Set(q.lines.map((l) => l.amount))].sort((a, b) => a - b);
 

@@ -19,6 +19,7 @@ import { TxnDetail } from "@/components/cycle/steps/TheYear";
 import { RichText } from "@/components/learn/RichText";
 
 export { BudgetTool } from "./Budget";
+export { CashForecastTool } from "./CashForecast";
 
 const input = "max-w-full rounded-lg border border-stone-300 bg-white px-2 py-1.5 text-sm";
 

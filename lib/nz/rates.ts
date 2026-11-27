@@ -152,6 +152,15 @@ export const DEPRECIATION = {
   source: "https://www.ird.govt.nz/rate-finder",
 };
 
+/** IRD trading stock rules (checked against ird.govt.nz "Valuing trading stock", updated 19 November 2026) */
+export const TRADING_STOCK = {
+  /** low value trading stock: closing stock may be valued at its opening value, with no year-end count */
+  lowValue: { salesUnder: 1_300_000, stockEstimateUnder: 10_000 },
+  /** low-turnover trader: simpler options within each valuation method (Income Tax Act 2007, ss EB 13–EB 22) */
+  lowTurnoverSalesUnder: 3_000_000,
+  source: "https://www.ird.govt.nz/income-tax/income-tax-for-businesses-and-organisations/types-of-business-income/trading-stock/valuing-trading-stock",
+};
+
 export const RWT = {
   companyDefault: 0.28,
   /** Dividends: RWT is 33% of (cash + imputation credits), less the imputation credits attached (IR284) */

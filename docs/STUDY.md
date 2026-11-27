@@ -171,7 +171,7 @@ See the open questions in section 5.
 | Provisional tax | ✅ | ✅ Provisional tax, due dates | |
 | Shareholders | ✅ | ✅ Dividends & imputation, Owners & business structures, entries in E1/E2/E4 | |
 | Depreciation | ✅ | ✅ Depreciation, Capital or revenue?, depreciation entry in E2 | |
-| Inventory | ✅ | ✅ Cost of goods sold, stocktake entries in E2 | |
+| Inventory | ✅ FIFO, weighted average, NRV | ✅ Cost of goods sold, stocktake entries in E2, Valuing stock (FIFO, weighted average, which gives more profit, lower of cost and NRV, low value stock rule) | |
 | Other taxes | ✅ | ✅ RWT, FBT or withholding tax? | |
 | Compliance | ✅ | ✅ When is it due? (full calendar), records 7 years | |
 
@@ -182,6 +182,8 @@ See the open questions in section 5.
 | Year 2 tasks (226) | via terms | ✅ Year 2 entries (reversals, POS sale, dividend and RWT, annual leave, provisional tax), Dividends & imputation | |
 | Year 2 statements | ✅ | ✅ Ratios use both years | |
 | Budget vs actual (Explore) | ✅ budget, variance, flexible budget | ✅ Budget vs actual (F/U, size, flexing, fixed or variable, why) | |
+| Cash flow forecast (Explore) | ✅ cash flow forecast | ✅ Cash flow forecast (profit or cash, month-end bank, GST due dates, paydays, why) | |
+| Year-end, all together | – | ✅ Do the year-end yourself (`/study/year-end`): both years' real adjustments in order, on your own trial balance | |
 
 ### Memory aids (18)
 Shown on matching flashcards, and practised as cards of their own (`a:` cards, on by default).
@@ -248,6 +250,9 @@ Shown on matching flashcards, and practised as cards of their own (`a:` cards, o
 - [x] **V1** IR4 due date checked against IRD (company tax return guide 2026 and the 2026–27 tax calendar): 7 July without an agent, 31 March the following year with one.
 - [x] **X2** Harder entry mode: hide the amounts, with the hint still available (from the open questions).
 - [x] **X3** Drills mastered: last set 80%+ and no open missed questions; shown on drill cards, the Drills tab and Progress. Known stays flashcards-only.
+- [x] **B2** Cash flow forecast drill, from `data/books/cashForecast.ts`.
+- [x] **B3** Valuing stock drill (generated purchases, `lib/nz/stock.ts`).
+- [x] **Y1** Do the year-end yourself: the unadjusted trial balance, every real adjustment in order, your trial balance and profit as you go, and your profit beside the real one. 44 drills.
 - [x] **B1** Budget vs actual drill, from `data/books/budget.ts` (year 2 budget built from year 1 plus known changes). 42 drills.
 - [x] **X4** "Type it" for meaning → term cards, with a forgiving checker (`lib/study/recall.ts`) and a suggested grade.
 - [x] **K1** Keyboard pass: a visible focus outline everywhere; focus moves to each new question, to Next once answered, and follows a flashcard as it flips; number-key shortcuts ignore Ctrl/Alt/Cmd and typing; order-drill arrows keep focus and announce the new position; Dr/Cr buttons say whether they're pressed and jump to the amount; the explainer overlay takes focus, keeps Tab inside, and hands focus back on Escape.
@@ -267,6 +272,7 @@ Shown on matching flashcards, and practised as cards of their own (`a:` cards, o
 - None open. Decided 2026-11-28: drills don't count towards Known; they have their own "mastered" (X3). Typed recall added as the "Type it" option for meaning → term cards (X4).
 
 ## 6. Log
+- **2026-11-28**: Cash flow forecast tool and drill (B2); inventory page made interactive, with a Valuing stock drill (B3) and IRD's stock rules corrected; Do the year-end yourself (Y1). 44 drills, 154 tests.
 - **2026-11-28**: Budget vs actual tool (Explore) and its drill (B1); three glossary terms. Site-wide accessibility pass. 42 drills, 135 tests.
 - **2026-11-28**: Keyboard pass (K1), drills mastered (X3) and "Type it" recall (X4); both open questions settled. Payroll rates are now one set per income year (see CHANGELOG). 128 tests.
 - **2026-11-27**: IR4 dates verified against IRD (V1). Five drills for the last uncovered lessons (G4): every lesson now has practice. 41 drills; 111 tests.

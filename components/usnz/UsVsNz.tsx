@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { money, pct } from "@/lib/money";
-import { KIWISAVER, MINIMUM_WAGE } from "@/lib/nz/rates";
+import { KIWISAVER, MINIMUM_WAGE, TRADING_STOCK } from "@/lib/nz/rates";
 
 const KS = pct(KIWISAVER.employerMinimum);
 /** the $1,000 example: PAYE is illustrative, KiwiSaver follows the current rates so the entry always balances */
@@ -249,7 +249,7 @@ const SECTIONS: Section[] = [
     rows: [
       { topic: "Cost methods", us: "FIFO, weighted average or LIFO.", nz: "FIFO or weighted average. LIFO is not allowed.", cafe: "Kōwhai values its stocktake at FIFO cost." },
       { topic: "Write-downs", us: "Lower of cost and net realisable value; a write-down can't be reversed.", nz: "Lower of cost and net realisable value; a write-down can be reversed if the value recovers." },
-      { topic: "Small-business simplifications for tax", us: "Small businesses (under a gross-receipts limit) can use simplified inventory methods.", nz: "Low-turnover traders (turnover $1.3m or less) with closing stock reasonably estimated under $10,000 may use opening stock value instead of a full valuation.", cafe: "Kōwhai qualifies but counts its stock anyway." },
+      { topic: "Small-business simplifications for tax", us: "Small businesses (under a gross-receipts limit) can use simplified inventory methods.", nz: `Sales under ${money(TRADING_STOCK.lowValue.salesUnder, { dp: 0 })} and closing stock reasonably estimated under ${money(TRADING_STOCK.lowValue.stockEstimateUnder, { dp: 0 })}: closing stock may be valued at its opening value, with no year-end count (IRD's low value trading stock rule).`, cafe: "Kōwhai qualifies but counts its stock anyway." },
     ],
   },
   {

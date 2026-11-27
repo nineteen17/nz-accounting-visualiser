@@ -21,6 +21,11 @@ export function PractiseLinks({ href, part }: { href: string; part?: 1 | 2 | 3 |
             {d.icon} {d.title}
           </Link>
         ))}
+        {href === "/cycle/adjustments" && (
+          <Link href="/study/year-end" className="rounded-xl bg-white px-4 py-2 text-sm font-semibold ring-1 ring-stone-300 hover:ring-kowhai-500">
+            📒 Do the whole year-end yourself
+          </Link>
+        )}
         {part && <Link href={`/study?part=${part}`} className="rounded-xl bg-white px-4 py-2 text-sm font-semibold ring-1 ring-stone-300 hover:ring-kowhai-500">
           🃏 Flashcards for Part {part}
         </Link>}
