@@ -1,6 +1,6 @@
 # Plan: using jurisd to check NZ law
 
-Status: **planned, not started** (written 2026-11-28). jurisd is installed for this project (README "Checking NZ law") but hasn't been used yet.
+Status: **Step 0 failed** (2026-11-28): jurisd can't reach NZ legislation from here, so Steps 1–3 wait for another source. See the Step 0 result below.
 
 ## Purpose
 
@@ -17,6 +17,22 @@ Look up three sections where the answer is already known:
 **Pass:** each section is found, matches the site, and is current (its date checked against legislation.govt.nz, since NZLII copies can lag).
 **Fail:** fall back to nz-legislation-mcp (needs a free PCO API key; README "Checking NZ law").
 Either way, record the result in the README.
+
+### Result (2026-11-28): fail
+
+Tried through the jurisd command line (its MCP connection timed out at startup; the first launch downloads and builds it from GitHub).
+
+- **Search:** blocked. AustLII sits behind a Cloudflare challenge; jurisd needs an `EXA_API_KEY` (Exa, a paid search service) to work around it.
+- **Direct fetch:** NZLII addresses (nzlii.org) aren't on jurisd's allowed list, and the AustLII copies are blocked by the same challenge.
+- **Offline data modules:** none for NZ. The only published module is Australian Commonwealth legislation.
+
+So jurisd can't read the GST Act or the Income Tax Act without paying for Exa. Options, in order:
+
+1. **nz-legislation-mcp**, with a free PCO API key: the official text of every Act, including the tax Acts. Recommended.
+2. **global-law**, once its address is fixed (README): has the Companies Act, Holidays Act and other non-tax Acts now, but no tax Acts.
+3. jurisd with an Exa key: not worth paying for here.
+
+jurisd was removed from the project's Claude Code settings the same day.
 
 ## Step 1: "The law" on the NZ topic pages
 

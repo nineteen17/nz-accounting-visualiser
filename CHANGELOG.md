@@ -8,11 +8,14 @@ Dates are when the change was made. Rates and rules are for the 2026–27 NZ inc
 ## Proposed / not yet done
 
 - **2027–28 rates (on or after 1 April 2027)**. Follow README "Updating the rates" (`npm run rates` lists what to check). In short: when IRD, ACC and MBIE announce them, fill in `PAYROLL_2027_28` in `lib/nz/rates.ts` and clear its `toConfirm` list (tax brackets, IETC, student loan threshold and ESCT bands are carried forward for now); update `MINIMUM_WAGE`; then on 1 April 2027 point `CURRENT_PAYROLL` at 2027–28. Year 1's books keep the 2026–27 rates.
-- **NZ law lookup (MCP)**. Plan in `docs/LAW-LOOKUP.md` (not started; includes the proposed pay yourself tool). global-law's address needs fixing (README "Checking NZ law"). nz-legislation-mcp is the alternative if official, current wording of the tax Acts is needed (needs a PCO API key).
+- **NZ law lookup (MCP)**. jurisd failed Step 0 (`docs/LAW-LOOKUP.md`). Next: get a free PCO API key and set up **nz-legislation-mcp** (README "Checking NZ law"), then continue the plan. Optionally fix global-law's address for the non-tax Acts. The pay yourself tool waits on this.
 
 ---
 
 ## 2026-11-28
+
+### Law lookup: jurisd tested, doesn't work for NZ law
+- Step 0 of `docs/LAW-LOOKUP.md`: jurisd couldn't fetch the GST Act. AustLII is behind a Cloudflare challenge (getting round it needs a paid Exa key), NZLII isn't on its allowed list, and it has no NZ offline data. README now recommends **nz-legislation-mcp** (free PCO key) instead. jurisd has been removed.
 
 ### Plan: checking NZ law with jurisd
 - `docs/LAW-LOOKUP.md`: how jurisd will be used (prove it works, "The law" references on each NZ topic, check the site's rules against the Acts, the April routine), and a proposed follow-on **pay yourself** tool (salary vs dividend). Nothing run yet.
