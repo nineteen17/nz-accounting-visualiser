@@ -1,6 +1,6 @@
 # Plan: GST on mixed-use goods (apportionment)
 
-Status: **planned** 2026-11-29. Not built yet.
+Status: **built** 2026-11-29, with the recommended decisions. Checked while building: IRD's change-in-use page (its boat example reproduces exactly, $16,000; IRD shows $16,008 because it rounds the use to 86.66% first) confirms actual use is weighted by months since purchase. **Correction to the plan below:** the cap on the sale adjustment (s 21F(6)) only applies to land developers and s 5(16B) cases (s 21F(6B)), not to a car, so it isn't modelled. The law check confirms the GST Act is unchanged, so the $10,000 threshold stands. The car's default yearly use is 50%, 55%, 45%, 90%, 60%: one payback ($420), one extra claim ($420), and the rest under the 10-point rule.
 
 ## Why
 

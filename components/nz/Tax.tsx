@@ -118,6 +118,7 @@ export function GstTopic() {
             <li><strong>Private use</strong>: if Aroha took coffee beans home, the café would need to pay GST on the private-use adjustment.</li>
           </ul>
           <p>What a GST invoice must show depends on its value: see <Term k="taxable-supply-information">taxable supply information</Term>.</p>
+          <p className="text-[16px]"><Link href="/explore/gst-mixed-use" className="font-semibold text-kowhai-700 underline">🚗 Try it: used partly for the business?</Link> How much GST can be claimed on a car or laptop used partly privately, and why a company like Kōwhai usually claims it all.</p>
         </div>
       </div>
       <MemoryAid k="gst-3-23" link={false} />

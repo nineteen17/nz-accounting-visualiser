@@ -20,6 +20,24 @@ export const GST = {
   source: "https://www.ird.govt.nz/gst",
 };
 
+/**
+ * GST on goods and services used partly for taxable supplies (GST Act 1985, version as at 30 June 2026; checked 29 November 2026).
+ * smallItem: s 20(3CB)–(3CD) (all or nothing on principal purpose) and s 21(2)(b) (no adjustments).
+ * minPoints / minAdjustment: s 21(2)(c), (d). periods: s 21G(4), (8). exemptDeMinimis: s 20(3D).
+ */
+export const GST_APPORTIONMENT = {
+  smallItem: 10_000,
+  minPoints: 0.1,
+  minAdjustment: 1_000,
+  periods: [
+    { upTo: 20_000, periods: 2 },
+    { upTo: 500_000, periods: 5 },
+    { upTo: Infinity, periods: 10 },
+  ],
+  exemptDeMinimis: { amount: 90_000, share: 0.05 },
+  source: "https://www.ird.govt.nz/gst/gst-adjustments/change-in-use-adjustments-for-gst",
+};
+
 /** Company income tax rate */
 export const COMPANY_TAX_RATE = 0.28;
 

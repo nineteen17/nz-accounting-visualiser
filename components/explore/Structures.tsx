@@ -248,7 +248,7 @@ export function StructuresTool() {
 
       <p className="text-xs text-stone-500">
         Year 2 is the 2028 income year. Its tax brackets and IETC are carried forward from 2026–27 until IRD confirms them; the café work levy ({ACC_CAFE_LEVIES.classificationUnit}) is the {ACC_CAFE_LEVIES.levyYear} rate until ACC publishes 2027/28.
-        See also <Link href="/explore/pay-yourself" className="underline">Pay yourself</Link> for the company&apos;s choices, and <Link href="/foundations/business-structures" className="underline">Business structures</Link>.
+        See also <Link href="/explore/pay-yourself" className="underline">Pay yourself</Link> for the company&apos;s choices, <Link href="/explore/gst-mixed-use" className="underline">GST on mixed use</Link> for a sole trader&apos;s car, and <Link href="/foundations/business-structures" className="underline">Business structures</Link>.
       </p>
     </div>
   );

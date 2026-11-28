@@ -23,6 +23,7 @@ const TOOLS: Record<string, () => React.ReactNode> = {
   "provisional-tax": () => <X.ProvisionalTaxTool />,
   "deferred-tax": () => <X.DeferredTaxTool />,
   "tax-losses": () => <X.TaxLossesTool />,
+  "gst-mixed-use": () => <X.GstMixedUseTool />,
   "year-end": () => <X.YearEndTool />,
   "break-even": () => <X.BreakEvenTool />,
 };

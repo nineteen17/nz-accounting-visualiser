@@ -7,8 +7,6 @@ Dates are when the change was made. Rates and rules are for the 2026–27 NZ inc
 
 ## Proposed / not yet done
 
-- **GST on mixed use (apportionment)**: planned in `docs/GST-MIXED-USE.md`. An Explore tool: which rule applies (a company's private use by staff goes through FBT, s 21I; exempt supplies under the de minimis, s 20(3D); items of $10,000 or less are all or nothing on principal purpose, s 20(3CB)), then a worked sole-trader example (Aroha's car: the claim on purchase, five yearly adjustments with the 10-point / $1,000 rule, and the GST on selling it). With a US note (no VAT; sales tax isn't claimed back).
-
 - **IR4 2027 form (around March 2027)**: when IRD publishes it, re-check `ir4Boxes()` in `lib/engine/ir4.ts` against it (box numbers and wording), and update `IR4_SOURCE` to the new form and guide.
 
 - **2027–28 rates (on or after 1 April 2027)**. Follow README "Updating the rates" (`npm run rates` lists what to check). In short: when IRD, ACC and MBIE announce them, fill in `PAYROLL_2027_28` in `lib/nz/rates.ts` and clear its `toConfirm` list (tax brackets, IETC, student loan threshold and ESCT bands are carried forward for now); update `MINIMUM_WAGE`; then on 1 April 2027 point `CURRENT_PAYROLL` at 2027–28. Year 1's books keep the 2026–27 rates. Also update `ACC_CAFE_LEVIES` (the café work levy and working safer levy) from ACC's 2027/28 Levy Guidebook and clear its `toConfirm`.
@@ -16,6 +14,17 @@ Dates are when the change was made. Rates and rules are for the 2026–27 NZ inc
 ---
 
 ## 2026-11-29
+
+### GST on mixed use
+
+A new Explore tool, `/explore/gst-mixed-use`: how much GST can be claimed on something used partly for the business. Plan: `docs/GST-MIXED-USE.md`.
+- **Which rule applies?** Pick the buyer, the other use and the cost: a company's staff private use is a fringe benefit (full GST claim, then FBT; GST Act s 21I); exempt supplies under the lesser of $90,000 and 5% need no apportioning (s 20(3D)); items of $10,000 or less are all or nothing on their principal purpose (s 20(3CB)–(3CD), since April 2023); otherwise apportion.
+- **The car:** Aroha as a sole trader (the Which structure? "what if") buys a $28,000 + GST car for 60% business use and claims $2,520. Sliders set each of the 5 years' use; the page works out the time-weighted actual use, what it's compared with, the 10-point / $1,000 rule, and each adjustment. Selling it for $15,000: $1,956.52 GST on the whole price, $782.61 back.
+- **The laptop:** $2,400 + GST, all $360 or nothing at the 50% line.
+- **Back at Kōwhai:** why the company hardly ever apportions: a van through FBT, its bank interest ($369.86 in year 1) far under the de minimis, and the entertainment GST adjustment already in its books.
+- The rules reproduce IRD's own change-in-use example. A US note (no VAT; sales tax isn't claimed back; listed property's 50% business-use test).
+- A "GST on mixed use: claim how much?" drill; four glossary terms; 8 GST Act sections in the law references (138 checked); `GST_APPORTIONMENT` in `rates.ts`. Linked from the GST page and Which structure?.
+- Tests: 13 new (321 in all).
 
 ### Tax losses
 

@@ -276,6 +276,24 @@ export const LAW: Record<string, LawRef[]> = {
 
 /** the law behind an Explore tool, keyed by the tool's slug (shown in the same "The law" box) */
 export const TOOL_LAW: Record<string, LawRef[]> = {
+  "gst-mixed-use": [
+    { act: "gst", section: "20", heading: "Calculation of tax payable", anchor: "DLM83479",
+      says: "GST on purchases is claimed to the extent they're used for taxable supplies (subs (3C)). Items costing $10,000 or less are all or nothing on their principal purpose (subs (3CB)–(3CD)). Exempt supplies under the lesser of $90,000 and 5% needn't be apportioned (subs (3D))." },
+    { act: "gst", section: "21", heading: "Adjustments for apportioned supplies", anchor: "DLM83898",
+      says: "At the end of each adjustment period, check the actual use. No adjustment for items of $10,000 or less, or for a change under 10 percentage points unless the adjustment is over $1,000." },
+    { act: "gst", section: "21C", heading: "Adjustments for first and subsequent adjustment periods", anchor: "DLM83934",
+      says: "The first period compares actual use with intended use; later periods compare with the actual use at the last adjustment made." },
+    { act: "gst", section: "21D", heading: "Calculating amount of adjustment", anchor: "DLM83936",
+      says: "The adjustment is the full GST on the item × the percentage difference: an extra claim, or GST paid back as output tax." },
+    { act: "gst", section: "21F", heading: "Treatment on disposal", anchor: "DLM83944",
+      says: "On sale, GST is charged on the whole price, and a final adjustment gives back tax fraction × price × (1 − previous use)." },
+    { act: "gst", section: "21FB", heading: "Treatment when percentage of taxable use permanently changes", anchor: "LMS851151",
+      says: "A permanent change in use is a one-off wash-up: full GST × the new use, less what's been claimed. Then no more yearly adjustments." },
+    { act: "gst", section: "21G", heading: "Definitions and requirements for apportioned supplies and adjustment periods", anchor: "DLM83947",
+      says: "Actual use is measured from purchase to the end of the period. 2 adjustment periods for items over $10,000 up to $20,000, 5 up to $500,000, 10 above that or for land." },
+    { act: "gst", section: "21I", heading: "Fringe benefits and entertainment expenses", anchor: "DLM83958",
+      says: "A fringe benefit is treated as a supply, so GST is paid on it; so is the non-deductible part of entertainment. That's why a company doesn't apportion for staff private use." },
+  ],
   "tax-losses": [
     { act: "ita", section: "BC 4", heading: "Net income and net loss", anchor: "DLM1512339",
       says: "If deductions are more than income, the difference is a net loss and net income is zero: no income tax for the year." },
