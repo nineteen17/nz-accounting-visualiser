@@ -249,7 +249,7 @@ const SECTIONS: Section[] = [
     rows: [
       { topic: "Cost methods", us: "FIFO, weighted average or LIFO.", nz: "FIFO or weighted average. LIFO is not allowed.", cafe: "Kōwhai values its stocktake at FIFO cost." },
       { topic: "Write-downs", us: "Lower of cost and net realisable value; a write-down can't be reversed.", nz: "Lower of cost and net realisable value; a write-down can be reversed if the value recovers." },
-      { topic: "Small-business simplifications for tax", us: "Small businesses (under a gross-receipts limit) can use simplified inventory methods.", nz: `Sales under ${money(TRADING_STOCK.lowValue.salesUnder, { dp: 0 })} and closing stock reasonably estimated under ${money(TRADING_STOCK.lowValue.stockEstimateUnder, { dp: 0 })}: closing stock may be valued at its opening value, with no year-end count (IRD's low value trading stock rule).`, cafe: "Kōwhai qualifies but counts its stock anyway." },
+      { topic: "Small-business simplifications for tax", us: "Small businesses (under a gross-receipts limit) can use simplified inventory methods.", nz: `Turnover of ${money(TRADING_STOCK.lowValue.turnoverUpTo, { dp: 0 })} or less and closing stock reasonably estimated under ${money(TRADING_STOCK.lowValue.stockEstimateUnder, { dp: 0 })}: closing stock may be valued at its opening value, with no year-end count (IRD's low value trading stock rule).`, cafe: "Kōwhai qualifies but counts its stock anyway." },
     ],
   },
   {

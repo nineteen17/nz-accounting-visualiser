@@ -8,11 +8,16 @@ Dates are when the change was made. Rates and rules are for the 2026–27 NZ inc
 ## Proposed / not yet done
 
 - **2027–28 rates (on or after 1 April 2027)**. Follow README "Updating the rates" (`npm run rates` lists what to check). In short: when IRD, ACC and MBIE announce them, fill in `PAYROLL_2027_28` in `lib/nz/rates.ts` and clear its `toConfirm` list (tax brackets, IETC, student loan threshold and ESCT bands are carried forward for now); update `MINIMUM_WAGE`; then on 1 April 2027 point `CURRENT_PAYROLL` at 2027–28. Year 1's books keep the 2026–27 rates.
-- **NZ law lookup (MCP)**. jurisd failed Step 0 (`docs/LAW-LOOKUP.md`). Next: get a free PCO API key and set up **nz-legislation-mcp** (README "Checking NZ law"), then continue the plan. Optionally fix global-law's address for the non-tax Acts. The pay yourself tool waits on this.
+- **Check the site against NZ law**: Steps 1–3 of `docs/LAW-LOOKUP.md` (law references on each NZ topic, check every rule, the April routine), then the pay yourself tool. No key or server needed: the Acts are read from legislation.govt.nz directly.
 
 ---
 
 ## 2026-11-28
+
+### NZ law read straight from legislation.govt.nz, and the stock thresholds corrected to match the Act
+- Step 0 of `docs/LAW-LOOKUP.md` now **passes** without any law server or key: legislation.govt.nz serves each Act to a plain download (the web-fetch tool gets "403", NZLII blocks automated access). GST Act ss 8 and 51 match the site (15%, $60,000).
+- **Corrected against the Act**: low value trading stock applies with turnover of **$1,300,000 or less** (Income Tax Act 2007 s EB 23), not "under $1.3m"; a low-turnover trader has turnover of **no more than $3,000,000**, counting associated persons (s EB 2). The earlier wording followed IRD's summary. Fixed in `rates.ts`, the inventory page (now citing the sections), the glossary, US vs NZ, and the Valuing stock drill (which now includes the $1,300,000 exactly case). New boundary test.
+- README "Checking NZ law" rewritten: read the Acts directly; jurisd, global-law and nz-legislation-mcp listed as tried or optional.
 
 ### Law lookup: jurisd tested, doesn't work for NZ law
 - Step 0 of `docs/LAW-LOOKUP.md`: jurisd couldn't fetch the GST Act. AustLII is behind a Cloudflare challenge (getting round it needs a paid Exa key), NZLII isn't on its allowed list, and it has no NZ offline data. README now recommends **nz-legislation-mcp** (free PCO key) instead. jurisd has been removed.

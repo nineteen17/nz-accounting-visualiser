@@ -27,3 +27,14 @@ describe("valuing stock", () => {
     expect(lowerOfCostAndNrv(100, 130)).toBe(100);
   });
 });
+
+describe("IRD trading stock thresholds (Income Tax Act 2007)", () => {
+  it("low value trading stock: turnover of $1,300,000 or less, closing stock under $10,000 (s EB 23)", async () => {
+    const { TRADING_STOCK } = await import("@/lib/nz/rates");
+    const qualifies = (turnover: number, stock: number) => turnover <= TRADING_STOCK.lowValue.turnoverUpTo && stock < TRADING_STOCK.lowValue.stockEstimateUnder;
+    expect(qualifies(1_300_000, 9_999)).toBe(true);
+    expect(qualifies(1_300_001, 9_999)).toBe(false);
+    expect(qualifies(1_000_000, 10_000)).toBe(false);
+    expect(TRADING_STOCK.lowTurnoverUpTo).toBe(3_000_000);
+  });
+});

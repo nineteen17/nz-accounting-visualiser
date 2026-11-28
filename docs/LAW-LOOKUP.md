@@ -1,10 +1,12 @@
-# Plan: using jurisd to check NZ law
+# Plan: checking the site against NZ law
 
-Status: **Step 0 failed** (2026-11-28): jurisd can't reach NZ legislation from here, so Steps 1–3 wait for another source. See the Step 0 result below.
+Status: **Step 0 passed** (2026-11-28) by reading legislation.govt.nz directly; jurisd failed and was removed. Steps 1–3 can go ahead, with no key or server needed.
+
+**How to read an Act (no key, no server):** fetch any section's page on legislation.govt.nz with a plain `curl -sL`. It redirects to the whole Act (the Income Tax Act 2007 is about 30 MB), with its "Version as at" date. Strip the HTML and search for the section heading, e.g. `EB 23 Valuing closing stock under $10,000`. The web-fetch tool gets "403 Forbidden" from the same site, and NZLII blocks automated access, so use curl.
 
 ## Purpose
 
-IRD, ACC and Employment NZ stay the source for **figures and how rules are applied**. jurisd adds **the law behind them**: the Act and section each rule comes from, in the Act's own wording. That lets the site say "here's the law" and helps catch mistakes like the trading stock rule (corrected 2026-11-28, see CHANGELOG).
+IRD, ACC and Employment NZ stay the source for **figures and how rules are applied**. The Acts add **the law behind them**: the Act and section each rule comes from, in the Act's own wording. That lets the site say "here's the law" and helps catch mistakes like the trading stock rule (corrected 2026-11-28, see CHANGELOG).
 
 ## Step 0: Prove it works
 
@@ -81,3 +83,14 @@ Raised 2026-11-28: owners of a company like Kōwhai largely set their own salary
 - the cash left in the company after the tax bill, GST and the loan, and whether it still passes the solvency test.
 
 It waits for Step 2, so the limits it describes (relatives' salaries, personal services attribution, directors' duties, the solvency test) are checked against the Acts first. Figures come from `lib/nz/rates.ts` and the year 2 books.
+
+## Step 0, second attempt (2026-11-28): pass, by reading legislation.govt.nz directly
+
+| Check | Found in the Act | Matches the site? |
+|---|---|---|
+| GST Act 1985 s 8 (version as at 30 June 2026) | GST charged "at the rate of 15 %" | Yes |
+| GST Act 1985 s 51 | liable to register when supplies over 12 months have "exceeded $60,000" | Yes |
+| Income Tax Act 2007 s EB 23 (version as at 4 September 2026) | "a turnover of $1,300,000 or less" and closing stock reasonably estimated at "less than $10,000": closing stock may be valued at its opening value | **No: the site said "under $1.3m". Fixed to "$1,300,000 or less".** |
+| Income Tax Act 2007 s EB 2, "low-turnover trader" | turnover, with associated persons, of "no more than" $3,000,000 | **No: the site said "under $3 million". Fixed.** |
+
+Both fixes came from IRD's page summarising the rule as "less than"; the Act is the authority. Next: Step 1.

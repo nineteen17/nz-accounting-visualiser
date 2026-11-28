@@ -152,12 +152,17 @@ export const DEPRECIATION = {
   source: "https://www.ird.govt.nz/rate-finder",
 };
 
-/** IRD trading stock rules (checked against ird.govt.nz "Valuing trading stock", updated 19 November 2026) */
+/**
+ * Trading stock thresholds, checked against the Income Tax Act 2007 (legislation.govt.nz, version as at
+ * 4 September 2026) and IRD's "Valuing trading stock" page.
+ */
 export const TRADING_STOCK = {
-  /** low value trading stock: closing stock may be valued at its opening value, with no year-end count */
-  lowValue: { salesUnder: 1_300_000, stockEstimateUnder: 10_000 },
-  /** low-turnover trader: simpler options within each valuation method (Income Tax Act 2007, ss EB 13–EB 22) */
-  lowTurnoverSalesUnder: 3_000_000,
+  /** s EB 23: turnover of $1,300,000 OR LESS and closing stock reasonably estimated at LESS THAN $10,000:
+   *  closing stock may be valued at its opening value, with no year-end count */
+  lowValue: { turnoverUpTo: 1_300_000, stockEstimateUnder: 10_000, section: "EB 23" },
+  /** s EB 2(2) "low-turnover trader": turnover (with associated persons) of NO MORE THAN $3,000,000;
+   *  simpler options within each valuation method (ss EB 13–EB 22) */
+  lowTurnoverUpTo: 3_000_000,
   source: "https://www.ird.govt.nz/income-tax/income-tax-for-businesses-and-organisations/types-of-business-income/trading-stock/valuing-trading-stock",
 };
 

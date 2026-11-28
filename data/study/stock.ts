@@ -91,13 +91,13 @@ function stockQuestion(rng: Rng): Question {
 
   // can it skip the count?
   const lv = TRADING_STOCK.lowValue;
-  const sales = pick(rng, [450_000, 900_000, 1_250_000, 1_400_000, 2_500_000]);
+  const sales = pick(rng, [450_000, 900_000, 1_250_000, 1_300_000, 1_400_000, 2_500_000]);
   const stock = pick(rng, [4_000, 8_500, 9_800, 12_000, 15_000]);
-  const ok = sales < lv.salesUnder && stock < lv.stockEstimateUnder;
+  const ok = sales <= lv.turnoverUpTo && stock < lv.stockEstimateUnder;
   const yes = "Yes: it can keep last year's stock value", no = "No: it must value its closing stock";
   return mc(rng, ok ? yes : no, [ok ? no : yes],
-    `A café has sales of ${$$(sales)} this year and reasonably estimates its closing stock at ${$$(stock)}. Under IRD's low value trading stock rule, can it skip valuing its stock at year end?`,
-    `The rule needs **both**: sales under ${$$(lv.salesUnder)} and a reasonable estimate of closing stock under ${$$(lv.stockEstimateUnder)}. ${ok ? "Both are met, so closing stock can stay at its opening value, with no count." : `${sales >= lv.salesUnder ? `Sales of ${$$(sales)} are too high` : `Stock of ${$$(stock)} is too much`}, so it has to value its stock.`}`);
+    `A café has turnover of ${$$(sales)} this year and reasonably estimates its closing stock at ${$$(stock)}. Under IRD's low value trading stock rule, can it skip valuing its stock at year end?`,
+    `The rule needs **both**: turnover of ${$$(lv.turnoverUpTo)} or less and a reasonable estimate of closing stock under ${$$(lv.stockEstimateUnder)}. ${ok ? "Both are met, so closing stock can stay at its opening value, with no count." : `${sales > lv.turnoverUpTo ? `Turnover of ${$$(sales)} is too high` : `Stock of ${$$(stock)} is too much`}, so it has to value its stock.`}`);
 }
 
 export const STOCK_DRILLS: Drill[] = [

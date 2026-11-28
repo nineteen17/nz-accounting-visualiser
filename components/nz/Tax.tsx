@@ -510,7 +510,7 @@ export function InventoryTopic() {
   const y1Sales = r2(-((b1["400"] ?? 0) + (b1["410"] ?? 0)));
   const y1Stock = CLOSING_STOCK.reduce((t, x) => t + x.value, 0);
   const lv = TRADING_STOCK.lowValue;
-  const qualifies = y1Sales < lv.salesUnder && y1Stock < lv.stockEstimateUnder;
+  const qualifies = y1Sales <= lv.turnoverUpTo && y1Stock < lv.stockEstimateUnder;
   const $0 = (x: number) => money(x, { dp: 0 });
 
   return (
@@ -586,12 +586,12 @@ export function InventoryTopic() {
         <h2>IRD trading stock rules</h2>
         <ul>
           <li>Trading stock must be valued at balance date. The closing value is taxable income and the opening value is a deduction, so the stock in hand is taxed when it&apos;s sold, not when it&apos;s bought.</li>
-          <li><strong>Low value trading stock</strong>: if sales for the year are under {$0(lv.salesUnder)} and a reasonable estimate of closing stock is under {$0(lv.stockEstimateUnder)}, closing stock can be valued at its <strong>opening value</strong>, with no stocktake at year end. {qualifies ? <>Kōwhai qualifies (year 1 sales {$0(y1Sales)}, stock {$0(y1Stock)}) but chose to count anyway, to know its true margin.</> : null}</li>
-          <li><strong>Low-turnover traders</strong> (sales under {$0(TRADING_STOCK.lowTurnoverSalesUnder)}) get simpler options within each valuation method.</li>
+          <li><strong>Low value trading stock</strong>: if turnover for the year is {$0(lv.turnoverUpTo)} or less and a reasonable estimate of closing stock is under {$0(lv.stockEstimateUnder)}, closing stock can be valued at its <strong>opening value</strong>, with no stocktake at year end. {qualifies ? <>Kōwhai qualifies (year 1 sales {$0(y1Sales)}, stock {$0(y1Stock)}) but chose to count anyway, to know its true margin.</> : null}</li>
+          <li><strong>Low-turnover traders</strong> (turnover of {$0(TRADING_STOCK.lowTurnoverUpTo)} or less, counting associated businesses) get simpler options within each valuation method.</li>
           <li><strong>Stock taken for private use</strong> (Aroha takes beans home) is usually taxed as if it were sold at market value.</li>
           <li><strong>Wastage</strong> (expired milk, dropped cakes) is simply not in the count, so it ends up in COGS automatically.</li>
         </ul>
-        <p className="text-sm text-stone-500">Source: <a className="underline" href={TRADING_STOCK.source} target="_blank" rel="noreferrer">IRD, Valuing trading stock</a>.</p>
+        <p className="text-sm text-stone-500">Sources: Income Tax Act 2007, s {TRADING_STOCK.lowValue.section} and the &ldquo;low-turnover trader&rdquo; definition in s EB 2 (<a className="underline" href="https://www.legislation.govt.nz/act/public/2007/0097/latest/DLM1512301.html" target="_blank" rel="noreferrer">legislation.govt.nz</a>); <a className="underline" href={TRADING_STOCK.source} target="_blank" rel="noreferrer">IRD, Valuing trading stock</a>.</p>
         <Callout kind="tip" title="Café rule of thumb">Most cafés aim for a COGS of 28–35% of sales. Kōwhai&apos;s is about 30%. If it creeps up, look at wastage, portion sizes, supplier prices and menu prices.</Callout>
       </div>
     </div>
