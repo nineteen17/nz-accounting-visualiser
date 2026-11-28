@@ -8,12 +8,35 @@ Dates are when the change was made. Rates and rules are for the 2026–27 NZ inc
 ## Proposed / not yet done
 
 - **2027–28 rates (on or after 1 April 2027)**. Follow README "Updating the rates" (`npm run rates` lists what to check). In short: when IRD, ACC and MBIE announce them, fill in `PAYROLL_2027_28` in `lib/nz/rates.ts` and clear its `toConfirm` list (tax brackets, IETC, student loan threshold and ESCT bands are carried forward for now); update `MINIMUM_WAGE`; then on 1 April 2027 point `CURRENT_PAYROLL` at 2027–28. Year 1's books keep the 2026–27 rates. Also update `ACC_CAFE_LEVIES` (the café work levy and working safer levy) from ACC's 2027/28 Levy Guidebook and clear its `toConfirm`.
-- **Do a pay run yourself**: planned in `docs/PAY-RUN.md`. Six real pay runs: payslips (with IRD's PAYE steps guided), the journal entry, payday filing and paying IRD. It needs a payroll engine fix first: PAYE is 1–3 cents out on 95 of 102 payslips, and Leo's ESCT rate changes from pay to pay. Three decisions are needed and two rounding rules are still to confirm.
 - **Beginner annotation pass** on the recent tools (pay yourself, which structure, provisional tax, the GST return exercise): check every term has a `<Term>` or a plain-English line, and every figure says what it is and where it comes from.
 
 ---
 
 ## 2026-11-28
+
+### Do a pay run yourself
+- New exercise `/study/pay-run`: six of Kōwhai's real pay runs, simpler first.
+  - The first pay run.
+  - Leo's busy summer (44 hours).
+  - The first pay of year 2 (new ACC rate).
+  - The pay rises.
+  - Mia's two annual leave runs, marked harder.
+- **1. The payslips.** Each person's timesheet, then every payslip line: ordinary pay, holiday pay, gross, PAYE, student loan, KiwiSaver, net pay, employer KiwiSaver, ESCT, and what reaches the fund.
+  - Each line says what it is in plain English and links to its glossary entry. Once marked, it shows its working.
+  - PAYE is a short worksheet of IRD's own steps. "Use the PAYE tables" fills it in from your own gross pay.
+  - Lines are marked against your own earlier figures.
+  - A "Who gets what" breakdown shows where every dollar of the pay run goes.
+- **2. The journal entry**, with the payslip totals, the common mistakes, and Kōwhai's real entry as the answer. The leave runs use the holiday pay accrual.
+- **3. Payday filing and paying IRD**: when the employment information is due, what's in it, and how much goes to IRD on the 20th.
+- The best result for each pay run is saved on the device. Linked from the PAYE, KiwiSaver and Holidays pages' "Make it stick" boxes and the Drills tab.
+- **Corrected the payroll engine to IRD's Payroll Calculations & Business Rules Specification 2026–27:**
+  - PAYE now drops the cents from annual income and truncates twice, weekly and then per pay. It was 1–3 cents out on 95 of Kōwhai's 102 payslips (Mia's first pay: $341.18, not $341.19).
+  - ESCT is worked on the employer contribution with its cents dropped.
+  - Each employee's ESCT rate is set once a year from the year's expected pay. Leo's used to switch between 10.5% and 17.5% from one pay to the next.
+  - Student loan uses gross pay with the cents dropped.
+  - Profit and tax are unchanged in both years. Only cents move between net pay and the amounts owed to IRD.
+- The PAYE page's calculator now uses the same engine, and its "how PAYE is worked out" steps are IRD's.
+- New tests check IRD's worked examples. Tests: 254 pass.
 
 ### Plan for "Do a pay run yourself"
 - `docs/PAY-RUN.md`, checked against IRD's Payroll Calculations & Business Rules Specification for 2026–27 (v1.0, 24 March 2026), the rules payroll software must follow.

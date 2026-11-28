@@ -9,7 +9,7 @@ import type { JournalLine, Transaction } from "@/lib/engine/types";
 import type { GstPeriod, GstReturn } from "@/lib/engine/gst";
 import type { Balances } from "@/lib/engine/ledger";
 import { pct, r2, nzDate } from "@/lib/money";
-import { calcPay, type Employee, type PayResult } from "@/lib/nz/payroll";
+import { calcPay, esctRateFor, type Employee, type PayResult } from "@/lib/nz/payroll";
 import { HOLIDAYS, type PayrollRates } from "@/lib/nz/rates";
 import { BUSINESS, PURCHASE_MIX, SUPPLIERS } from "../business";
 import { ACCOUNTS } from "../chartOfAccounts";
@@ -72,12 +72,28 @@ export function payDates(first: string, yearEnd: string) {
   return out;
 }
 
+/**
+ * Each employee's ESCT rate for the year. IRD sets it once a year (payroll specification 5.20–5.21). Neither Mia nor Leo
+ * worked a full previous tax year (they started in April 2026), so it's set from the year's expected pay plus employer
+ * KiwiSaver: the café knows its rosters, so the expected pay is the year's rostered pay.
+ */
+export function esctRates(cfg: YearConfig): Record<string, number> {
+  const year: Record<string, number> = {};
+  for (const date of payDates(cfg.firstPayDate, cfg.yearEnd))
+    for (const e of cfg.employeesOn(date)) {
+      const p = calcPay(e, cfg.hoursFor(e.id, date), cfg.rates);
+      year[e.id] = r2((year[e.id] ?? 0) + p.gross + p.ksEmployerGross);
+    }
+  return Object.fromEntries(Object.entries(year).map(([id, total]) => [id, esctRateFor(total, cfg.rates.esct)]));
+}
+
 export function payRuns(cfg: YearConfig): PayRun[] {
+  const esct = esctRates(cfg);
   return payDates(cfg.firstPayDate, cfg.yearEnd).map((date) => ({
     date,
     periodFrom: addDays(date, -15),
     periodTo: addDays(date, -2),
-    results: cfg.employeesOn(date).map((e) => calcPay(e, cfg.hoursFor(e.id, date), cfg.rates)),
+    results: cfg.employeesOn(date).map((e) => calcPay(e, cfg.hoursFor(e.id, date), cfg.rates, esct[e.id])),
   }));
 }
 

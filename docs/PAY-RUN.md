@@ -1,6 +1,6 @@
 # Plan: "Do a pay run yourself"
 
-Status: **planned, not started** (written 2026-11-28).
+Status: **built** 2026-11-28 (`/study/pay-run`), with the engine fix. Planned the same day.
 
 ## The idea
 
@@ -125,9 +125,10 @@ The engine was compared with IRD's steps on all 102 of Kōwhai's payslips (51 pa
 
 The PAYE page's calculator uses the same function, so it becomes IRD-exact too. This goes in the CHANGELOG as a correction.
 
-**To confirm before building**
-1. ESCT on the employer contribution: section 5.20.6 says the contribution uses dollars and cents but that "ESCT is calculated based on the last amount i.e. $51 and not $51.71". Read the worked examples in 5.21 to settle whether ESCT is truncated to whole dollars or cents.
-2. Whether the KiwiSaver employee deduction is rounded or truncated to cents (section 4).
+**Confirmed before building** (the same specification)
+1. **ESCT** (section 5.21.3): the employer contribution is worked out in dollars and cents, ESCT is that amount with the cents dropped × the rate, cut to cents, and the fund gets the contribution less the ESCT. IRD's example: $122.50 → $122 × 17.5% = $21.35, so $101.15 goes to the fund.
+2. **KiwiSaver deductions**: the specification doesn't give a rounding rule, and its examples come out exact. The app rounds to the cent.
+3. **The ESCT rate for Kōwhai's staff**: neither worked a full previous tax year with Kōwhai (they started in April 2026), so the rate is set from the year's *expected* pay (the rostered hours), as in IRD's examples for new and casual employees. Both come out at 17.5% in both years.
 
 ## Build
 

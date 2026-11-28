@@ -5,7 +5,7 @@ import Link from "next/link";
 import { PAY_RUNS } from "@/data/books/year";
 import { EMPLOYEES } from "@/data/business";
 import { ACC_EARNERS_LEVY, CURRENT_PAYROLL, ESCT_BANDS, HOLIDAYS, IETC, INDIVIDUAL_TAX_BRACKETS, KIWISAVER, MINIMUM_WAGE, STUDENT_LOAN } from "@/lib/nz/rates";
-import { TAX_CODES, esctRateFor, ietcFor, progressiveTax, type TaxCode } from "@/lib/nz/payroll";
+import { TAX_CODES, esctOn, esctRateFor, payeForPay, progressiveTax, studentLoanFor, type TaxCode } from "@/lib/nz/payroll";
 import { money, pct, r2 } from "@/lib/money";
 import { cx } from "@/lib/ui";
 import { SourceDoc } from "@/components/documents/SourceDoc";
@@ -28,21 +28,21 @@ export function PayeTopic() {
   const [code, setCode] = useState<TaxCode>("ME");
   const [sl, setSl] = useState(true);
   const [ks, setKs] = useState(KIWISAVER.employeeDefault);
-  const annual = gross * freq;
+  // the same calculation as Kōwhai's books, which follows IRD's payroll specification
+  const p = payeForPay(gross, code, freq);
+  const annual = p.annualised;
   const flat = TAX_CODES[code].flat;
   const pt = progressiveTax(annual);
-  const taxAnnual = flat !== undefined ? annual * flat : pt.total;
-  const ietc = code === "ME" ? ietcFor(annual) : 0;
-  const accAnnual = Math.min(annual, ACC_EARNERS_LEVY.maxLiableEarnings) * ACC_EARNERS_LEVY.rate;
-  const incomeTax = r2((taxAnnual - ietc) / freq);
-  const acc = r2(accAnnual / freq);
-  const slThreshold = STUDENT_LOAN.annualThreshold / freq;
-  const slAmt = sl ? r2(Math.max(0, gross - slThreshold) * STUDENT_LOAN.rate) : 0;
+  const ietc = p.ietcAnnual;
+  const incomeTax = p.incomeTax;
+  const acc = p.accLevy;
+  const slAmt = sl ? studentLoanFor(gross, CURRENT_PAYROLL, freq) : 0;
   const ksAmt = r2(gross * ks);
-  const net = r2(gross - incomeTax - acc - slAmt - ksAmt);
+  const net = r2(gross - p.paye - slAmt - ksAmt);
   const erGross = ks > 0 ? r2(gross * KIWISAVER.employerMinimum) : 0;
-  const esctRate = esctRateFor(annual + erGross * freq);
-  const esct = r2(erGross * esctRate);
+  // the ESCT rate is set once a year; here it's estimated as if every pay were like this one
+  const esctRate = esctRateFor((gross + erGross) * freq);
+  const esct = esctOn(erGross, esctRate);
   const segments = [
     { l: "Take-home", v: net, c: "bg-emerald-500" },
     { l: "PAYE tax", v: incomeTax, c: "bg-rose-500" },
@@ -59,13 +59,14 @@ export function PayeTopic() {
           <h3>How PAYE is worked out</h3>
           <ol>
             <li>Take the <strong>gross pay</strong> for the period (hours × rate + any extras).</li>
-            <li><strong>Annualise</strong> it (× 52 weekly, × 26 fortnightly, × 12 monthly).</li>
+            <li><strong>Annualise</strong> it (× 52 weekly, × 26 fortnightly, × 12 monthly) and drop the cents.</li>
             <li>Apply the <strong>tax brackets</strong> (or a flat rate for secondary codes).</li>
-            <li>Subtract the <Term k="ietc">IETC</Term> if the code is ME.</li>
             <li>Add the <Term k="acc-earners-levy">ACC earners&apos; levy</Term> ({pct(ACC_EARNERS_LEVY.rate, 2)}).</li>
-            <li>Divide back to the pay period.</li>
+            <li>Subtract the <Term k="ietc">IETC</Term> if the code is ME.</li>
+            <li>Divide by 52 to get a week&apos;s worth, and <strong>cut</strong> it to whole cents (no rounding).</li>
+            <li>Convert to the pay period (× 52 ÷ 26 for a fortnight) and cut to whole cents again.</li>
           </ol>
-          <p>IRD publishes exact PAYE tables and rounding rules. Payroll software follows them, so results can differ from this calculator by a few cents.</p>
+          <p>These are IRD&apos;s own steps: the payroll specification every payroll program must follow. This calculator and Kōwhai&apos;s books use them, so the figures match to the cent. Student loan works on the gross pay with its cents dropped.</p>
           <h3>Tax codes</h3>
           <p>New employees complete an <strong>IR330</strong> tax code declaration. Without one, the employer must deduct at the 45% <strong>non-declaration rate</strong>.</p>
           <div className="not-prose grid gap-1 text-sm">

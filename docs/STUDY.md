@@ -110,6 +110,7 @@ A learner who finishes the course and keeps up with Study should be able to:
 }
 "study-settings-v1": { parts, levels, dir, newCount, aids, typed }
 "gst-return-v1": { [periodKey]: { sorted, of, boxes, done } }   // best result per GST period
+"pay-run-v1": { [runKey]: { lines, of, entry, filing, done } }   // best result per pay run
 ```
 Bad data loads as empty. **Export / import** (Progress tab): `exportStudy` writes `{ app: "kowhai-cafe-study", exported, study, settings }` as a JSON file; `parseImport` refuses anything that isn't that (or is a different version), drops broken entries, and the settings are checked field by field before anything is replaced. `missed`, `aids` and `typed` were added without a version bump: they're new optional fields, and `loadStudy` / the settings loader fill them with defaults, so older saved progress still loads. **Any change to the shape needs a version bump plus a migration in `loadStudy`**, so learners don't lose progress.
 
@@ -163,7 +164,7 @@ See the open questions in section 5.
 |---|---|---|---|
 | GST | ✅ | ✅ GST maths, Standard / zero-rated / exempt | |
 | GST return | ✅ | ✅ GST for a period, GST period order, due dates, GST entries in E1, Do the GST return yourself (`/study/gst-return`, all twelve real periods) | |
-| PAYE | ✅ | ✅ Payroll, pay-run entries in E1 | |
+| PAYE | ✅ | ✅ Payroll, pay-run entries in E1, Do a pay run yourself (`/study/pay-run`, six real pay runs) | |
 | KiwiSaver | ✅ | ✅ Payroll (employee and employer KS, ESCT) | |
 | Holidays | ✅ | ✅ Holiday pay | |
 | Employment | ✅ | ✅ Employment basics | |
@@ -244,6 +245,7 @@ Shown on matching flashcards, and practised as cards of their own (`a:` cards, o
 - [x] **E4** Year 2 entries: reversing last year's accruals, the POS sale and its depreciation, the dividend and its RWT, annual leave, provisional tax.
 - [x] **N9** Balance a T-account.
 - [x] **N10** Cash-basis vs accrual-basis profit for a month.
+- [x] **Y3** Do a pay run yourself (`/study/pay-run`, logic in `lib/study/payRun.ts`, runs in `data/study/payRun.ts`): the payslips line by line (PAYE as IRD's steps), the entry, payday filing. Best result per pay run saved as `pay-run-v1`. The payroll engine now follows IRD's payroll specification.
 - [x] **B6** Provisional tax: methods & interest drill, with the provisional tax planner (`data/study/provisionalTax.ts`, rules from `lib/nz/provisionalTax.ts`). 47 drills.
 - [x] **Y2** Do the GST return yourself (`/study/gst-return`, logic in `lib/study/gstReturn.ts`, periods in `data/study/gstReturn.ts`): sort a real period's transactions, fill in the GST101A from your own sorting, and compare with Kōwhai's return. Best result per period saved as `gst-return-v1`.
 - [x] **B5** Which structure? drill, with the Which structure? tool (`data/study/structures.ts`, figures from `lib/nz/structures.ts`). 46 drills.
@@ -278,6 +280,7 @@ Shown on matching flashcards, and practised as cards of their own (`a:` cards, o
 - None open. Decided 2026-11-28: drills don't count towards Known; they have their own "mastered" (X3). Typed recall added as the "Type it" option for meaning → term cards (X4).
 
 ## 6. Log
+- **2026-11-28**: Do a pay run yourself (Y3), and the payroll engine corrected to IRD's payroll specification. 47 drills, 254 tests.
 - **2026-11-28**: Provisional tax planner (Explore) and its drill (B6); Do the GST return yourself (Y2). 47 drills, 232 tests.
 - **2026-11-28**: Which structure? tool (Explore) and its drill (B5). 46 drills, 191 tests.
 - **2026-11-28**: Pay yourself tool (Explore) and its Salary or dividend? drill (B4). 45 drills, 175 tests.

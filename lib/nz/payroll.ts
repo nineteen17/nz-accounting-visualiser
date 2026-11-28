@@ -41,27 +41,52 @@ export const TAX_CODES: Record<TaxCode, { label: string; flat?: number; explain:
   CAE: { label: "CAE", flat: B[0].rate, explain: "Casual agricultural employee (short-term harvest workers etc.)." },
 };
 
-/** PAYE for one pay (includes the ACC earners' levy, like IRD's PAYE tables) */
+/** cut to whole cents without rounding, as IRD's payroll rules require ($75.678 → $75.67). The tiny nudge stops 0.29 × 100 = 28.999… losing a cent */
+export const truncCents = (x: number) => Math.floor(x * 100 + 1e-6) / 100;
 
+/**
+ * PAYE for one pay, including the ACC earners' levy, following IRD's Payroll Calculations & Business Rules
+ * Specification 2026–27 (sections 5.2 and 5.3), which payroll software must follow:
+ * 1. annual income = pay × pays a year, cents dropped; 2. tax on that (or a flat rate for secondary codes);
+ * 3. + the earners' levy; 4. − the IETC (code ME); 5. ÷ 52, cut to cents; 6. × 52 ÷ pays a year, cut to cents.
+ * `steps` lists each step with its working, for the PAYE page and the pay run exercise.
+ */
 export function payeForPay(gross: number, code: TaxCode, paysPerYear = PAYS_PER_YEAR, rates: PayrollRates = CURRENT_PAYROLL) {
-  const annual = gross * paysPerYear;
-  const accAnnual = Math.min(annual, rates.acc.maxLiableEarnings) * rates.acc.rate;
+  const annual = Math.floor(gross * paysPerYear + 1e-6);
   const flat = TAX_CODES[code].flat;
   const taxAnnual = flat !== undefined ? annual * flat : progressiveTax(annual, rates.brackets).total;
+  const accAnnual = annual >= rates.acc.maxLiableEarnings ? rates.acc.maxLiableEarnings * rates.acc.rate : annual * rates.acc.rate;
   const ietcAnnual = code === "ME" ? ietcFor(annual, rates.ietc) : 0;
-  const incomeTax = r2((taxAnnual - ietcAnnual) / paysPerYear);
-  const accLevy = r2(accAnnual / paysPerYear);
-  return {
-    annualised: annual,
-    taxAnnual,
-    ietcAnnual,
-    accAnnual,
-    incomeTax,
-    accLevy,
-    paye: r2(incomeTax + accLevy),
-  };
+  const weekly = truncCents((taxAnnual + accAnnual - ietcAnnual) / 52);
+  const paye = truncCents((weekly * 52) / paysPerYear);
+  // the payslip shows the levy on its own line; it's worked out the same way, and the rest is income tax
+  const accLevy = truncCents((truncCents(accAnnual / 52) * 52) / paysPerYear);
+  const steps = [
+    { label: "Annual income", how: `${money(gross)} × ${paysPerYear}, cents dropped`, value: annual },
+    { label: "Tax on the annual income", how: flat !== undefined ? `${money(annual)} × ${(flat * 100).toFixed(1)}% (flat rate for code ${code})` : "the tax brackets", value: taxAnnual },
+    { label: "ACC earners' levy for the year", how: `${money(Math.min(annual, rates.acc.maxLiableEarnings))} × ${(rates.acc.rate * 100).toFixed(2)}%`, value: accAnnual },
+    ...(code === "ME" ? [{ label: "less the IETC", how: "independent earner tax credit for the year", value: -ietcAnnual }] : []),
+    { label: "Per week", how: "÷ 52, cut to whole cents", value: weekly },
+    { label: paysPerYear === 26 ? "Per fortnight" : "Per pay", how: `× 52 ÷ ${paysPerYear}, cut to whole cents`, value: paye },
+  ];
+  return { annualised: annual, taxAnnual, ietcAnnual, accAnnual, incomeTax: r2(paye - accLevy), accLevy, paye, steps };
 }
 
+/** student loan for one pay (spec 5.4): gross cut to whole dollars, less the pay period's threshold, × 12%, cut to cents */
+export function studentLoanFor(gross: number, rates: PayrollRates = CURRENT_PAYROLL, paysPerYear = PAYS_PER_YEAR) {
+  const threshold = paysPerYear === 26 ? rates.studentLoan.fortnightlyThreshold : paysPerYear === 52 ? rates.studentLoan.weeklyThreshold : rates.studentLoan.annualThreshold / paysPerYear;
+  return truncCents(Math.max(0, Math.floor(gross + 1e-6) - threshold) * rates.studentLoan.rate);
+}
+
+/**
+ * ESCT on an employer KiwiSaver contribution (spec 5.21.3): the contribution with its cents dropped × the ESCT rate,
+ * cut to cents. IRD's example: $122.50 → $122 × 17.5% = $21.35, so $101.15 goes to the fund.
+ */
+export function esctOn(employerGross: number, rate: number) {
+  return truncCents(Math.floor(employerGross + 1e-6) * rate);
+}
+
+/** the ESCT rate band for a year's salary or wages plus the employer's gross contributions (set once for the whole year) */
 export function esctRateFor(annualSalaryPlusEmployerContrib: number, bands = CURRENT_PAYROLL.esct) {
   return bands.find((b) => annualSalaryPlusEmployerContrib <= b.upTo)!.rate;
 }
@@ -100,21 +125,24 @@ export interface PayResult {
   employerCost: number;
 }
 
-/** One employee's fortnightly pay, calculated the way payroll software does it */
-/** `rates`: the payroll rates for the income year the pay falls in */
-export function calcPay(employee: Employee, hours: number, rates: PayrollRates = CURRENT_PAYROLL): PayResult {
+/**
+ * One employee's fortnightly pay, calculated the way payroll software must (IRD's payroll specification 2026–27).
+ * `rates`: the payroll rates for the income year the pay falls in.
+ * `esctRate`: the employee's ESCT rate for the year. IRD sets it once a year, from last year's pay (or, for someone
+ * who hasn't worked a full year, the year's expected pay), so the pay runs pass it in. Without it, it's estimated
+ * from this pay as if every pay were the same.
+ */
+export function calcPay(employee: Employee, hours: number, rates: PayrollRates = CURRENT_PAYROLL, esctRate?: number): PayResult {
   const ordinary = r2(hours * employee.rate);
   const holidayPay = employee.casual ? r2(ordinary * HOLIDAYS.payAsYouGoRate) : 0;
   const gross = r2(ordinary + holidayPay);
   const p = payeForPay(gross, employee.code, PAYS_PER_YEAR, rates);
-  const studentLoan = employee.studentLoan
-    ? r2(Math.max(0, gross - rates.studentLoan.fortnightlyThreshold) * rates.studentLoan.rate)
-    : 0;
+  const studentLoan = employee.studentLoan ? studentLoanFor(gross, rates) : 0;
   const ksEmployee = employee.kiwiSaver ? r2(gross * employee.kiwiSaver) : 0;
   const net = r2(gross - p.paye - studentLoan - ksEmployee);
   const ksEmployerGross = employee.kiwiSaver !== null ? r2(gross * rates.kiwiSaver.employerMinimum) : 0;
-  const esctRate = esctRateFor(gross * PAYS_PER_YEAR + ksEmployerGross * PAYS_PER_YEAR, rates.esct);
-  const esct = r2(ksEmployerGross * esctRate);
+  const rate = esctRate ?? esctRateFor((gross + ksEmployerGross) * PAYS_PER_YEAR, rates.esct);
+  const esct = ksEmployerGross ? esctOn(ksEmployerGross, rate) : 0;
   const ksEmployerNet = r2(ksEmployerGross - esct);
   const toIrd = r2(p.paye + studentLoan + ksEmployee + ksEmployerGross);
   return {
@@ -131,7 +159,7 @@ export function calcPay(employee: Employee, hours: number, rates: PayrollRates =
     ksEmployee,
     net,
     ksEmployerGross,
-    esctRate,
+    esctRate: rate,
     esct,
     ksEmployerNet,
     toIrd,
