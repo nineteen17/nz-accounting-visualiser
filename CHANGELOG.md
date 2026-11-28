@@ -8,11 +8,25 @@ Dates are when the change was made. Rates and rules are for the 2026–27 NZ inc
 ## Proposed / not yet done
 
 - **2027–28 rates (on or after 1 April 2027)**. Follow README "Updating the rates" (`npm run rates` lists what to check). In short: when IRD, ACC and MBIE announce them, fill in `PAYROLL_2027_28` in `lib/nz/rates.ts` and clear its `toConfirm` list (tax brackets, IETC, student loan threshold and ESCT bands are carried forward for now); update `MINIMUM_WAGE`; then on 1 April 2027 point `CURRENT_PAYROLL` at 2027–28. Year 1's books keep the 2026–27 rates.
-- **Pay yourself tool**: planned in `docs/PAY-YOURSELF.md`: Aroha and Ben choose a mix of shareholder salary and dividend and see the tax, what they keep, and whether the company still passes the solvency test. The limits it needs are now checked against the Acts. Unconfirmed: whether court fines are non-deductible by statute or case law.
 
 ---
 
 ## 2026-11-28
+
+### Pay yourself: salary, dividend or keep it in the company
+- New Explore tool `/explore/pay-yourself`. Using Kōwhai's real year 2, choose Aroha's and Ben's salaries and a dividend (always split 60/40) and see:
+  - the company's tax;
+  - each owner's IR3: tax, imputation credits used, RWT, what's left to pay or refunded, and what they keep;
+  - the ACC levy that ACC invoices on shareholder salaries;
+  - five presets side by side: what the café did, all salary, dividend only, keep it in the company, and the lowest tax this year;
+  - the legal checks: the solvency test (Companies Act s 4), enough cash to keep trading (ss 135–136), imputation credits available, and whether Ben's salary is reasonable for his work (Income Tax Act s GB 25).
+- The café's actual choice reproduces the books to the cent: company tax $21,110.88, credits $7,777.78, RWT $1,388.89.
+- New drill **Salary or dividend?** (45 drills), and links from the Shareholders page and the year 2 salary and dividend entries.
+- `data/business.ts`: the owners now have hours and other income. Ben's IT salary ($90,000) is an assumed figure. His work at Kōwhai is 14 hours of café shifts and 6 of bookkeeping a week (about 20), priced at Leo’s wage and an assumed $35 an hour for bookkeeping: about $29,500 a year, so his $35,000 is 1.19× that (within the tool’s 1.25× guide).
+- **Corrected** the year 2 dividend notes:
+  - Ben's IT salary puts him on 33%, so the credits exactly cover the tax on his dividend. The old note said he was on 17.5% and got a refund.
+  - Aroha's credits cover the tax on her dividend, but the extra income costs her the IETC, so she pays $126.78 more. This figure is now worked out, not stated.
+- Tests: 175 pass.
 
 ### Plan for the pay yourself tool
 - `docs/PAY-YOURSELF.md`: salary, dividend or keep it in the company, using Kōwhai's real year 2 figures, with the tax on each route and the legal limits (solvency test, imputation, excessive salary). Not started.

@@ -1,6 +1,6 @@
 # Plan: "Pay yourself", salary or dividend?
 
-Status: **planned, not started** (written 2026-11-28). Follows the law plan (`docs/LAW-LOOKUP.md`), whose Step 2 checked every limit this tool describes against the Acts.
+Status: **built** 2026-11-28 (`/explore/pay-yourself`). Written 2026-11-28. Follows the law plan (`docs/LAW-LOOKUP.md`), whose Step 2 checked every limit this tool describes against the Acts.
 
 ## The question it answers
 
@@ -17,7 +17,7 @@ From `data/books/year2.ts`, the 2028 income year:
 | Company tax (28%) | $21,111 |
 | Dividend paid (fully imputed) | $20,000 cash + $7,778 imputation credits, RWT $1,389 |
 | Imputation credit account before the dividend | $14,823 |
-| Bank before the dividend | $266,178; current liabilities $42,831 |
+| Solvency checks | Use the year-end balance sheet (31 March 2028), adjusted for the choice |
 
 The tool opens on these choices, so the learner sees the café's actual decision first, then changes it.
 
@@ -38,12 +38,12 @@ The tool opens on these choices, so the learner sees the café's actual decision
 **2. Each owner (their IR3)**
 - Salary + gross dividend (cash + imputation credits) = taxable income.
 - Tax at the personal rates, less the IETC if eligible, less imputation credits and dividend RWT.
-- The ACC earners' levy on salary (shareholder-employees are invoiced by ACC, not through PAYE).
+- The ACC earners' levy on salary. Shareholder-employees with no PAYE are invoiced by ACC each July or August, using the IR4/IR3 figures (checked on acc.co.nz).
 - Result: tax to pay or refund, personal provisional tax if their residual income tax is over $5,000 (s RC 3), and **what they keep**.
 
 **3. All together**
 - Total tax (company + both owners), and what reaches the owners' pockets. A stacked bar per preset makes the comparison visible.
-- The lesson it should make obvious: imputation means profit paid out is taxed **once, at the owner's own rate**, whichever route it takes. Salary helps an owner whose rate is under 28% (Ben). For an owner on 33% or 39%, a dividend gets topped up to that rate anyway. Profit **kept** in the company is taxed only at 28% for now; the top-up comes when it's paid out.
+- The lesson it should make obvious: imputation means profit paid out is taxed **once, at the owner's own rate**, whichever route it takes. Salary helps an owner whose rate is under 28%. For an owner on 33% or 39% (Ben, with his IT salary), a dividend gets topped up to that rate anyway. Profit **kept** in the company is taxed only at 28% for now; the top-up comes when it's paid out.
 
 **4. Can the company afford it? (the law's limits)**
 - **Solvency test** (Companies Act ss 4, 52): after the payout, assets still exceed liabilities, and the bank covers current liabilities plus the next GST, provisional tax and loan payments (taken from the cash forecast). Shown as pass or fail, with the signed certificate's wording.
@@ -72,10 +72,10 @@ A US **C-corporation**'s profit is taxed twice (corporate tax, then the sharehol
 
 **Checks:** rates from `lib/nz/rates.ts` only (the guard test still applies). Year 2 is the 2028 income year, whose brackets and IETC are still marked **to confirm**, so the tool shows that note until April 2027. The ACC earners' levy for shareholder-employees is to be confirmed against ACC before building.
 
-## Open questions
+## Decisions (were open questions)
 
-1. **Ben's benchmark.** His hours aren't recorded anywhere yet. Suggested: add them to `data/business.ts` (e.g. two weekend shifts plus bookkeeping, about 20 hours a week) and price the work at the café's own wage rates plus a bookkeeping rate. Alternatively, leave the warning as a note without a number.
-2. **Year.** Year 2 (recommended: it has a dividend, so every route is real), or year 1 (simpler, but no dividend was paid).
+1. **Ben's benchmark** (decided: 14h café + 6h bookkeeping a week, at Leo's wage and an assumed $35/h). His hours aren't recorded anywhere yet. Suggested: add them to `data/business.ts` (e.g. two weekend shifts plus bookkeeping, about 20 hours a week) and price the work at the café's own wage rates plus a bookkeeping rate. Alternatively, leave the warning as a note without a number.
+2. **Year** (decided: year 2). Year 2 (recommended: it has a dividend, so every route is real), or year 1 (simpler, but no dividend was paid).
 
 ## Size
 

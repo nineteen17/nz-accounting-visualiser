@@ -10,7 +10,8 @@ import { balances, byDate, type Balances } from "@/lib/engine/ledger";
 import { GST_PERIODS, gstPeriodsFor, gstReturn } from "@/lib/engine/gst";
 import { pct, r2, nzDate } from "@/lib/money";
 import { assetYear, assetYearOne, disposal, type FixedAsset } from "@/lib/nz/assets";
-import { calcPay, type Employee } from "@/lib/nz/payroll";
+import { calcPay, ietcFor, type Employee } from "@/lib/nz/payroll";
+import { dividendShare, ownerYear } from "@/lib/nz/payYourself";
 import { taxFromItems, type TaxAssetRow, type TaxItem } from "@/lib/nz/incomeTax";
 import { MINIMUM_WAGE, PAYROLL_2027_28, COMPANY_TAX_RATE, PROVISIONAL_TAX, RWT } from "@/lib/nz/rates";
 import { ACCOUNTS } from "../chartOfAccounts";
@@ -395,6 +396,16 @@ const divShare = SHAREHOLDERS.map((s) => {
   return { ...s, cash, ic, gross, rwt, paid: r2(cash - rwt) };
 });
 const DIV_IC = r2(divShare.reduce((s, x) => s + x.ic, 0));
+/** what the dividend changes in Aroha's IR3: worked out, not stated */
+const arohaDividendNote = (() => {
+  const salary = 65_000, d = divShare[0];
+  const rates = PAYROLL_2027_28;
+  const without = ownerYear({ salary, dividend: dividendShare(0, 0), otherIncome: 0, rates });
+  const withDiv = ownerYear({ salary, dividend: dividendShare(d.cash, d.ic), otherIncome: 0, rates });
+  const extra = r2(withDiv.toPay - without.toPay);
+  const ietcLost = r2(ietcFor(salary, rates.ietc) - ietcFor(salary + d.gross, rates.ietc));
+  return `With her $65,000 salary, most of the dividend falls in her 30% band, which the 33% of credits more than covers.${ietcLost > 0 ? ` But the extra income takes her past the IETC limit, so she loses ${ietcLost >= ietcFor(salary, rates.ietc) ? "all " : ""}${money2(ietcLost)} of that credit.` : ""} Overall she ${extra > 0 ? `pays ${money2(extra)} more` : `gets ${money2(-extra)} back`}.`;
+})();
 const DIV_RWT = r2(divShare.reduce((s, x) => s + x.rwt, 0));
 
 /** Imputation credit account: a memorandum record (not part of the ledger) of tax paid that can be passed to shareholders */
@@ -450,11 +461,11 @@ const DIVIDEND_TXNS: Transaction[] = [
       { account: "216", credit: DIV_RWT, why: "RWT deducted from the dividends, owed to IRD by 20 March." },
     ],
     notes: [
-      `${divShare[0].name.split(" ")[0]}'s side: she includes the gross dividend (${money2(divShare[0].gross)}) in her IR3 and gets credit for ${money2(divShare[0].ic)} of imputation credits plus ${money2(divShare[0].rwt)} of RWT: ${money2(divShare[0].ic + divShare[0].rwt)}, which is 33% of the gross. Her top tax rate is 33%, so she has nothing more to pay on it.`,
-      `${divShare[1].name.split(" ")[0]}'s side: his total income is lower, so his top rate is 17.5%. His credits (33%) are more than the tax on the dividend. The extra imputation credits reduce the tax on his salary, and the extra RWT is refunded.`,
+      `${divShare[0].name.split(" ")[0]}'s side: she includes the gross dividend (${money2(divShare[0].gross)}) in her IR3 and gets credit for ${money2(divShare[0].ic)} of imputation credits plus ${money2(divShare[0].rwt)} of RWT: ${money2(divShare[0].ic + divShare[0].rwt)}, which is 33% of the gross. ${arohaDividendNote}`,
+      `${divShare[1].name.split(" ")[0]}'s side: with his IT salary as well, everything he earns from Kōwhai is taxed at 33%. The credits are exactly 33% of the gross dividend, so he has nothing more to pay on it.`,
       "US contrast: a US C-corporation's dividends are taxed twice (corporate tax, then the shareholder's dividend tax). NZ's imputation system gives shareholders credit for the company's tax.",
     ],
-    deepDives: [{ href: "/nz/shareholders", label: "Dividends, imputation & current accounts" }],
+    deepDives: [{ href: "/nz/shareholders", label: "Dividends, imputation & current accounts" }, { href: "/explore/pay-yourself", label: "Try other salaries and dividends" }],
   },
   {
     id: "B18",
@@ -510,7 +521,7 @@ export const CLOSING_STOCK_Y2 = [
 ];
 const openingStock = OPENING_BALANCES["130"];
 const closingStock = CLOSING_STOCK_Y2.reduce((s, x) => s + x.value, 0);
-const SALARIES = [{ ...SHAREHOLDERS[0], salary: 65_000 }, { ...SHAREHOLDERS[1], salary: 35_000 }];
+export const SALARIES = [{ ...SHAREHOLDERS[0], salary: 65_000 }, { ...SHAREHOLDERS[1], salary: 35_000 }];
 const salaryTotal = SALARIES.reduce((s, x) => s + x.salary, 0);
 
 const ADJ_BEFORE_TAX: Transaction[] = [
@@ -595,6 +606,7 @@ const ADJ_BEFORE_TAX: Transaction[] = [
       { account: "605", debit: salaryTotal, why: "An expense of the company." },
       ...SALARIES.map((s) => ({ account: s.currentAccount, credit: s.salary, party: s.name, why: `Owed to ${s.name.split(" ")[0]}: credited to the current account.` })),
     ],
+    deepDives: [{ href: "/explore/pay-yourself", label: "Salary or dividend? Try other choices" }],
   }),
 ];
 

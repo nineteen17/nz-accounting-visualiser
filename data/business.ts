@@ -23,10 +23,18 @@ export const BUSINESS = {
     "Aroha Ngata spent ten years as a barista and café manager. With her friend Ben Fraser, who has some savings and a day job in IT, she's opening her own café in a seaside suburb of Wellington. They set up a company, Kōwhai Café Ltd, so their personal assets are protected if the business fails. Aroha owns 60% of the shares and works in the café full-time. Ben owns 40%, helps on weekends and does the books in the evenings.",
 };
 
+/**
+ * `otherIncome`: income outside Kōwhai (Ben's IT day job, taxed through PAYE by that employer; an assumed figure).
+ * `fullTime`: works substantially full-time in the business (the exemption in Income Tax Act s GB 25).
+ * `hours`: Ben's usual weekly hours at Kōwhai, used to judge whether his salary is reasonable for the work.
+ */
 export const SHAREHOLDERS = [
-  { id: "aroha", name: "Aroha Ngata", shares: 60_000, pct: 0.6, role: "Director & café manager", currentAccount: "240", salary: 60_000 },
-  { id: "ben", name: "Ben Fraser", shares: 40_000, pct: 0.4, role: "Director & weekend help / bookkeeper", currentAccount: "241", salary: 30_000 },
+  { id: "aroha", name: "Aroha Ngata", shares: 60_000, pct: 0.6, role: "Director & café manager", currentAccount: "240", salary: 60_000, otherIncome: 0, fullTime: true, hours: { cafe: 45, books: 0 } },
+  { id: "ben", name: "Ben Fraser", shares: 40_000, pct: 0.4, role: "Director & weekend help / bookkeeper", currentAccount: "241", salary: 30_000, otherIncome: 90_000, fullTime: false, hours: { cafe: 14, books: 6 } },
 ];
+
+/** an assumed hourly rate for part-time bookkeeping, to price Ben's book-keeping work (café shifts are priced at Leo's wage) */
+export const BOOKKEEPING_RATE = 35;
 
 export const EMPLOYEES: Employee[] = [
   {

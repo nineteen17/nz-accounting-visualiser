@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { ALL, BEFORE_CLOSING, TAX } from "@/data/books";
 import { CLOSING_STOCK, SHAREHOLDERS } from "@/data/business";
@@ -345,6 +346,7 @@ export function ShareholdersTopic() {
             <li><strong>Directors can&apos;t strip the company</strong> (ss 135 and 136): no running the business in a way likely to cause serious loss to creditors, and no taking on obligations it can&apos;t meet. Taking out cash needed for the next GST, tax or loan payment risks both.</li>
             <li><strong>Not an issue here: the contractor rule</strong> (s GB 27). It taxes a company&apos;s income as the owner&apos;s own when 80% or more comes from one client for their personal work. A café selling to the public isn&apos;t caught.</li>
           </ul>
+          <p><Link href="/explore/pay-yourself" className="font-semibold text-kowhai-700 underline">💸 Try it: pay Aroha and Ben yourself</Link>: choose salaries and a dividend for year 2 and see the tax, what each owner keeps, and whether the company passes these limits.</p>
           <h3>The current account</h3>
           <p>During the year Aroha and Ben take <Term k="drawings">drawings</Term>. Those are debited to their <Term k="shareholder-current-account">current accounts</Term>. At year end, the shareholder salary is credited. The account then shows who owes whom.</p>
           <Callout kind="warn" title="Overdrawn current accounts">If drawings exceed what the company owes the shareholder, the shareholder owes the company. The company should charge interest at IRD&apos;s <strong>prescribed rate</strong> on that balance. If it charges less, the shortfall is taxed: as a fringe benefit (FBT, s CX 10) when the shareholder is also an employee, otherwise as a dividend. Accountants watch this closely.</Callout>

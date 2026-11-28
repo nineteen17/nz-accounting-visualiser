@@ -183,6 +183,7 @@ See the open questions in section 5.
 | Year 2 statements | ✅ | ✅ Ratios use both years | |
 | Budget vs actual (Explore) | ✅ budget, variance, flexible budget | ✅ Budget vs actual (F/U, size, flexing, fixed or variable, why) | |
 | Cash flow forecast (Explore) | ✅ cash flow forecast | ✅ Cash flow forecast (profit or cash, month-end bank, GST due dates, paydays, why) | |
+| Pay yourself (Explore) | via terms | ✅ Salary or dividend? (credits, dividend RWT, the most the credits cover, company tax after salaries, who should take salary, solvency, s GB 25) | |
 | Year-end, all together | – | ✅ Do the year-end yourself (`/study/year-end`): both years' real adjustments in order, on your own trial balance | |
 
 ### Memory aids (18)
@@ -242,6 +243,7 @@ Shown on matching flashcards, and practised as cards of their own (`a:` cards, o
 - [x] **E4** Year 2 entries: reversing last year's accruals, the POS sale and its depreciation, the dividend and its RWT, annual leave, provisional tax.
 - [x] **N9** Balance a T-account.
 - [x] **N10** Cash-basis vs accrual-basis profit for a month.
+- [x] **B4** Salary or dividend? drill, with the pay yourself tool (`data/study/payYourself.ts`, figures from `data/books/payYourself.ts`). 45 drills.
 - [x] **N11** GST payable for a period (output − input, leaving out exempt fees and wages).
 - [x] **N12** Imputation credits (28/72), the gross dividend, dividend RWT and the cash paid.
 - [x] **P1** A "Make it stick" box at the end of every lesson (Foundations, cycle steps and overview, NZ topics, A year on the job, and the ratios tool) with its drills and the Part's flashcards; `/study?drill=` starts a drill.
@@ -272,6 +274,7 @@ Shown on matching flashcards, and practised as cards of their own (`a:` cards, o
 - None open. Decided 2026-11-28: drills don't count towards Known; they have their own "mastered" (X3). Typed recall added as the "Type it" option for meaning → term cards (X4).
 
 ## 6. Log
+- **2026-11-28**: Pay yourself tool (Explore) and its Salary or dividend? drill (B4). 45 drills, 175 tests.
 - **2026-11-28**: Cash flow forecast tool and drill (B2); inventory page made interactive, with a Valuing stock drill (B3) and IRD's stock rules corrected; Do the year-end yourself (Y1). 44 drills, 154 tests.
 - **2026-11-28**: Budget vs actual tool (Explore) and its drill (B1); three glossary terms. Site-wide accessibility pass. 42 drills, 135 tests.
 - **2026-11-28**: Keyboard pass (K1), drills mastered (X3) and "Type it" recall (X4); both open questions settled. Payroll rates are now one set per income year (see CHANGELOG). 128 tests.

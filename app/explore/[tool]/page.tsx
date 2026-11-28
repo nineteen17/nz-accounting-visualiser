@@ -16,6 +16,7 @@ const TOOLS: Record<string, () => React.ReactNode> = {
   loan: () => <X.LoanTool />,
   budget: () => <X.BudgetTool />,
   "cash-forecast": () => <X.CashForecastTool />,
+  "pay-yourself": () => <X.PayYourselfTool />,
   "break-even": () => <X.BreakEvenTool />,
 };
 
