@@ -8,6 +8,7 @@ import { money, pct } from "@/lib/money";
 import { cx } from "@/lib/ui";
 import { Callout, Card, UsNote } from "@/components/learn/bits";
 import { Term } from "@/components/learn/Term";
+import { ToolGuide } from "@/components/learn/ToolGuide";
 import { BOOKKEEPING_RATE, SHAREHOLDERS } from "@/data/business";
 
 const $0 = (x: number) => money(x, { dp: 0 });
@@ -100,13 +101,13 @@ function OwnerCard({ o }: { o: Result["owners"][number] }) {
       <h3 className="font-bold">{first}&apos;s IR3</h3>
       <p className="text-xs text-stone-500">{o.role}{o.otherIncome ? `; also earns ${$0(o.otherIncome)} in an IT job (assumed), taxed through PAYE` : ""}</p>
       <dl className="mt-3 space-y-0.5 text-sm">
-        <Row label="Shareholder salary" value={o.salary} />
+        <Row label={<Term k="shareholder-salary">Shareholder salary</Term>} value={o.salary} />
         <Row label="Dividend (cash)" value={o.dividend.cash} />
-        <Row label="+ imputation credits" value={o.dividend.ic} sub />
+        <Row label={<>+ <Term k="imputation-credit">imputation credits</Term></>} value={o.dividend.ic} sub note="added on: tax the company already paid" />
         <Row label="= Income from Kōwhai" value={o.salary + o.dividend.gross} strong />
         <Row label={`Tax on it (top rate ${pct(o.topRate)})`} value={o.tax} note={o.otherIncome ? "the extra tax on top of the IT salary's" : undefined} />
-        <Row label="− imputation credits used" value={-o.icUsed} sub />
-        <Row label="− dividend RWT already deducted" value={-o.dividend.rwt} sub />
+        <Row label="− imputation credits used" value={-o.icUsed} sub note="the company's tax counts towards the owner's" />
+        <Row label={<>− dividend <Term k="rwt">RWT</Term> already deducted</>} value={-o.dividend.rwt} sub />
         <Row label={o.toPay >= 0 ? "= To pay IRD" : "= Refund"} value={Math.abs(o.toPay)} strong />
       </dl>
       <div className="mt-3 rounded-lg bg-stone-50 p-3 text-sm">
@@ -173,6 +174,26 @@ export function PayYourselfTool() {
 
   return (
     <div className="space-y-8">
+      <ToolGuide
+        what={<>A company&apos;s profit belongs to the company, not its owners. To get it, Aroha and Ben choose how: a salary, a dividend, or leave it in for now. Each is taxed differently. This shows the tax, the money each owner keeps and whether the company can afford it, using Kōwhai&apos;s real year 2.</>}
+        steps={[
+          <>Start with the <strong>preset buttons</strong>: what the café really did, all salary, dividend only, and so on.</>,
+          <>Move the <strong>sliders</strong> to make your own mix.</>,
+          <>Read <strong>The company</strong> (its tax) and each owner&apos;s <strong>IR3</strong> (their own tax return).</>,
+          <>Compare every choice in <strong>All the choices side by side</strong>, then check <strong>Can the company afford it?</strong></>,
+        ]}
+        read={<><strong>Owners keep</strong>: their salary and dividend, less their own tax. <strong>Tax &amp; levies</strong>: everything paid to IRD and ACC this year. <strong>Kept in the company</strong>: profit not paid out yet, with more tax to come when it is. In the checks, ✓ is fine, ! needs care, and ✗ means the law says no.</>}
+        terms={[
+          { k: "shareholder-salary", says: "pay to an owner who works in the business. The company deducts it; the owner pays tax on it in their IR3." },
+          { k: "dividend", says: "a share of profit paid to the owners (60/40 here, by shareholding). Not an expense." },
+          { k: "imputation-credit", label: "Imputation credits", says: "the company tax already paid, passed to the owners with a dividend so it isn't taxed twice." },
+          { k: "imputation-credit-account", label: "ICA", says: "the company's running total of credits it can attach to dividends." },
+          { k: "rwt", label: "Dividend RWT", says: "extra tax the company deducts from a dividend when the credits don't cover the owner's rate." },
+          { k: "ir3", says: "an individual's income tax return." },
+          { k: "solvency-test", says: "before a dividend, the company must be able to pay its debts and have more assets than liabilities." },
+          { k: "acc-earners-levy", label: "ACC levies", says: "ACC charges levies on salaries, but not on dividends." },
+        ]}
+      />
       <div className="prose-learn max-w-4xl text-[16px]">
         <p>
           Aroha and Ben own Kōwhai, so they decide how its profit reaches them: as <Term k="shareholder-salary">shareholder salary</Term>, as a <Term k="dividend">dividend</Term>, or not yet, by keeping it in the company.

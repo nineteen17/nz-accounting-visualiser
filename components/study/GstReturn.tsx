@@ -4,10 +4,13 @@ import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { GST_EXERCISES } from "@/data/study/gstReturn";
 import { GST101A_BOXES } from "@/lib/engine/gst";
-import { money, nzDate } from "@/lib/money";
+import { money, nzDate, pct } from "@/lib/money";
+import { GST } from "@/lib/nz/rates";
 import { ENTER, PLACES, answerKey, boxesFor, loadProgress, markBox, saveProgress, type Boxes, type Exercise, type Place, type Progress } from "@/lib/study/gstReturn";
 import { cx } from "@/lib/ui";
 import { Callout, Card, UsNote } from "@/components/learn/bits";
+import { Term } from "@/components/learn/Term";
+import { ToolGuide } from "@/components/learn/ToolGuide";
 
 const store = () => (typeof window === "undefined" ? undefined : window.localStorage);
 const num = (k: keyof Boxes) => Number(k.slice(3));
@@ -23,6 +26,26 @@ export function GstReturnPractice() {
   if (ex) return <Run key={ex.key} ex={ex} onBack={() => setKey(null)} onDone={(r) => setProgress(saveProgress(store(), ex.key, r))} />;
   return (
     <div className="space-y-6">
+      <ToolGuide
+        what={<>Every two months Kōwhai fills in a GST return (IRD&apos;s GST101A form): the GST it charged on its sales, less the GST it paid on its purchases. The difference is paid to IRD, or refunded. Here you fill in Kōwhai&apos;s real returns yourself, from the period&apos;s transactions.</>}
+        steps={[
+          <>Pick a <strong>period</strong> below. Start with the first: the ones marked <em>Harder</em> have a refund or adjustments.</>,
+          <><strong>Sort</strong> each transaction: a sale, a purchase, an adjustment, or not in the return at all. Then check: every answer says why.</>,
+          <>Fill in the <strong>boxes</strong> from your own sorting. Each one is a sum, or × 3 ÷ 23 to find the GST in an amount.</>,
+          <><strong>Compare</strong> your return with the one Kōwhai filed.</>,
+        ]}
+        read={<><strong>Box 15</strong> is the answer: GST to pay, or a refund. In the comparison, a pink row is a box that differs from Kōwhai&apos;s: look back at your sorting to find the transaction that caused it.</>}
+        terms={[
+          { k: "gst", says: `${pct(GST.rate, 0)} on most sales in NZ. A registered business collects it for IRD.` },
+          { k: "output-tax", label: "Output tax", says: "the GST in the café's sales: owed to IRD (Box 10)." },
+          { k: "input-tax", label: "Input tax", says: "the GST in its purchases: claimed back (Box 14)." },
+          { k: "gst-inclusive", label: "GST-inclusive", says: `an amount with GST in it. The GST is 3/23 of it: ${money(100 * (1 + GST.rate), { dp: 0 })} includes ${money(100 * GST.rate, { dp: 0 })}.` },
+          { k: "gst-adjustment", label: "Adjustment", says: "a correction entered as the GST itself: extra GST to pay (Box 9) or GST to claim back (Box 13)." },
+          { k: "invoice-basis", label: "Invoice basis", says: "GST counts in the period of the invoice, not when it's paid. Kōwhai uses it." },
+          { k: "exempt-supply", label: "Exempt", says: "no GST at all, e.g. interest and bank fees: they stay out of the return." },
+          { k: "zero-rated", label: "Zero-rated", says: "GST at 0%, e.g. exports. Kōwhai has none, so Box 6 is 0." },
+        ]}
+      />
       <div className="prose-learn max-w-3xl text-[16px]">
         <p>Pick a GST period. You&apos;ll get every transaction Kōwhai recorded in it that has GST, mixed with some that don&apos;t. Sort them into the return, fill in the GST101A&apos;s boxes from your own sorting, and then compare your return with the one Kōwhai filed.</p>
         <p>Kōwhai files two-monthly on the <strong>invoice basis</strong>: GST goes in the period of the invoice, not when it&apos;s paid.</p>
@@ -81,7 +104,7 @@ function Run({ ex, onBack, onDone }: { ex: Exercise; onBack: () => void; onDone:
 
       <Card>
         <h3 className="font-bold">1. Sort the transactions</h3>
-        <p className="mt-1 text-sm text-stone-600">Sales and purchases show the amount <strong>including GST</strong>. An adjustment shows the GST itself. Anything else shows its total.</p>
+        <p className="mt-1 text-sm text-stone-600">Sales and purchases show the amount <strong><Term k="gst-inclusive">including GST</Term></strong>. An <Term k="gst-adjustment">adjustment</Term> shows the GST itself. Anything else shows its total. Not sure? Ask: did Kōwhai sell or buy something with GST on it, in this period, by invoice date?</p>
         <ul className="mt-3 divide-y divide-stone-100">
           {ex.items.map((i) => {
             const mine = sort[i.id];

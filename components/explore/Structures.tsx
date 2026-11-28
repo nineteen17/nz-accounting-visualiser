@@ -6,11 +6,12 @@ import { compare, OWNERS, PRESETS, PROFIT, RANGE, RATES, STRUCTURES, type Key } 
 import { ACTUAL } from "@/data/books/payYourself";
 import { accRate } from "@/lib/nz/payYourself";
 import type { StructureResult } from "@/lib/nz/structures";
-import { ACC_CAFE_LEVIES } from "@/lib/nz/rates";
+import { ACC_CAFE_LEVIES, COMPANY_TAX_RATE } from "@/lib/nz/rates";
 import { money, pct } from "@/lib/money";
 import { cx } from "@/lib/ui";
 import { Callout, Card, UsNote } from "@/components/learn/bits";
 import { Term } from "@/components/learn/Term";
+import { ToolGuide } from "@/components/learn/ToolGuide";
 
 const $0 = (x: number) => (Math.abs(x) < 0.5 ? "–" : x < 0 ? `(${money(-x, { dp: 0 })})` : money(x, { dp: 0 }));
 /** validated together (dataviz palette, slots 1–3), the same as the pay yourself tool; every bar's numbers are in the table */
@@ -101,6 +102,25 @@ export function StructuresTool() {
 
   return (
     <div className="space-y-8">
+      <ToolGuide
+        what={<>The legal form of a business decides who pays tax on its profit, at what rate, and who loses their own money if it fails. This runs the same café profit through each NZ structure, side by side, so you can see what changes and what doesn&apos;t.</>}
+        steps={[
+          <>Move the <strong>profit</strong> slider, or use the buttons for a good year, a quiet year and a loss. Try a loss: that&apos;s where the structures differ most.</>,
+          <>Tick <strong>sole trader</strong> to add the one-owner option.</>,
+          <>Read the table one row at a time across the columns.</>,
+          <>Then read <strong>More than tax</strong>: liability, losses and paperwork matter as much as the tax.</>,
+        ]}
+        read={<>Each column is one structure. The shaded one is Kōwhai&apos;s real choice, a company. A figure in brackets is a refund, and – means nothing. The coloured bar under each name splits the profit: blue is what the owners keep, orange is tax and ACC now, green is kept in the company. <strong>Tax still to come</strong> matters: a company&apos;s lower tax now is mostly tax <em>delayed</em>.</>}
+        terms={[
+          { k: "sole-trader", says: "one person in business on their own. The profit is simply their income." },
+          { k: "partnership", says: "two or more people in business together. Each is taxed on their share, and each is liable for all the debts." },
+          { k: "company", says: `a separate legal person. It pays ${pct(COMPANY_TAX_RATE, 0)} tax itself, and its owners' liability is limited.` },
+          { k: "look-through-company", label: "LTC", says: "a company whose profit (or loss) is taxed in the owners' hands, like a partnership." },
+          { k: "limited-liability", says: "the owners can lose what they put in, but not their own house or savings, unless they guaranteed a debt." },
+          { k: "imputation-credit", label: "Imputation credits", says: "company tax passed on with dividends, so profit isn't taxed twice." },
+          { k: "acc-earners-levy", label: "ACC levies", says: "charged on owners' earnings from the business: salaries, or a share of profit if they're self-employed." },
+        ]}
+      />
       <div className="prose-learn max-w-4xl text-[16px]">
         <p>
           Aroha and Ben chose a <Term k="company">company</Term>. They could have run Kōwhai as a <Term k="partnership">partnership</Term>, or elected for the company to be a <Term k="look-through-company">look-through company</Term> (LTC).

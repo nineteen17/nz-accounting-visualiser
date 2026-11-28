@@ -8,11 +8,17 @@ Dates are when the change was made. Rates and rules are for the 2026–27 NZ inc
 ## Proposed / not yet done
 
 - **2027–28 rates (on or after 1 April 2027)**. Follow README "Updating the rates" (`npm run rates` lists what to check). In short: when IRD, ACC and MBIE announce them, fill in `PAYROLL_2027_28` in `lib/nz/rates.ts` and clear its `toConfirm` list (tax brackets, IETC, student loan threshold and ESCT bands are carried forward for now); update `MINIMUM_WAGE`; then on 1 April 2027 point `CURRENT_PAYROLL` at 2027–28. Year 1's books keep the 2026–27 rates. Also update `ACC_CAFE_LEVIES` (the café work levy and working safer levy) from ACC's 2027/28 Levy Guidebook and clear its `toConfirm`.
-- **Beginner annotation pass** on the recent tools (pay yourself, which structure, provisional tax, the GST return exercise): check every term has a `<Term>` or a plain-English line, and every figure says what it is and where it comes from.
+- **Beginner guides for the older Explore tools** (journal, ledger, trial balance, statements, ratios, loan schedule, cash flow forecast, budget vs actual, break-even): add the same "New here?" `ToolGuide`.
 
 ---
 
 ## 2026-11-28
+
+### Beginner guides on the new tools
+- New "New here? How to use this" guide (`components/learn/ToolGuide.tsx`) at the top of the pay yourself, which structure and provisional tax tools and the GST return exercise. It has four parts: what the tool shows, how to use it step by step, how to read the results, and the words you'll meet. Each word opens its glossary entry. It's open by default and folds away.
+- More terms are linked where they first appear: imputation credits, dividend RWT, use-of-money interest, terminal tax, the late payment penalty, GST-inclusive, adjustments. Some rows now carry a one-line note, such as "added on: tax the company already paid".
+- Four new glossary terms: **AIM**, **GST ratio method**, **late payment penalty** and **GST adjustment (Boxes 9 and 13)**.
+- **Corrected** the glossary's "Safe harbour": under $60,000 of RIT on the standard method there's no interest until the terminal tax date even if an instalment is paid late (Tax Administration Act s 120KE). It used to say instalments had to be paid on time. A late instalment still gets the late payment penalty.
 
 ### Do a pay run yourself
 - New exercise `/study/pay-run`: six of Kōwhai's real pay runs, simpler first.

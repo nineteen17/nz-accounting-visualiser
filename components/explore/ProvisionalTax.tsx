@@ -9,6 +9,7 @@ import { money, nzDate, pct } from "@/lib/money";
 import { cx } from "@/lib/ui";
 import { Callout, Card, UsNote } from "@/components/learn/bits";
 import { Term } from "@/components/learn/Term";
+import { ToolGuide } from "@/components/learn/ToolGuide";
 
 const $ = (x: number) => money(x);
 const $0 = (x: number) => money(x, { dp: 0 });
@@ -49,7 +50,7 @@ function Schedule({ plan, actualRit }: { plan: Plan; actualRit: number }) {
           </tr>
           <tr className="align-top">
             <td className="py-1.5 pr-2 whitespace-nowrap">{nzDate(TERMINAL_DATE)}</td>
-            <td className="px-2 py-1.5">{plan.terminal >= 0 ? "Terminal tax" : "Refund"}<span className="block text-xs text-stone-500">actual RIT {$(actualRit)} − paid {$(plan.paid)}</span></td>
+            <td className="px-2 py-1.5">{plan.terminal >= 0 ? <Term k="terminal-tax">Terminal tax</Term> : "Refund"}<span className="block text-xs text-stone-500">actual RIT {$(actualRit)} − paid {$(plan.paid)}</span></td>
             <td className="num py-1.5 pl-2 text-right font-semibold">{$(Math.abs(plan.terminal))}</td>
           </tr>
         </tbody>
@@ -70,6 +71,26 @@ export function ProvisionalTaxTool() {
 
   return (
     <div className="space-y-8">
+      <ToolGuide
+        what={<>A company doesn&apos;t pay its income tax in one lump after the year ends. Once its tax gets over {$0(PROVISIONAL_TAX.ritThreshold)} a year, it pays <strong>during</strong> the year, in instalments: provisional tax. This shows the four ways of working out those instalments, and what each costs, for Kōwhai&apos;s year 2: its first year paying them.</>}
+        steps={[
+          <>Pick a <strong>method</strong> with the buttons. Standard is what Kōwhai used.</>,
+          <>Move <strong>How the year turned out</strong>: what if the year&apos;s tax is much bigger, or smaller, than last year&apos;s?</>,
+          <>Standard: try paying the January instalment <strong>late</strong>. Estimation: set <strong>your estimate</strong> of the year&apos;s tax.</>,
+          <>Read the payment table, then <strong>All four methods</strong> to compare them.</>,
+        ]}
+        read={<><strong>Paid in year</strong>: the instalments. <strong>Terminal tax</strong>: the rest of the year&apos;s tax, paid the following April; a figure in brackets is a refund. <strong>Interest &amp; penalties</strong>: the extra cost of paying too little, or too late. The best method is usually the one with the lowest extra cost that the café can afford in cash during the year.</>}
+        terms={[
+          { k: "residual-income-tax", label: "RIT", says: "residual income tax: the year's income tax less tax already deducted (like RWT on interest). It's what provisional tax pays towards." },
+          { k: "provisional-tax", says: "the year's income tax, paid in instalments during the year." },
+          { k: "terminal-tax", says: "whatever's left once the year's tax is known, or a refund if too much was paid." },
+          { k: "uomi", label: "Use-of-money interest", says: "interest IRD charges when you've paid too little (or pays you when you've paid too much)." },
+          { k: "safe-harbour", says: `under ${$0(PROVISIONAL_TAX.safeHarbourRit)} of RIT on the standard method, there's no interest until the terminal tax date.` },
+          { k: "late-payment-penalty", says: "a penalty for paying an instalment late, separate from interest." },
+          { k: "aim-method", label: "AIM", says: "accounting software works out each payment from the profit so far." },
+          { k: "gst-ratio-method", label: "GST ratio", says: "a fixed share of each GST period's sales." },
+        ]}
+      />
       <div className="prose-learn max-w-4xl text-[16px]">
         <p>
           Kōwhai&apos;s first-year <Term k="terminal-tax">residual income tax</Term> (RIT) was {$(LAST_RIT)}, over {$0(PROVISIONAL_TAX.ritThreshold)}, so in year 2 it must pay <Term k="provisional-tax">provisional tax</Term>: the year&apos;s tax in instalments, during the year.
@@ -123,9 +144,9 @@ export function ProvisionalTaxTool() {
           {method === "aim" && <p className="mt-1 text-xs text-stone-500">Approximated from the ledger: the profit to each GST period&apos;s end, scaled so the year comes to the real taxable income. Real AIM software applies the tax adjustments as it goes.</p>}
           <div className="mt-3"><Schedule plan={plan} actualRit={actualRit} /></div>
           <dl className="mt-4 space-y-1 rounded-lg bg-stone-50 p-3 text-sm">
-            <div className="flex justify-between gap-3"><dt>Use-of-money interest charged</dt><dd className="num">{$(plan.interestCharged)}</dd></div>
+            <div className="flex justify-between gap-3"><dt><Term k="uomi">Use-of-money interest</Term> charged</dt><dd className="num">{$(plan.interestCharged)}</dd></div>
             {plan.interestCredited > 0 && <div className="flex justify-between gap-3"><dt>Interest paid to Kōwhai (overpaid)</dt><dd className="num">{$(plan.interestCredited)}</dd></div>}
-            {plan.penalties > 0 && <div className="flex justify-between gap-3"><dt>Late payment penalties</dt><dd className="num">{$(plan.penalties)}</dd></div>}
+            {plan.penalties > 0 && <div className="flex justify-between gap-3"><dt><Term k="late-payment-penalty">Late payment penalties</Term></dt><dd className="num">{$(plan.penalties)}</dd></div>}
             <div className="flex justify-between gap-3 border-t border-stone-200 pt-1 font-semibold"><dt>Extra cost</dt><dd className="num">{$(cost(plan))}</dd></div>
           </dl>
           <p className="mt-2 text-xs text-stone-500">{plan.rule}</p>
