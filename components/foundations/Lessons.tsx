@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo, useState } from "react";
 import { motion } from "motion/react";
 import { APRIL_FEATURED, DURING_YEAR } from "@/data/books";
@@ -511,6 +512,7 @@ export function BusinessStructures() {
           <li>Owners&apos; money out = <Term k="drawings">drawings</Term> against their <Term k="shareholder-current-account">shareholder current account</Term>, then a <Term k="shareholder-salary">shareholder salary</Term> or a dividend.</li>
           <li>The company pays its own income tax (an expense in its P&amp;L), files an <Term k="ir4">IR4</Term> and a Companies Office annual return.</li>
         </ul>
+        <p><Link href="/explore/structures" className="font-semibold text-kowhai-700 underline">🏛️ Try it: run Kōwhai&apos;s profit through each structure</Link>: the tax, ACC, a loss year, and who&apos;s liable, side by side.</p>
       </div>
     </div>
   );

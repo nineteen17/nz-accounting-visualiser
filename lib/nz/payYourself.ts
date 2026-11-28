@@ -11,7 +11,7 @@
  */
 import { r2 } from "@/lib/money";
 import { ietcFor, progressiveTax } from "./payroll";
-import { COMPANY_TAX_RATE, RWT, type PayrollRates } from "./rates";
+import { ACC_CAFE_LEVIES, COMPANY_TAX_RATE, RWT, type PayrollRates } from "./rates";
 
 /** most credits a dividend can carry, per dollar of cash: 28/72 */
 export const MAX_IC_RATIO = COMPANY_TAX_RATE / (1 - COMPANY_TAX_RATE);
@@ -72,5 +72,11 @@ export function ownerYear(input: { salary: number; dividend: ReturnType<typeof d
   };
 }
 
-/** a rate as an ACC levy on liable earnings, capped */
-export const accLevy = (earnings: number, rates: PayrollRates) => r2(Math.min(Math.max(0, earnings), rates.acc.maxLiableEarnings) * rates.acc.rate);
+/** every ACC levy rate on a café owner's liable earnings: earners' levy, work levy and working safer levy */
+export const accRate = (rates: PayrollRates) => rates.acc.rate + ACC_CAFE_LEVIES.work + ACC_CAFE_LEVIES.workingSafer;
+
+/**
+ * ACC levies on an owner's liable earnings (a shareholder salary without PAYE, or a self-employed share of profit),
+ * capped at the maximum liable earnings. ACC invoices them after the year, from the tax return.
+ */
+export const accLevy = (earnings: number, rates: PayrollRates) => r2(Math.min(Math.max(0, earnings), rates.acc.maxLiableEarnings) * accRate(rates));

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { NZ_TOPICS } from "@/data/topics";
-import { ACTS, LAW, lawUrl } from "@/lib/nz/law";
+import { ACTS, LAW, TOOL_LAW, lawUrl } from "@/lib/nz/law";
+import { EXPLORE_TOOLS } from "@/app/explore/tools";
 
 describe("The law on each NZ topic (lib/nz/law.ts)", () => {
   it("every NZ topic has at least one law reference", () => {
@@ -10,8 +11,11 @@ describe("The law on each NZ topic (lib/nz/law.ts)", () => {
     const slugs = new Set(NZ_TOPICS.map((t) => t.slug));
     for (const k of Object.keys(LAW)) expect(slugs.has(k), k).toBe(true);
   });
+  it("tool law is only for Explore tools that exist", () => {
+    for (const k of Object.keys(TOOL_LAW)) expect(EXPLORE_TOOLS.some((t) => t.slug === k), k).toBe(true);
+  });
   it("each reference is complete and links to the official site", () => {
-    for (const refs of Object.values(LAW))
+    for (const refs of [...Object.values(LAW), ...Object.values(TOOL_LAW)])
       for (const r of refs) {
         expect(ACTS[r.act]).toBeDefined();
         expect(r.anchor).toMatch(/^(DLM|LMS)\d+$/);

@@ -1,8 +1,8 @@
-import { ACTS, LAW, LAW_CHECKED, lawUrl, sectionLabel, type ActKey, type LawRef } from "@/lib/nz/law";
+import { ACTS, LAW, LAW_CHECKED, TOOL_LAW, lawUrl, sectionLabel, type ActKey, type LawRef } from "@/lib/nz/law";
 
 /** "The law" on an NZ topic page: the Acts and sections behind it, with official links. */
-export function LawBox({ topic }: { topic: string }) {
-  const refs = LAW[topic];
+export function LawBox({ topic, tool }: { topic?: string; tool?: string }) {
+  const refs = tool ? TOOL_LAW[tool] : LAW[topic ?? ""];
   if (!refs?.length) return null;
   const byAct = new Map<ActKey, LawRef[]>();
   for (const r of refs) byAct.set(r.act, [...(byAct.get(r.act) ?? []), r]);

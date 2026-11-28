@@ -7,12 +7,21 @@ Dates are when the change was made. Rates and rules are for the 2026–27 NZ inc
 
 ## Proposed / not yet done
 
-- **2027–28 rates (on or after 1 April 2027)**. Follow README "Updating the rates" (`npm run rates` lists what to check). In short: when IRD, ACC and MBIE announce them, fill in `PAYROLL_2027_28` in `lib/nz/rates.ts` and clear its `toConfirm` list (tax brackets, IETC, student loan threshold and ESCT bands are carried forward for now); update `MINIMUM_WAGE`; then on 1 April 2027 point `CURRENT_PAYROLL` at 2027–28. Year 1's books keep the 2026–27 rates.
-- **Which structure? tool**: planned in `docs/STRUCTURES.md`. It runs Kōwhai's profit through a partnership, a company, a look-through company and (if Aroha owned it alone) a sole trader, comparing tax, ACC, losses and liability. Three decisions are needed and three facts are still to confirm (listed in the plan).
+- **2027–28 rates (on or after 1 April 2027)**. Follow README "Updating the rates" (`npm run rates` lists what to check). In short: when IRD, ACC and MBIE announce them, fill in `PAYROLL_2027_28` in `lib/nz/rates.ts` and clear its `toConfirm` list (tax brackets, IETC, student loan threshold and ESCT bands are carried forward for now); update `MINIMUM_WAGE`; then on 1 April 2027 point `CURRENT_PAYROLL` at 2027–28. Year 1's books keep the 2026–27 rates. Also update `ACC_CAFE_LEVIES` (the café work levy and working safer levy) from ACC's 2027/28 Levy Guidebook and clear its `toConfirm`.
 
 ---
 
 ## 2026-11-28
+
+### Which structure? sole trader, partnership, company or LTC
+- New Explore tool `/explore/structures`. Kōwhai's year 2 profit is run through a partnership, the company it really is, a look-through company and (optionally) a sole trader, if Aroha owned it alone. For each it shows the tax now, the ACC levies, what each owner keeps, profit kept in the company and the tax still to come on it, and any loss carried forward.
+- A profit slider runs from a $60,000 loss to $260,000, with presets for year 2, a quieter year and a loss year. In a loss year, Ben's share of a partnership or LTC loss gets PAYE back on his IT salary, while the company can only carry its loss forward.
+- "More than tax" cards compare returns, paying the owners, losses, ACC, liability and limits. There's also a note on Kōwhai's personal guarantees, and a US note (self-employment tax, LLCs and S corporations).
+- "The law" box now appears on Explore tools too. It has 11 sections for this tool, including the **Partnership Law Act 2019** (ss 22 and 25), now checked by `npm run law`.
+- New drill **Which structure?** (46 drills). The Business structures lesson and the pay yourself tool link to it.
+- `lib/nz/rates.ts`: the café's ACC **work levy** ($0.40 per $100) and **working safer levy** ($0.08 per $100), from ACC's Levy Guidebook 2026/27, with the 2027/28 rates marked to confirm.
+- **Corrected** the pay yourself tool: ACC on shareholder salaries now includes the work and working safer levies, not just the earners' levy. ACC invoices all three. Year 2's ACC on the real salaries is $2,310, not $1,830.
+- Tests: 191 pass.
 
 ### Plan for the "Which structure?" tool
 - `docs/STRUCTURES.md`. Checked against:

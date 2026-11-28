@@ -1,6 +1,6 @@
 # Plan: "Which structure?", sole trader, partnership, company or LTC
 
-Status: **planned, not started** (written 2026-11-28). Follows the pay yourself tool (`docs/PAY-YOURSELF.md`), whose company calculations it reuses.
+Status: **built** 2026-11-28 (`/explore/structures`). Written 2026-11-28. Follows the pay yourself tool (`docs/PAY-YOURSELF.md`), whose company calculations it reuses.
 
 ## The question it answers
 
@@ -82,11 +82,11 @@ Both real years made a profit (year 1 taxable income before salaries was about $
 
 **Tests:** the company column equals the pay yourself result for the same choice. The partners' shares add up to the profit. A partnership and an LTC with no salaries pay the same income tax. In a loss year, Ben's share of the loss reduces the tax on his IT salary. ACC stops at the maximum liable earnings. The sole trader's tax equals Aroha's personal tax on the whole profit.
 
-## Decisions needed
+## Decisions (made 2026-11-28)
 
-1. **Sole trader.** Recommended: show it as "if Aroha owned it alone" (a toggle), because a sole trader can't have two owners. The alternative is to leave it out and describe it in words only.
-2. **Loss slider.** Recommended: yes, down to about a $60,000 loss. Without it, the main reason people choose an LTC doesn't show.
-3. **Year.** Recommended: year 2 only, the same as pay yourself.
+1. **Sole trader** (decided: a toggle). Recommended: show it as "if Aroha owned it alone" (a toggle), because a sole trader can't have two owners. The alternative is to leave it out and describe it in words only.
+2. **Loss slider** (decided: down to $60,000). Recommended: yes, down to about a $60,000 loss. Without it, the main reason people choose an LTC doesn't show.
+3. **Year** (decided: year 2). Recommended: year 2 only, the same as pay yourself.
 
 ## Size
 

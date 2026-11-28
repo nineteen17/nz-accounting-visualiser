@@ -24,6 +24,7 @@ export const ACTS = {
   minwage: { name: "Minimum Wage Act 1983", year: 1983, no: 115, versionAsAt: "20 December 2023" },
   acc: { name: "Accident Compensation Act 2001", year: 2001, no: 49, versionAsAt: "10 July 2026" },
   companies: { name: "Companies Act 1993", year: 1993, no: 105, versionAsAt: "1 July 2025" },
+  partnership: { name: "Partnership Law Act 2019", year: 2019, no: 53, versionAsAt: "2 November 2026" },
 } as const;
 
 export type ActKey = keyof typeof ACTS;
@@ -247,5 +248,33 @@ export const LAW: Record<string, LawRef[]> = {
       says: "Full GAAP financial statements are required only from large companies, companies with 10 or more shareholders, or when shareholders with 5% of the votes ask. A small company like Kōwhai only needs the tax minimum." },
     { act: "companies", section: "214", heading: "Annual return", anchor: "DLM321131",
       says: "Every company files an annual return with the Companies Office, in its allocated month." },
+  ],
+};
+
+/** the law behind an Explore tool, keyed by the tool's slug (shown in the same "The law" box) */
+export const TOOL_LAW: Record<string, LawRef[]> = {
+  structures: [
+    { act: "ita", section: "HG 2", heading: "Partnerships are transparent", anchor: "DLM1185059",
+      says: "For income tax, partners are treated as carrying on the partnership's activities themselves: each is taxed on their share of its income." },
+    { act: "ita", section: "HB 1", heading: "Look-through companies are transparent", anchor: "DLM3676672",
+      says: "Once the owners elect it, a look-through company is treated like a partnership for income tax: the owners are taxed on its income (but not for PAYE, FBT, RWT and similar rules)." },
+    { act: "ita", section: "HB 13", heading: "LTC elections", anchor: "DLM3676669",
+      says: "A company becomes a look-through company by an election signed by a director, with notices from all its owners agreeing to it, sent to IRD." },
+    { act: "ita", section: "YA 1", heading: "Definitions", anchor: "DLM1520575",
+      says: "A look-through company may have no more than 5 look-through counted owners, with relatives counted as one owner." },
+    { act: "ita", section: "HB 11", heading: "Limitation on deductions by persons with interests in look-through companies", anchor: "DLM3678210",
+      says: "The old limit on owners using an LTC's losses now only applies when the LTC is a partner with another LTC. Otherwise owners can set the losses against their other income." },
+    { act: "ita", section: "DC 3B", heading: "Payments to working owners", anchor: "DLM3683703",
+      says: "An LTC can deduct salary paid to a working owner under a written employment contract that sets out the work and the pay." },
+    { act: "ita", section: "DC 4", heading: "Payments to working partners", anchor: "DLM1513765",
+      says: "A partnership can deduct salary paid to a working partner under a written contract that all the partners have entered into." },
+    { act: "companies", section: "15", heading: "Separate legal personality", anchor: "DLM320115",
+      says: "A company is a legal person in its own right, separate from its shareholders." },
+    { act: "companies", section: "97", heading: "Liability of shareholders", anchor: "DLM320464",
+      says: "A shareholder isn't liable for the company's obligations just because they're a shareholder (unless the constitution says otherwise)." },
+    { act: "partnership", section: "22", heading: "Liability of partners for firm’s debts and obligations", anchor: "LMS206010",
+      says: "Every partner is liable, jointly with the other partners, for all the firm's debts incurred while they're a partner." },
+    { act: "partnership", section: "25", heading: "Liability for wrongful acts or omissions is joint and several", anchor: "LMS206015",
+      says: "For wrongs done in the firm's business, each partner is liable jointly with the others and also on their own." },
   ],
 };

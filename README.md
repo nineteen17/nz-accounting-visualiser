@@ -34,7 +34,7 @@ The course teaches one income year at a time (`CURRENT_PAYROLL`, now **2026–27
 1. Run `npm run rates`. It lists the next year's figures, what's still marked **to confirm** (carried forward because they hadn't been announced), and the official page for each.
 2. Check each figure on the official sites (IRD, ACC, Employment NZ) and correct `PAYROLL_2027_28` in `lib/nz/rates.ts`. Empty its `toConfirm` list once everything is checked.
 3. Point the course at the new year: `export const CURRENT_PAYROLL = PAYROLL_2027_28;`
-4. Update the other figures that change on their own dates: `MINIMUM_WAGE` (1 April), `PROVISIONAL_TAX` use-of-money interest, and `RATES_AS_AT`.
+4. Update the other figures that change on their own dates: `MINIMUM_WAGE` (1 April), `PROVISIONAL_TAX` use-of-money interest, `ACC_CAFE_LEVIES` (the café work and working safer levies, from ACC's Levy Guidebook for the new levy year), and `RATES_AS_AT`.
 5. Add the following year's set (`PAYROLL_2028_29`) the same way: copy the year before, change what's known (e.g. KiwiSaver goes to 4% on 1 April 2028), and list the rest in `toConfirm`.
 6. Run `npm run law`. It downloads each Act from legislation.govt.nz and lists any section in `lib/nz/law.ts` that has been amended (or has an amendment waiting to take effect), renumbered, retitled or repealed since it was last checked. For each one flagged, re-read the section, update its summary in `lib/nz/law.ts` and the topic page if the rule changed, then update that Act's `versionAsAt` and `LAW_CHECKED`. (`LAW_SINCE="1 April 2027" npm run law` lists changes since any date.)
 7. Run `npx vitest run` and `npm run build`, add a CHANGELOG entry, then push.

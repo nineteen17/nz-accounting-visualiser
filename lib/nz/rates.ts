@@ -102,6 +102,21 @@ export const ACC_EARNERS_LEVY = {
   ...CURRENT_PAYROLL.acc,
   source: "https://www.acc.co.nz/for-business/received-an-invoice/calculate-your-levies/",
 };
+/**
+ * The other ACC levies on a café's liable earnings (an employer's payroll, or a self-employed person's earnings),
+ * per $1, excluding GST: ACC Levy Guidebook 2026/27, classification unit 57300 "Cafes and restaurants".
+ * The work levy is the same for employers and CoverPlus self-employed. 2027–28's rates are still to confirm.
+ */
+export const ACC_CAFE_LEVIES = {
+  levyYear: "2026/27",
+  classificationUnit: "57300 Cafes and restaurants",
+  // $0.40 per $100
+  work: 0.004,
+  // $0.08 per $100, collected for WorkSafe
+  workingSafer: 0.0008,
+  toConfirm: ["2027/28 work levy", "2027/28 working safer levy", "minimum liable earnings for full-time self-employed"],
+  source: "https://www.acc.co.nz/assets/business/Levy-Guidebook-2026-2027.pdf",
+};
 export const KIWISAVER = {
   ...CURRENT_PAYROLL.kiwiSaver,
   otherEmployeeRates: [0.035, 0.04, 0.06, 0.08, 0.1],

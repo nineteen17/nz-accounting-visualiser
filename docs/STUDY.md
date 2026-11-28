@@ -139,7 +139,7 @@ See the open questions in section 5.
 | Source documents | ✅ | ✅ Which source document? | |
 | Cash vs accrual | ✅ | ✅ Cash vs accrual profit | |
 | US vs NZ | ✅ (reference) | ✅ US → NZ terms | |
-| Business structures | ✅ | ✅ Owners & business structures | |
+| Business structures | ✅ | ✅ Owners & business structures, Which structure? (who's taxed, returns, losses, liability, LTC owners, ACC, tax on a share) | |
 
 ### Part 2 · Accounting cycle
 | Step | Flashcards | Drills | Gap / planned |
@@ -243,6 +243,7 @@ Shown on matching flashcards, and practised as cards of their own (`a:` cards, o
 - [x] **E4** Year 2 entries: reversing last year's accruals, the POS sale and its depreciation, the dividend and its RWT, annual leave, provisional tax.
 - [x] **N9** Balance a T-account.
 - [x] **N10** Cash-basis vs accrual-basis profit for a month.
+- [x] **B5** Which structure? drill, with the Which structure? tool (`data/study/structures.ts`, figures from `lib/nz/structures.ts`). 46 drills.
 - [x] **B4** Salary or dividend? drill, with the pay yourself tool (`data/study/payYourself.ts`, figures from `data/books/payYourself.ts`). 45 drills.
 - [x] **N11** GST payable for a period (output − input, leaving out exempt fees and wages).
 - [x] **N12** Imputation credits (28/72), the gross dividend, dividend RWT and the cash paid.
@@ -274,6 +275,7 @@ Shown on matching flashcards, and practised as cards of their own (`a:` cards, o
 - None open. Decided 2026-11-28: drills don't count towards Known; they have their own "mastered" (X3). Typed recall added as the "Type it" option for meaning → term cards (X4).
 
 ## 6. Log
+- **2026-11-28**: Which structure? tool (Explore) and its drill (B5). 46 drills, 191 tests.
 - **2026-11-28**: Pay yourself tool (Explore) and its Salary or dividend? drill (B4). 45 drills, 175 tests.
 - **2026-11-28**: Cash flow forecast tool and drill (B2); inventory page made interactive, with a Valuing stock drill (B3) and IRD's stock rules corrected; Do the year-end yourself (Y1). 44 drills, 154 tests.
 - **2026-11-28**: Budget vs actual tool (Explore) and its drill (B1); three glossary terms. Site-wide accessibility pass. 42 drills, 135 tests.

@@ -6,6 +6,7 @@ import * as X from "@/components/explore/Tools";
 import { PageHeader } from "@/components/learn/bits";
 import { EXPLORE_TOOLS } from "../tools";
 import { PractiseLinks } from "@/components/study/PractiseLinks";
+import { LawBox } from "@/components/nz/LawBox";
 
 const TOOLS: Record<string, () => React.ReactNode> = {
   journal: () => <X.JournalTool />,
@@ -17,6 +18,7 @@ const TOOLS: Record<string, () => React.ReactNode> = {
   budget: () => <X.BudgetTool />,
   "cash-forecast": () => <X.CashForecastTool />,
   "pay-yourself": () => <X.PayYourselfTool />,
+  structures: () => <X.StructuresTool />,
   "break-even": () => <X.BreakEvenTool />,
 };
 
@@ -50,6 +52,7 @@ async function Content({ params }: { params: Promise<{ tool: string }> }) {
       </nav>
       <PageHeader eyebrow="Explore the books" title={t.title}>{t.blurb}</PageHeader>
       {TOOLS[tool]()}
+      <LawBox tool={tool} />
       <PractiseLinks href={`/explore/${tool}`} />
     </div>
   );

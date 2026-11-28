@@ -1,8 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo, useState, type ReactNode } from "react";
 import { ACTUAL, BASE, PRESETS, RATES, payYourself, type Choice, type Result } from "@/data/books/payYourself";
-import { MAX_IC_RATIO } from "@/lib/nz/payYourself";
+import { accRate, MAX_IC_RATIO } from "@/lib/nz/payYourself";
 import { money, pct } from "@/lib/money";
 import { cx } from "@/lib/ui";
 import { Callout, Card, UsNote } from "@/components/learn/bits";
@@ -112,7 +113,7 @@ function OwnerCard({ o }: { o: Result["owners"][number] }) {
         <div className="flex justify-between font-bold"><span>{first} keeps</span><span className="num">{money(o.keeps)}</span></div>
         <div className="text-xs text-stone-500">Salary plus the dividend paid, less what&apos;s owed to IRD.</div>
       </div>
-      {o.salary > 0 && <p className="mt-2 text-xs text-stone-500">ACC also invoices the company {money(o.acc)} next July or August: the earners&apos; levy on {first}&apos;s salary ({pct(RATES.acc.rate, 2)}). Shareholder salaries have no PAYE, so ACC bills it instead.</p>}
+      {o.salary > 0 && <p className="mt-2 text-xs text-stone-500">ACC also invoices the company {money(o.acc)} next July or August: the earners&apos;, work and working safer levies on {first}&apos;s salary ({pct(accRate(RATES), 2)}). Shareholder salaries have no PAYE, so ACC bills it instead.</p>}
     </Card>
   );
 }
@@ -251,6 +252,7 @@ export function PayYourselfTool() {
         <UsNote>
           <p>A US <strong>C-corporation</strong>&apos;s profit is taxed twice: corporate tax, then the owner&apos;s dividend tax. So owners lean towards salary. An <strong>S-corporation</strong> owner must take &quot;reasonable compensation&quot; as salary before distributions, the opposite worry to NZ&apos;s s GB 25, which is about salary that&apos;s too <em>high</em>.</p>
           <p>NZ&apos;s imputation removes the second layer of tax, so the choice is about rates and timing.</p>
+          <p>Could they have avoided the company altogether? See <Link href="/explore/structures" className="underline">Which structure?</Link></p>
         </UsNote>
       </div>
 

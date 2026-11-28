@@ -71,7 +71,7 @@ Add a test that every NZ topic has at least one law reference.
 
 ### Result (2026-11-28): done
 
-Every rule stated on the 14 NZ topic pages was checked against its section (and the schedules of the Income Tax Act for rates). `lib/nz/law.ts` now lists 85 sections.
+Every rule stated on the 14 NZ topic pages was checked against its section (and the schedules of the Income Tax Act for rates). `lib/nz/law.ts` now lists 85 sections, plus 11 for the Which structure? tool (`TOOL_LAW`, added later), from 10 Acts.
 
 **Matched the Act** (no change needed): GST 15%, $60,000 registration (past and next 12 months), payments basis up to $2,000,000, monthly filing above $24,000,000, return due dates, time of supply; tax brackets, company 28%, trustee 39%, IETC ($520 from $24,000, abating 13c over $66,000), ESCT bands, non-declaration rate 45%; provisional tax over $5,000 RIT, instalments 28 Aug / 15 Jan / 7 May, terminal tax February (April with extension); 63-day rule for accrued holiday pay; entertainment 50%; low-value assets $1,000 or less; pooling $5,000 or less; Investment Boost 20%; RWT on interest (28% companies, 45% no IRD number, 10.5–39% individuals) and dividends (33% less credits); maximum imputation 28/72; FBT minimums ($300 a quarter, $22,500 over 4 quarters); PAYE payment by the 20th under $500,000; payday filing within 2 working days; KiwiSaver 3.5%, employer contributions from age 16; annual leave 4 weeks, holiday pay rate, 8% pay-as-you-go conditions, time and a half, alternative holidays, sick leave 10 days after 6 months, carry-over 10 to a maximum of 20, bereavement 3 / 1 days; records 6 years (wages, holidays) and 7 years (tax, GST); Matariki 10 July 2026 and 25 June 2027 (Matariki Act schedule 1).
 
