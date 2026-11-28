@@ -10,6 +10,7 @@ export const EXPLORE_TOOLS = [
   { slug: "structures", title: "Which structure?", icon: "🏛️", blurb: "Partnership, company, look-through company or sole trader? Run Kōwhai's profit through each and compare the tax, ACC, losses and who's liable." },
   { slug: "provisional-tax", title: "Provisional tax", icon: "🗓️", blurb: "Standard, estimation, AIM or the GST ratio? Plan Kōwhai's year 2 provisional tax and see the instalments, terminal tax, interest and penalties." },
   { slug: "deferred-tax", title: "Tax: accounts vs return", icon: "⚖️", blurb: "Why isn't Kōwhai's tax 28% of its profit? Temporary and permanent differences, what deferred tax would add, and why a café its size doesn't record it." },
+  { slug: "tax-losses", title: "Tax losses", icon: "📉", blurb: "What if Kōwhai made a loss? Carry it forward, see what it does to provisional tax, and find out what an owner selling up does to the loss and the imputation credits." },
   { slug: "year-end", title: "Year-end checklist", icon: "✅", blurb: "Every job from just before 31 March to the next April's terminal tax, with Kōwhai's own dates and figures, the law, and a link to practise each one." },
   { slug: "budget", title: "Budget vs actual", icon: "🎯", blurb: "Year 2's plan beside what really happened: every variance, favourable or unfavourable, and why." },
   { slug: "break-even", title: "Break-even", icon: "☕", blurb: "How many customers does the café need each day to cover its costs?" },

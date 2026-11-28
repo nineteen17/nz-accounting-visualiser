@@ -1,6 +1,6 @@
 # Plan: tax losses, and what happens when the owners change
 
-Status: **planned** 2026-11-29. Not built yet.
+Status: **built** 2026-11-29, with the recommended decisions. Checked while building: IRD's business continuity test page lists the changes allowed (efficiency, technology, scale, withdrawing or adding related products), so the scenario's "major change" is closing the café for an unrelated IT consultancy, and "adds evening wine and tapas" is the allowed one. The IRS confirms the 80% limit and no general carry-back for post-2017 NOLs. Figures: 6 months closed gives a $24,150.75 net loss (about 5 months is where it turns into a loss), which saves $6,762.21 of tax; the imputation credits at risk are $10,364.14.
 
 ## Why
 

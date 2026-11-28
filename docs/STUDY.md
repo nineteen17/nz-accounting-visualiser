@@ -247,6 +247,7 @@ Shown on matching flashcards, and practised as cards of their own (`a:` cards, o
 - [x] **N10** Cash-basis vs accrual-basis profit for a month.
 - [x] **Y4** Do the company tax return yourself (`/study/ir4`, form in `lib/engine/ir4.ts`, logic in `lib/study/ir4.ts`, returns in `data/study/ir4.ts`): sort the year's items into tax adjustments, work out taxable income, fill in the IR4 and the annual imputation return (each box marked against your own earlier boxes), and the due dates. Both years. Best result per return saved (`ir4-v1`). Plan: `docs/IR4.md`.
 - [x] **Y3** Do a pay run yourself (`/study/pay-run`, logic in `lib/study/payRun.ts`, runs in `data/study/payRun.ts`): the payslips line by line (PAYE as IRD's steps), the entry, payday filing. Best result per pay run saved as `pay-run-v1`. The payroll engine now follows IRD's payroll specification.
+- [x] **B8** Tax losses: does it survive? drill, with the Tax losses tool (`data/study/taxLosses.ts`, rules from `lib/nz/taxLosses.ts`): does a loss survive a share sale (49% or the business continuity test), do the imputation credits (66%), and how much of a loss a year uses. 49 drills.
 - [x] **B7** Deferred tax: temporary or permanent? drill, with the Tax: accounts vs return tool (`data/study/deferredTax.ts`, items from both years' tax reconciliations in `data/books/deferredTax.ts`): temporary or permanent, deferred tax asset or liability, and the deferred tax at 28%. 48 drills.
 - [x] **B6** Provisional tax: methods & interest drill, with the provisional tax planner (`data/study/provisionalTax.ts`, rules from `lib/nz/provisionalTax.ts`). 47 drills.
 - [x] **Y2** Do the GST return yourself (`/study/gst-return`, logic in `lib/study/gstReturn.ts`, periods in `data/study/gstReturn.ts`): sort a real period's transactions, fill in the GST101A from your own sorting, and compare with Kōwhai's return. Best result per period saved as `gst-return-v1`.
@@ -282,6 +283,7 @@ Shown on matching flashcards, and practised as cards of their own (`a:` cards, o
 - None open. Decided 2026-11-28: drills don't count towards Known; they have their own "mastered" (X3). Typed recall added as the "Type it" option for meaning → term cards (X4).
 
 ## 6. Log
+- **2026-11-29**: Tax losses tool in Explore and its drill (B8); five glossary terms (net loss, tax loss, shareholder continuity, business continuity test, NOL (US)). 49 drills, 308 tests.
 - **2026-11-29**: Tax: accounts vs return (deferred tax) tool in Explore, its drill (B7), and six glossary terms (deferred tax, temporary and permanent difference, tax base, taxes payable method, effective tax rate). 48 drills, 294 tests.
 - **2026-11-29**: ACC levies and the Companies Office fee are now in the books. The year-end exercise gains an ACC accrual in each year (13 and 11 adjustments); the IR4 exercise gains the s EF 3 add-back (year 1) and the add-back and deduction pair (year 2). 282 tests.
 - **2026-11-28**: Do the company tax return yourself (Y4), from IRD's IR4 2026 form and guide. 47 drills, 267 tests.

@@ -7,8 +7,6 @@ Dates are when the change was made. Rates and rules are for the 2026–27 NZ inc
 
 ## Proposed / not yet done
 
-- **Tax losses**: planned in `docs/TAX-LOSSES.md`. An Explore tool with a "what if" year 3 (roadworks close the street, so Kōwhai makes a net loss): carrying the loss forward (it must be used first, with no time limit), what it does to provisional tax, and what an owner selling out does. Ben selling his 40% keeps the loss (Aroha's 60% passes the 49% test) but loses the imputation credits (under 66%). Aroha selling her 60% breaks the 49% test, so the business continuity test decides. With a US note (NOLs, § 382).
-
 - **IR4 2027 form (around March 2027)**: when IRD publishes it, re-check `ir4Boxes()` in `lib/engine/ir4.ts` against it (box numbers and wording), and update `IR4_SOURCE` to the new form and guide.
 
 - **2027–28 rates (on or after 1 April 2027)**. Follow README "Updating the rates" (`npm run rates` lists what to check). In short: when IRD, ACC and MBIE announce them, fill in `PAYROLL_2027_28` in `lib/nz/rates.ts` and clear its `toConfirm` list (tax brackets, IETC, student loan threshold and ESCT bands are carried forward for now); update `MINIMUM_WAGE`; then on 1 April 2027 point `CURRENT_PAYROLL` at 2027–28. Year 1's books keep the 2026–27 rates. Also update `ACC_CAFE_LEVIES` (the café work levy and working safer levy) from ACC's 2027/28 Levy Guidebook and clear its `toConfirm`.
@@ -16,6 +14,17 @@ Dates are when the change was made. Rates and rules are for the 2026–27 NZ inc
 ---
 
 ## 2026-11-29
+
+### Tax losses
+
+A new Explore tool, `/explore/tax-losses`: a "what if" in which roadworks close Kōwhai's street in year 3 (2028–29). Built from year 2's books; Kōwhai's real books don't change. Plan: `docs/TAX-LOSSES.md`.
+- **A bad year:** a slider for the months closed. At 6 months, café sales fall $138,900 and the company has a net loss of $24,150.75 (s BC 4): no tax, and no refund.
+- **Carrying it forward:** years 3 to 5, with the loss coming off year 4's net income first (s IA 4) and any rest carried on with no time limit. It saves $6,762.21 of tax.
+- **Provisional tax:** a nil RIT means no year 4 instalments under the standard method; why Kōwhai would switch to estimation in the bad year.
+- **Change the owners:** who sells (nobody, half of Ben's shares, all of Ben's, all of Aroha's, both) and what the new owner does. The 49% loss test (s IA 5), the business continuity test (ss IB 3, IB 4) and the 66% imputation credit test (ss OA 8, OB 41) side by side. Ben selling keeps the loss but loses $10,364.14 of credits.
+- A link to deferred tax (a loss as a deferred tax asset) and a US note (NOLs, the 80% limit, § 382).
+- A "Tax losses: does it survive?" drill; five glossary terms; 11 Income Tax Act sections in the law references (131 checked); `LOSS_CONTINUITY` in `rates.ts`. Linked from the income tax page and the deferred tax tool.
+- Tests: 14 new (308 in all).
 
 ### Tax: accounts vs return (deferred tax)
 

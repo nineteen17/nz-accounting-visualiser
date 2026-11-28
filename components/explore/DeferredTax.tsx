@@ -192,7 +192,7 @@ export function DeferredTaxTool() {
       </UsNote>
 
       <p className="text-[15px]">
-        See also: <Link href="/nz/income-tax" className="font-semibold underline">Company income tax</Link> · <Link href="/study/ir4" className="font-semibold underline">Do the company tax return yourself</Link>
+        See also: <Link href="/nz/income-tax" className="font-semibold underline">Company income tax</Link> · <Link href="/study/ir4" className="font-semibold underline">Do the company tax return yourself</Link> · <Link href="/explore/tax-losses" className="font-semibold underline">Tax losses</Link>
       </p>
     </div>
   );

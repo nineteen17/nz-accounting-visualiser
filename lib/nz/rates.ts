@@ -167,6 +167,17 @@ export const LARGE_COMPANY = {
   source: "https://www.legislation.govt.nz/act/public/2013/101/en/latest/#DLM5206501",
 };
 
+/**
+ * Continuity of ownership a company must keep, as the lowest combined holding of the same people (Income Tax Act 2007).
+ * Losses: s IA 5 (49% of voting interests; market value interests too, in a market value circumstance).
+ * Imputation credits: s OA 8(2) (66%). Checked 29 November 2026.
+ */
+export const LOSS_CONTINUITY = {
+  losses: 0.49,
+  imputation: 0.66,
+  source: "https://www.legislation.govt.nz/act/public/2007/97/en/latest/#DLM1517695",
+};
+
 /** Companies Office annual return fee, excluding GST: $21 Companies Office fee + FMA, XRB and IP levies (fees from 1 July 2022, checked 28 November 2026) */
 export const COMPANIES_OFFICE = {
   annualReturnFee: 49.74,

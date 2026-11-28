@@ -24,6 +24,7 @@ export { PayYourselfTool } from "./PayYourself";
 export { StructuresTool } from "./Structures";
 export { ProvisionalTaxTool } from "./ProvisionalTax";
 export { DeferredTaxTool } from "./DeferredTax";
+export { TaxLossesTool } from "./TaxLosses";
 export { YearEndTool } from "./YearEnd";
 
 const input = "max-w-full rounded-lg border border-stone-300 bg-white px-2 py-1.5 text-sm";

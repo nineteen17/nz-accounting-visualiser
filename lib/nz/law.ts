@@ -276,6 +276,30 @@ export const LAW: Record<string, LawRef[]> = {
 
 /** the law behind an Explore tool, keyed by the tool's slug (shown in the same "The law" box) */
 export const TOOL_LAW: Record<string, LawRef[]> = {
+  "tax-losses": [
+    { act: "ita", section: "BC 4", heading: "Net income and net loss", anchor: "DLM1512339",
+      says: "If deductions are more than income, the difference is a net loss and net income is zero: no income tax for the year." },
+    { act: "ita", section: "IA 2", heading: "Tax losses", anchor: "DLM1517687",
+      says: "A company's tax loss for a year is its net loss plus any loss balance brought forward that wasn't used." },
+    { act: "ita", section: "IA 3", heading: "Using tax losses in tax year", anchor: "DLM1517691",
+      says: "A company can pass a tax loss to another company in its group; whatever's left is carried forward to the next year." },
+    { act: "ita", section: "IA 4", heading: "Using loss balances carried forward to tax year", anchor: "DLM1517693",
+      says: "A loss brought forward must first be subtracted from the year's net income, as far as it goes. There's no choice of year." },
+    { act: "ita", section: "IA 5", heading: "Restrictions on companies' loss balances carried forward: continuity of ownership", anchor: "DLM1517695",
+      says: "A loss carries forward only if the same group of people keeps at least 49% of the voting interests, counting each at their lowest holding, from the start of the loss year to the end of the year it's used." },
+    { act: "ita", section: "IB 3", heading: "When tax loss components of companies carried forward despite ownership continuity breach", anchor: "LMS486061",
+      says: "After a breach, a loss from 2013–14 or later still carries forward if the business doesn't stop and makes no major change in the nature of its activities. Some changes, like growth or related new products, are allowed." },
+    { act: "ita", section: "IB 4", heading: "Business continuity period", anchor: "LMS486064",
+      says: "The business must continue from just before the breach until the loss is used, or for 5 years at most for most companies." },
+    { act: "ita", section: "IP 3", heading: "Ownership continuity breach: tax loss components of companies carried forward", anchor: "DLM1517785",
+      says: "With a breach partway through a year, income from before the breach can still use the loss, with part-year financial statements." },
+    { act: "ita", section: "OA 8", heading: "Shareholder continuity requirements for memorandum accounts", anchor: "DLM1518664",
+      says: "Imputation credits carry forward only while 66% continuity of shareholding is kept." },
+    { act: "ita", section: "OB 41", heading: "ICA debit for loss of shareholder continuity", anchor: "DLM1518791",
+      says: "When that continuity is lost, the unused credits in the imputation credit account are debited away." },
+    { act: "ita", section: "IZ 8", heading: "Election to use net loss for 2019–20 or 2020–21 year as tax loss in preceding year", anchor: "LMS346687",
+      says: "A one-off COVID-19 carry-back, for those two years only. Losses otherwise only go forward." },
+  ],
   "deferred-tax": [
     { act: "frep", section: "45", heading: "Meaning of large", anchor: "DLM5206501",
       says: "A NZ company is large if, in each of the 2 previous years, its assets (with its subsidiaries') were over $66 million or its revenue over $33 million." },

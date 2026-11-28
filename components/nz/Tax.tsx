@@ -231,6 +231,9 @@ export function IncomeTaxTopic() {
             <li><strong>Home office</strong> (sole traders and shareholder-employees): a proportion of home costs, or IRD&apos;s square-metre rate option.</li>
             <li><strong>Motor vehicles</strong>: business-use % (logbook) or kilometre rates.</li>
           </ul>
+          <h2>When there&apos;s a loss, or the tax isn&apos;t 28% of profit</h2>
+          <p>A company whose deductions are more than its income has a <Term k="net-loss">net loss</Term>: no tax, and no refund. The loss is carried forward against future profit, as long as the owners don&apos;t change too much.</p>
+          <p className="text-[16px]"><Link href="/explore/tax-losses" className="font-semibold text-kowhai-700 underline">📉 Try it: give Kōwhai a bad year</Link> · <Link href="/explore/deferred-tax" className="font-semibold text-kowhai-700 underline">⚖️ Why its tax isn&apos;t 28% of profit</Link></p>
         </div>
         <Card>
           <h3 className="mb-3 text-lg font-bold">Personal tax calculator</h3>
