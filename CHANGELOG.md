@@ -8,11 +8,16 @@ Dates are when the change was made. Rates and rules are for the 2026–27 NZ inc
 ## Proposed / not yet done
 
 - **2027–28 rates (on or after 1 April 2027)**. Follow README "Updating the rates" (`npm run rates` lists what to check). In short: when IRD, ACC and MBIE announce them, fill in `PAYROLL_2027_28` in `lib/nz/rates.ts` and clear its `toConfirm` list (tax brackets, IETC, student loan threshold and ESCT bands are carried forward for now); update `MINIMUM_WAGE`; then on 1 April 2027 point `CURRENT_PAYROLL` at 2027–28. Year 1's books keep the 2026–27 rates.
-- **NZ law, Step 3**: add the April routine to README "Updating the rates" (download the Acts again, compare `lib/nz/law.ts` and each Act's version date). Then the **pay yourself** tool (`docs/LAW-LOOKUP.md`, end). Unconfirmed: whether court fines are non-deductible by statute or case law.
+- **Pay yourself tool** (`docs/LAW-LOOKUP.md`, end): Aroha and Ben choose a mix of shareholder salary and dividend and see the tax, what they keep, and whether the company still passes the solvency test. The limits it needs are now checked against the Acts. Unconfirmed: whether court fines are non-deductible by statute or case law.
 
 ---
 
 ## 2026-11-28
+
+### `npm run law`: the April check for NZ law (law plan Step 3)
+- New `scripts/law-check.mjs`: downloads each Act from legislation.govt.nz and reports any section in `lib/nz/law.ts` that has been amended (or has an amendment waiting), renumbered, retitled or repealed since `LAW_CHECKED`, and any Act with a newer version. Retries incomplete downloads. `LAW_SINCE="<date>"` checks from another date.
+- README "Updating the rates" gains the step; all 84 sections unchanged today. Fixed one shortened heading (KiwiSaver s 101B) it caught.
+- The law plan (`docs/LAW-LOOKUP.md`) is complete.
 
 ### Every NZ rule checked against the Acts (law plan Step 2)
 - All 14 NZ topic pages checked against their sections and the Income Tax Act's rate schedules. Most matched (rates, thresholds, due dates, leave, records); full list in `docs/LAW-LOOKUP.md`.

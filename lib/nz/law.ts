@@ -101,7 +101,7 @@ export const LAW: Record<string, LawRef[]> = {
       says: "An automatically enrolled employee can opt out from the 13th to the 55th day after starting the job." },
     { act: "kiwisaver", section: "66", heading: "Obligation to make deductions: general rule", anchor: "DLM379040",
       says: "The employer must take the employee's contribution out of every pay." },
-    { act: "kiwisaver", section: "101B", heading: "Compulsory contributions must be paid on top of gross salary or wages", anchor: "DLM1233471",
+    { act: "kiwisaver", section: "101B", heading: "Compulsory contributions must be paid on top of gross salary or wages except to extent that parties otherwise agree after 13 December 2007", anchor: "DLM1233471",
       says: "The employer's compulsory contribution is paid on top of gross pay, not taken out of it (unless agreed otherwise)." },
     { act: "kiwisaver", section: "101C", heading: "Employee’s requirements", anchor: "DLM1233473",
       says: "Compulsory employer contributions are for contributing members aged 16 or over." },

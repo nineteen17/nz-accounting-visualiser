@@ -1,6 +1,6 @@
 # Plan: checking the site against NZ law
 
-Status: **Steps 0, 1 and 2 done** (2026-11-28). The Acts are read directly from legislation.govt.nz; jurisd failed and was removed. Next: Step 3 (the April routine), then the pay yourself tool.
+Status: **all steps done** (2026-11-28). The Acts are read directly from legislation.govt.nz; jurisd failed and was removed. `npm run law` re-checks them. Only the optional pay yourself tool (end) remains.
 
 **How to read an Act (no key, no server):** fetch any section's page on legislation.govt.nz with a plain `curl -sL`. It redirects to the whole Act (the Income Tax Act 2007 is about 30 MB), with its "Version as at" date. Strip the HTML and search for the section heading, e.g. `EB 23 Valuing closing stock under $10,000`. The web-fetch tool gets "403 Forbidden" from the same site, and NZLII blocks automated access, so use curl.
 
@@ -92,6 +92,12 @@ Previously listed to check: The sections are now read and listed on the Sharehol
 ## Step 3: The April routine
 
 When `npm run rates` flags the new year, download the Acts again and compare each section in `lib/nz/law.ts` (and each Act's "version as at" date) with what's recorded, alongside IRD's announcements. Add this to README "Updating the rates".
+
+### Result (2026-11-28): done
+
+`npm run law` (`scripts/law-check.mjs`) does the comparison. For each Act it reports whether a newer version has been published; for each section, whether it still exists with the same number and heading, and whether its history notes show an amendment dated after `LAW_CHECKED` (including ones not yet in force). It's step 6 of README "Updating the rates". On 28 November 2026 all 84 sections were unchanged; run with `LAW_SINCE="1 January 2025"` it correctly flagged the 2025–26 amendments (e.g. s EE 38 on 22 May 2025, when Investment Boost arrived).
+
+Notes: it reads `lib/nz/law.ts` as text (Node can't load it directly), so keep each entry's `act`, `section`, `heading`, `anchor` on one line in that order. legislation.govt.nz serves a shorter page without the section menu if asked for `accept: text/html`, so the script sends no accept header.
 
 ## Ground rules
 

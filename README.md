@@ -12,6 +12,7 @@ npm run dev        # http://localhost:3000
 npx vitest run     # tests
 npm run build      # static site in out/, plus the offline service worker (out/sw.js)
 npm run rates      # which tax year the course teaches, and what still needs checking
+npm run law        # whether any section of NZ law the site cites has changed
 ```
 
 Every push to `master` is tested, built and published to GitHub Pages (`.github/workflows/pages.yml`).
@@ -35,7 +36,8 @@ The course teaches one income year at a time (`CURRENT_PAYROLL`, now **2026–27
 3. Point the course at the new year: `export const CURRENT_PAYROLL = PAYROLL_2027_28;`
 4. Update the other figures that change on their own dates: `MINIMUM_WAGE` (1 April), `PROVISIONAL_TAX` use-of-money interest, and `RATES_AS_AT`.
 5. Add the following year's set (`PAYROLL_2028_29`) the same way: copy the year before, change what's known (e.g. KiwiSaver goes to 4% on 1 April 2028), and list the rest in `toConfirm`.
-6. Run `npx vitest run` and `npm run build`, add a CHANGELOG entry, then push.
+6. Run `npm run law`. It downloads each Act from legislation.govt.nz and lists any section in `lib/nz/law.ts` that has been amended (or has an amendment waiting to take effect), renumbered, retitled or repealed since it was last checked. For each one flagged, re-read the section, update its summary in `lib/nz/law.ts` and the topic page if the rule changed, then update that Act's `versionAsAt` and `LAW_CHECKED`. (`LAW_SINCE="1 April 2027" npm run law` lists changes since any date.)
+7. Run `npx vitest run` and `npm run build`, add a CHANGELOG entry, then push.
 
 The notice and warning disappear by themselves once `CURRENT_PAYROLL` is moved on, and come back the following 1 April.
 
@@ -47,7 +49,7 @@ The site's rules are checked against the Acts themselves, read from **legislatio
 
 **How to read an Act (no key, no server):** fetch any section's page on legislation.govt.nz with a plain `curl -sL`. It redirects to the whole Act (the Income Tax Act 2007 is about 30 MB), with its "Version as at" date. Strip the HTML and search for the section heading, e.g. `EB 23 Valuing closing stock under $10,000`. The web-fetch tool gets "403 Forbidden" from the same site, and NZLII blocks automated access, so use curl.
 
-Always use IRD, ACC and Employment NZ for figures and how a rule is applied; the Acts are for the exact wording and references. The sections behind each NZ topic page are in `lib/nz/law.ts` (shown in each page's **The law** box).
+Always use IRD, ACC and Employment NZ for figures and how a rule is applied; the Acts are for the exact wording and references. The sections behind each NZ topic page are in `lib/nz/law.ts` (shown in each page's **The law** box), and `npm run law` checks whether any of them has changed.
 
 **Tried, not used:**
 
