@@ -8,11 +8,14 @@ Dates are when the change was made. Rates and rules are for the 2026–27 NZ inc
 ## Proposed / not yet done
 
 - **2027–28 rates (on or after 1 April 2027)**. Follow README "Updating the rates" (`npm run rates` lists what to check). In short: when IRD, ACC and MBIE announce them, fill in `PAYROLL_2027_28` in `lib/nz/rates.ts` and clear its `toConfirm` list (tax brackets, IETC, student loan threshold and ESCT bands are carried forward for now); update `MINIMUM_WAGE`; then on 1 April 2027 point `CURRENT_PAYROLL` at 2027–28. Year 1's books keep the 2026–27 rates.
-- **Pay yourself tool** (`docs/LAW-LOOKUP.md`, end): Aroha and Ben choose a mix of shareholder salary and dividend and see the tax, what they keep, and whether the company still passes the solvency test. The limits it needs are now checked against the Acts. Unconfirmed: whether court fines are non-deductible by statute or case law.
+- **Pay yourself tool**: planned in `docs/PAY-YOURSELF.md`: Aroha and Ben choose a mix of shareholder salary and dividend and see the tax, what they keep, and whether the company still passes the solvency test. The limits it needs are now checked against the Acts. Unconfirmed: whether court fines are non-deductible by statute or case law.
 
 ---
 
 ## 2026-11-28
+
+### Plan for the pay yourself tool
+- `docs/PAY-YOURSELF.md`: salary, dividend or keep it in the company, using Kōwhai's real year 2 figures, with the tax on each route and the legal limits (solvency test, imputation, excessive salary). Not started.
 
 ### `npm run law`: the April check for NZ law (law plan Step 3)
 - New `scripts/law-check.mjs`: downloads each Act from legislation.govt.nz and reports any section in `lib/nz/law.ts` that has been amended (or has an amendment waiting), renumbered, retitled or repealed since `LAW_CHECKED`, and any Act with a newer version. Retries incomplete downloads. `LAW_SINCE="<date>"` checks from another date.

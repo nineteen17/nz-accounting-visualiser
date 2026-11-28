@@ -112,6 +112,8 @@ Step 0 is small. Steps 1 and 2 are about the size of the budget tool. Step 3 is 
 
 ## Follow-on: a "pay yourself" tool (proposed, after Step 2)
 
+Full plan: `docs/PAY-YOURSELF.md` (2026-11-28).
+
 Raised 2026-11-28: owners of a company like Kōwhai largely set their own salary, so where should the profit go? A tool where Aroha and Ben choose the mix of **shareholder salary** and **dividend**, and see:
 
 - the tax on each route: salary at their personal rates; a dividend with imputation credits for the company's 28%, topped up to their personal rate;
