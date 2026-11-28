@@ -1,5 +1,3 @@
-/r
-
 # Kōwhai Café: learn NZ accounting
 
 A learning tool that teaches accounting from zero to a full New Zealand small-business year, through one fictional café company (Kōwhai Café Ltd, 31 March balance date). Every screen is worked out in the browser from the café's journal, so the numbers agree everywhere.
@@ -49,7 +47,7 @@ The site's rules are checked against the Acts themselves, read from **legislatio
 
 **How to read an Act (no key, no server):** fetch any section's page on legislation.govt.nz with a plain `curl -sL`. It redirects to the whole Act (the Income Tax Act 2007 is about 30 MB), with its "Version as at" date. Strip the HTML and search for the section heading, e.g. `EB 23 Valuing closing stock under $10,000`. The web-fetch tool gets "403 Forbidden" from the same site, and NZLII blocks automated access, so use curl.
 
-Always use IRD, ACC and Employment NZ for figures and how a rule is applied; the Acts are for the exact wording and references.
+Always use IRD, ACC and Employment NZ for figures and how a rule is applied; the Acts are for the exact wording and references. The sections behind each NZ topic page are in `lib/nz/law.ts` (shown in each page's **The law** box).
 
 **Tried, not used:**
 

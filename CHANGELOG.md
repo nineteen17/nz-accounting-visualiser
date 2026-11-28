@@ -8,15 +8,22 @@ Dates are when the change was made. Rates and rules are for the 2026–27 NZ inc
 ## Proposed / not yet done
 
 - **2027–28 rates (on or after 1 April 2027)**. Follow README "Updating the rates" (`npm run rates` lists what to check). In short: when IRD, ACC and MBIE announce them, fill in `PAYROLL_2027_28` in `lib/nz/rates.ts` and clear its `toConfirm` list (tax brackets, IETC, student loan threshold and ESCT bands are carried forward for now); update `MINIMUM_WAGE`; then on 1 April 2027 point `CURRENT_PAYROLL` at 2027–28. Year 1's books keep the 2026–27 rates.
-- **Check the site against NZ law**: Steps 1–3 of `docs/LAW-LOOKUP.md` (law references on each NZ topic, check every rule, the April routine), then the pay yourself tool. No key or server needed: the Acts are read from legislation.govt.nz directly.
+- **Check the site against NZ law**: Step 2 of `docs/LAW-LOOKUP.md` (check every rule the site states against the sections now in `lib/nz/law.ts`, starting with the Shareholders page), then Step 3 (the April routine) and the pay yourself tool.
 
 ---
 
 ## 2026-11-28
 
+### "The law" on every NZ topic page
+- Each of the 14 NZ topic pages ends with a collapsed **⚖️ The law** box: the sections of NZ law behind the page (71 in all, from 9 Acts), each with its heading, a plain-English summary and a link straight to the section on legislation.govt.nz. Every summary was written from the section's text, read on 28 November 2026; the box shows each Act's "version as at" date.
+- New `lib/nz/law.ts` (the KiwiSaver rate comes from `rates.ts`, so April updates still need only that file), `components/nz/LawBox.tsx` and `tests/law.test.ts` (every topic has a reference; links well formed; no duplicates).
+- **Corrected:** the "low-turnover trader" definition is in Income Tax Act s **EB 13(2)**, not s EB 2 as the previous entry said (inventory page and `rates.ts`).
+- **Corrected in the plan:** personal services attribution is ss GB 27–GB 29, not "GC 14B–14E" (`docs/LAW-LOOKUP.md`).
+- README: removed a stray "/r" from the first line.
+
 ### NZ law read straight from legislation.govt.nz, and the stock thresholds corrected to match the Act
 - Step 0 of `docs/LAW-LOOKUP.md` now **passes** without any law server or key: legislation.govt.nz serves each Act to a plain download (the web-fetch tool gets "403", NZLII blocks automated access). GST Act ss 8 and 51 match the site (15%, $60,000).
-- **Corrected against the Act**: low value trading stock applies with turnover of **$1,300,000 or less** (Income Tax Act 2007 s EB 23), not "under $1.3m"; a low-turnover trader has turnover of **no more than $3,000,000**, counting associated persons (s EB 2). The earlier wording followed IRD's summary. Fixed in `rates.ts`, the inventory page (now citing the sections), the glossary, US vs NZ, and the Valuing stock drill (which now includes the $1,300,000 exactly case). New boundary test.
+- **Corrected against the Act**: low value trading stock applies with turnover of **$1,300,000 or less** (Income Tax Act 2007 s EB 23), not "under $1.3m"; a low-turnover trader has turnover of **no more than $3,000,000**, counting associated persons (s EB 13(2); first written here as s EB 2, corrected in the next entry). The earlier wording followed IRD's summary. Fixed in `rates.ts`, the inventory page (now citing the sections), the glossary, US vs NZ, and the Valuing stock drill (which now includes the $1,300,000 exactly case). New boundary test.
 - README "Checking NZ law" rewritten: read the Acts directly; jurisd, global-law and nz-legislation-mcp listed as tried or optional.
 
 ### Law lookup: jurisd tested, doesn't work for NZ law

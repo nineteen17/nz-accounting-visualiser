@@ -1,6 +1,6 @@
 # Plan: checking the site against NZ law
 
-Status: **Step 0 passed** (2026-11-28) by reading legislation.govt.nz directly; jurisd failed and was removed. Steps 1–3 can go ahead, with no key or server needed.
+Status: **Steps 0 and 1 done** (2026-11-28). The Acts are read directly from legislation.govt.nz; jurisd failed and was removed. Next: Step 2.
 
 **How to read an Act (no key, no server):** fetch any section's page on legislation.govt.nz with a plain `curl -sL`. It redirects to the whole Act (the Income Tax Act 2007 is about 30 MB), with its "Version as at" date. Strip the HTML and search for the section heading, e.g. `EB 23 Valuing closing stock under $10,000`. The web-fetch tool gets "403 Forbidden" from the same site, and NZLII blocks automated access, so use curl.
 
@@ -51,17 +51,29 @@ Each NZ topic page gets a short **The law** box listing the Acts and sections be
 
 About 25–35 sections across the 15 NZ topics.
 
+### Result (2026-11-28): done
+
+- `lib/nz/law.ts`: 71 sections from 9 Acts, each with its heading, anchor, and a plain-English summary written from the section's text (not from memory). Rates that change each year (the KiwiSaver rate) come from `rates.ts`.
+- `components/nz/LawBox.tsx`: a collapsed **⚖️ The law** box on all 14 NZ topic pages, grouped by Act, linking straight to each section, with each Act's "version as at" date.
+- `tests/law.test.ts`: every topic has a reference, no unknown topics, links are well formed, no duplicates.
+- Found while reading:
+  - The "low-turnover trader" definition is in **s EB 13(2)**, not s EB 2 as first recorded. Corrected on the inventory page and in `rates.ts`.
+  - Personal services attribution is **ss GB 27–GB 29**. The "GC 14B–14E" in Step 2's to-check list doesn't exist. Its threshold is now $78,100 of net income, and it can't catch a café selling to many customers.
+  - The Companies Act's full financial statements (s 196) apply only to large companies, those with 10 or more shareholders, or when shareholders with 5% of the votes ask. Kōwhai only needs IRD's minimum (Tax Administration Act s 21B).
+
+How the sections were found: download each Act once (`curl -sL https://www.legislation.govt.nz/act/public/<year>/<number>/en/latest/`), list the section menu (number, heading, anchor), then read each section's text from its anchor.
+
 ## Step 2: Check the site's rules against the law
 
 Go through every rule the site states and check it against its section. Examples: registration thresholds, due dates, the 50% entertainment rule, the low-value asset limit, imputation, shareholder salaries and current accounts, the solvency test for dividends. Fix anything wrong, as with the stock rule, and log each fix in CHANGELOG.
 
 Add a test that every NZ topic has at least one law reference.
 
-To check (raised 2026-11-28, from memory, not yet verified): what limits a shareholder-employee's salary. Candidates are the excessive remuneration to relatives rule (Income Tax Act 2007 s GB 25), the personal services attribution rule (ss GC 14B–14E), and directors' duties not to trade recklessly (Companies Act 1993 ss 135–136). Also the dividend solvency test (Companies Act 1993 ss 4 and 52). The Shareholders topic page should say which apply to Kōwhai.
+To check: what limits a shareholder-employee's salary. The sections are now read and listed on the Shareholders page (GB 25, GB 27, Companies Act ss 4, 52, 135, 136), so Step 2 is to check the page's own wording against them and say which apply to Kōwhai.
 
 ## Step 3: The April routine
 
-When `npm run rates` flags the new year, use jurisd to see which sections were amended, alongside IRD's announcements. Add this to README "Updating the rates".
+When `npm run rates` flags the new year, download the Acts again and compare each section in `lib/nz/law.ts` (and each Act's "version as at" date) with what's recorded, alongside IRD's announcements. Add this to README "Updating the rates".
 
 ## Ground rules
 
@@ -91,6 +103,6 @@ It waits for Step 2, so the limits it describes (relatives' salaries, personal s
 | GST Act 1985 s 8 (version as at 30 June 2026) | GST charged "at the rate of 15 %" | Yes |
 | GST Act 1985 s 51 | liable to register when supplies over 12 months have "exceeded $60,000" | Yes |
 | Income Tax Act 2007 s EB 23 (version as at 4 September 2026) | "a turnover of $1,300,000 or less" and closing stock reasonably estimated at "less than $10,000": closing stock may be valued at its opening value | **No: the site said "under $1.3m". Fixed to "$1,300,000 or less".** |
-| Income Tax Act 2007 s EB 2, "low-turnover trader" | turnover, with associated persons, of "no more than" $3,000,000 | **No: the site said "under $3 million". Fixed.** |
+| Income Tax Act 2007 s EB 13(2), "low-turnover trader" (first recorded as s EB 2 by mistake) | turnover, with associated persons, of "no more than" $3,000,000 | **No: the site said "under $3 million". Fixed.** |
 
 Both fixes came from IRD's page summarising the rule as "less than"; the Act is the authority. Next: Step 1.

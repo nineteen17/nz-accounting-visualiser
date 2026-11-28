@@ -591,7 +591,7 @@ export function InventoryTopic() {
           <li><strong>Stock taken for private use</strong> (Aroha takes beans home) is usually taxed as if it were sold at market value.</li>
           <li><strong>Wastage</strong> (expired milk, dropped cakes) is simply not in the count, so it ends up in COGS automatically.</li>
         </ul>
-        <p className="text-sm text-stone-500">Sources: Income Tax Act 2007, s {TRADING_STOCK.lowValue.section} and the &ldquo;low-turnover trader&rdquo; definition in s EB 2 (<a className="underline" href="https://www.legislation.govt.nz/act/public/2007/0097/latest/DLM1512301.html" target="_blank" rel="noreferrer">legislation.govt.nz</a>); <a className="underline" href={TRADING_STOCK.source} target="_blank" rel="noreferrer">IRD, Valuing trading stock</a>.</p>
+        <p className="text-sm text-stone-500">Sources: Income Tax Act 2007, s {TRADING_STOCK.lowValue.section} and the &ldquo;low-turnover trader&rdquo; definition in s EB 13(2) (<a className="underline" href="https://www.legislation.govt.nz/act/public/2007/0097/latest/DLM1512301.html" target="_blank" rel="noreferrer">legislation.govt.nz</a>); <a className="underline" href={TRADING_STOCK.source} target="_blank" rel="noreferrer">IRD, Valuing trading stock</a>.</p>
         <Callout kind="tip" title="Café rule of thumb">Most cafés aim for a COGS of 28–35% of sales. Kōwhai&apos;s is about 30%. If it creeps up, look at wastage, portion sizes, supplier prices and menu prices.</Callout>
       </div>
     </div>

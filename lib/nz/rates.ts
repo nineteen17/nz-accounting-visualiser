@@ -160,7 +160,7 @@ export const TRADING_STOCK = {
   /** s EB 23: turnover of $1,300,000 OR LESS and closing stock reasonably estimated at LESS THAN $10,000:
    *  closing stock may be valued at its opening value, with no year-end count */
   lowValue: { turnoverUpTo: 1_300_000, stockEstimateUnder: 10_000, section: "EB 23" },
-  /** s EB 2(2) "low-turnover trader": turnover (with associated persons) of NO MORE THAN $3,000,000;
+  /** s EB 13(2) "low-turnover trader": turnover (with associated persons) of NO MORE THAN $3,000,000;
    *  simpler options within each valuation method (ss EB 13–EB 22) */
   lowTurnoverUpTo: 3_000_000,
   source: "https://www.ird.govt.nz/income-tax/income-tax-for-businesses-and-organisations/types-of-business-income/trading-stock/valuing-trading-stock",
