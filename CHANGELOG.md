@@ -7,6 +7,8 @@ Dates are when the change was made. Rates and rules are for the 2026–27 NZ inc
 
 ## Proposed / not yet done
 
+- **GST on mixed use (apportionment)**: planned in `docs/GST-MIXED-USE.md`. An Explore tool: which rule applies (a company's private use by staff goes through FBT, s 21I; exempt supplies under the de minimis, s 20(3D); items of $10,000 or less are all or nothing on principal purpose, s 20(3CB)), then a worked sole-trader example (Aroha's car: the claim on purchase, five yearly adjustments with the 10-point / $1,000 rule, and the GST on selling it). With a US note (no VAT; sales tax isn't claimed back).
+
 - **IR4 2027 form (around March 2027)**: when IRD publishes it, re-check `ir4Boxes()` in `lib/engine/ir4.ts` against it (box numbers and wording), and update `IR4_SOURCE` to the new form and guide.
 
 - **2027–28 rates (on or after 1 April 2027)**. Follow README "Updating the rates" (`npm run rates` lists what to check). In short: when IRD, ACC and MBIE announce them, fill in `PAYROLL_2027_28` in `lib/nz/rates.ts` and clear its `toConfirm` list (tax brackets, IETC, student loan threshold and ESCT bands are carried forward for now); update `MINIMUM_WAGE`; then on 1 April 2027 point `CURRENT_PAYROLL` at 2027–28. Year 1's books keep the 2026–27 rates. Also update `ACC_CAFE_LEVIES` (the café work levy and working safer levy) from ACC's 2027/28 Levy Guidebook and clear its `toConfirm`.
