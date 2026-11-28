@@ -7,8 +7,10 @@ import type { PayResult } from "@/lib/nz/payroll";
 import { money, nzDate, pct } from "@/lib/money";
 import { isRight, loadProgress, readAmount, saveProgress, slipLines, type LineKey, type Progress } from "@/lib/study/payRun";
 import { cx } from "@/lib/ui";
+import { HOLIDAYS } from "@/lib/nz/rates";
 import { Callout, Card, UsNote } from "@/components/learn/bits";
 import { Term } from "@/components/learn/Term";
+import { ToolGuide } from "@/components/learn/ToolGuide";
 import { EntryView } from "./DrillRun";
 
 const store = () => (typeof window === "undefined" ? undefined : window.localStorage);
@@ -30,6 +32,28 @@ export function PayRunPractice() {
   if (ex) return <Run key={ex.key} ex={ex} onBack={() => setKey(null)} onDone={(r) => setProgress(saveProgress(store(), ex.key, r))} />;
   return (
     <div className="space-y-6">
+      <ToolGuide
+        what={<>A pay run from start to finish, using Kōwhai&apos;s real staff and figures: what each person earned, what&apos;s taken out of their pay for tax and KiwiSaver, what they take home, how it&apos;s recorded in the books, and what&apos;s reported and paid to IRD.</>}
+        steps={[
+          <>Pick a <strong>pay run</strong> below. Start with the first: the ones marked <em>Harder</em> include annual leave.</>,
+          <><strong>The payslips</strong>: fill in each line from the top down. Hours × rate gives gross pay; each deduction is worked from it. PAYE has its own short worksheet; press <strong>Use the PAYE tables</strong> if you just want it done for you, as payroll software would.</>,
+          <><strong>The journal entry</strong>: record the whole pay run. Tick <strong>Harder</strong> to work out the amounts yourself.</>,
+          <><strong>Payday filing and paying IRD</strong>: answer when the pay is reported and when the deductions are paid.</>,
+        ]}
+        read={<>Each payslip line is checked to the cent against <em>your own</em> earlier figures, so one slip doesn&apos;t make every later line wrong. <strong>Who gets what</strong> shows where each dollar of the pay run goes: to the staff, to IRD, or to their KiwiSaver fund. IRD drops the cents at set steps (it truncates), so a figure a cent below simple rounding can still be right.</>}
+        terms={[
+          { k: "gross-pay", says: "pay before anything is taken out: hours × hourly rate, plus holiday pay." },
+          { k: "paye", says: "income tax taken from each pay and passed to IRD. It includes the ACC earners' levy." },
+          { k: "acc-earners-levy", label: "ACC earners' levy", says: "the employee's ACC cover for injuries outside work. It's collected through PAYE." },
+          { k: "ietc", label: "IETC", says: "a small tax credit for people on middle incomes. It reduces their PAYE." },
+          { k: "student-loan", label: "Student loan", says: "repayments taken from the part of each pay above a set threshold (the threshold depends on how often you're paid)." },
+          { k: "kiwisaver", says: "retirement savings: the employee pays a share of their gross pay, and the employer adds at least the minimum on top." },
+          { k: "esct", label: "ESCT", says: "tax on the employer's KiwiSaver contribution, taken before it reaches the fund." },
+          { k: "holiday-pay", says: `a casual like Leo gets ${pct(HOLIDAYS.payAsYouGoRate, 0)} extra on each pay instead of taking paid annual leave.` },
+          { k: "net-pay", label: "Take-home pay", says: "what's paid into the person's bank account after every deduction." },
+          { k: "payday-filing", says: "reporting each pay run to IRD within 2 working days of payday." },
+        ]}
+      />
       <div className="prose-learn max-w-3xl text-[16px]">
         <p>Every second Wednesday Kōwhai pays its two staff: Mia, a full-time barista, and Leo, a casual kitchen hand. A <strong>pay run</strong> is more than sending them money. The café is also IRD&apos;s tax collector: it works out each person&apos;s <Term k="gross-pay">gross pay</Term>, takes off <Term k="paye">PAYE</Term> (income tax and the <Term k="acc-earners-levy">ACC earners&apos; levy</Term>), any <Term k="student-loan">student loan</Term> repayment and their <Term k="kiwisaver">KiwiSaver</Term>, pays them the rest (<Term k="net-pay">net pay</Term>), and passes the deductions on to IRD.</p>
         <p>You&apos;ll do one of Kōwhai&apos;s real pay runs in three steps:</p>

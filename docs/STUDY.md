@@ -280,6 +280,7 @@ Shown on matching flashcards, and practised as cards of their own (`a:` cards, o
 - None open. Decided 2026-11-28: drills don't count towards Known; they have their own "mastered" (X3). Typed recall added as the "Type it" option for meaning → term cards (X4).
 
 ## 6. Log
+- **2026-11-28**: Beginner guides (`ToolGuide`) added to all three "do it yourself" exercises: the GST return, the pay run and the year-end.
 - **2026-11-28**: Do a pay run yourself (Y3), and the payroll engine corrected to IRD's payroll specification. 47 drills, 254 tests.
 - **2026-11-28**: Provisional tax planner (Explore) and its drill (B6); Do the GST return yourself (Y2). 47 drills, 232 tests.
 - **2026-11-28**: Which structure? tool (Explore) and its drill (B5). 46 drills, 191 tests.

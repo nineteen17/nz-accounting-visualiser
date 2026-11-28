@@ -10,6 +10,7 @@ import { money, nzDate } from "@/lib/money";
 import { cx } from "@/lib/ui";
 import { Callout, Card, Tabs } from "@/components/learn/bits";
 import { RichText } from "@/components/learn/RichText";
+import { ToolGuide } from "@/components/learn/ToolGuide";
 import { EntryView } from "./DrillRun";
 
 type Answer = { right: boolean; entered: EntryLine[] };
@@ -20,7 +21,29 @@ export function YearEndPractice() {
   const [year, setYear] = useState<YearEnd["key"]>("y1");
   const ye = YEAR_ENDS.find((y) => y.key === year)!;
   return (
-    <div>
+    <div className="space-y-6">
+      <ToolGuide
+        what={<>On 31 March the day-to-day bookkeeping is done, but the figures aren&apos;t finished. Some costs belong to the year but haven&apos;t been billed yet, some bills cover next year too, equipment has worn out a bit, and the stock on the shelves has to be counted. The <strong>year-end adjustments</strong> fix all that, so the profit is right. Here you make Kōwhai&apos;s real adjustments yourself.</>}
+        steps={[
+          <>Choose <strong>year 1</strong> or <strong>year 2</strong> with the tabs. Year 1 has more adjustments.</>,
+          <>Press <strong>Start the year-end</strong>. You get one fact at a time, such as &quot;the March power bill hasn&apos;t arrived&quot;.</>,
+          <>Write the journal entry for each one: pick the accounts, Dr or Cr, and the amounts. Tick <strong>Harder</strong> to work out the amounts yourself.</>,
+          <>Watch your trial balance update. At the end, compare your profit and balance sheet with Kōwhai&apos;s.</>,
+        ]}
+        read={<><strong>Your trial balance</strong> uses what <em>you</em> entered, right or wrong. Highlighted rows are the accounts your last entry changed. Under each entry, the line on profit shows how much that one adjustment moved the year&apos;s profit. Most adjustments lower it, which is why the unadjusted profit looks too good.</>}
+        terms={[
+          { k: "adjusting-entry", label: "Adjustment", says: "an entry at year end so the figures belong to the right year." },
+          { k: "accrual-basis", says: "income counts when it's earned and costs when they're incurred, not when cash moves. This is why adjustments are needed." },
+          { k: "accrued-expense", says: "a cost of this year that hasn't been billed or paid yet." },
+          { k: "accrued-income", says: "income earned this year but not invoiced yet." },
+          { k: "prepayment", says: "something paid for in advance: the part for next year is an asset, not an expense." },
+          { k: "depreciation", says: "spreading the cost of equipment over the years it's used." },
+          { k: "stocktake", says: "counting the stock on hand at 31 March, to work out what was really used." },
+          { k: "bad-debt", says: "money a customer owes that will never be paid, written off as an expense." },
+          { k: "holiday-pay", label: "Holiday pay accrual", says: "annual leave staff have earned but not taken yet: a cost of this year." },
+          { k: "adjusted-trial-balance", says: "the trial balance after every adjustment: the figures the statements are made from." },
+        ]}
+      />
       <Tabs tabs={YEAR_ENDS.map((y) => ({ id: y.key, label: `${y.label}: ${nzDate(y.date)}` }))} value={year} onChange={setYear} />
       <Run key={year} ye={ye} />
     </div>

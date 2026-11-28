@@ -13,6 +13,11 @@ Dates are when the change was made. Rates and rules are for the 2026–27 NZ inc
 
 ## 2026-11-28
 
+### Beginner guides on the pay run and year-end exercises
+- "Do a pay run yourself" and the year-end exercise now open with the "New here? How to use this" guide, like every Explore tool and the GST return exercise.
+  - The pay run guide covers what a pay run is, the three steps, why each line is marked against your own figures, and why IRD's dropped cents can leave a figure a cent below rounding. Its words include PAYE, the ACC earners' levy, the IETC, the student loan, KiwiSaver, ESCT, holiday pay, take-home pay and payday filing.
+  - The year-end guide covers why adjustments are needed, how the exercise flows, and how to read your own trial balance and the profit effect of each entry. Its words include accruals, prepayments, depreciation, the stocktake, bad debts and the holiday pay accrual.
+
 ### Beginner guides on every Explore tool
 - The nine older Explore tools (journal, ledger, trial balance, statements, ratios, loan, cash flow forecast, budget vs actual, break-even) now open with the same "New here? How to use this" guide. Each explains what the tool shows, how to use its controls, and how to read its table: for example, a minus sign in the ledger means a credit balance, and a matching trial balance doesn't prove every entry is right. Each guide also lists the words you'll meet, linked to the glossary.
 - The guides live in `components/explore/guides.tsx`, and the Explore page shows them above the tool. Tools that carry their own guide are left alone.
