@@ -7,6 +7,8 @@ Dates are when the change was made. Rates and rules are for the 2026–27 NZ inc
 
 ## Proposed / not yet done
 
+- **Tax losses**: planned in `docs/TAX-LOSSES.md`. An Explore tool with a "what if" year 3 (roadworks close the street, so Kōwhai makes a net loss): carrying the loss forward (it must be used first, with no time limit), what it does to provisional tax, and what an owner selling out does. Ben selling his 40% keeps the loss (Aroha's 60% passes the 49% test) but loses the imputation credits (under 66%). Aroha selling her 60% breaks the 49% test, so the business continuity test decides. With a US note (NOLs, § 382).
+
 - **IR4 2027 form (around March 2027)**: when IRD publishes it, re-check `ir4Boxes()` in `lib/engine/ir4.ts` against it (box numbers and wording), and update `IR4_SOURCE` to the new form and guide.
 
 - **2027–28 rates (on or after 1 April 2027)**. Follow README "Updating the rates" (`npm run rates` lists what to check). In short: when IRD, ACC and MBIE announce them, fill in `PAYROLL_2027_28` in `lib/nz/rates.ts` and clear its `toConfirm` list (tax brackets, IETC, student loan threshold and ESCT bands are carried forward for now); update `MINIMUM_WAGE`; then on 1 April 2027 point `CURRENT_PAYROLL` at 2027–28. Year 1's books keep the 2026–27 rates. Also update `ACC_CAFE_LEVIES` (the café work levy and working safer levy) from ACC's 2027/28 Levy Guidebook and clear its `toConfirm`.
