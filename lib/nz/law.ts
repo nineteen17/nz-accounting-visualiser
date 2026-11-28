@@ -25,7 +25,14 @@ export const ACTS = {
   acc: { name: "Accident Compensation Act 2001", year: 2001, no: 49, versionAsAt: "10 July 2026" },
   companies: { name: "Companies Act 1993", year: 1993, no: 105, versionAsAt: "1 July 2025" },
   partnership: { name: "Partnership Law Act 2019", year: 2019, no: 53, versionAsAt: "2 November 2026" },
+  // secondary legislation (an Order in Council): numbered in clauses, and never amended, so its only version is "as made"
+  fso: { name: "Tax Administration (Financial Statements) Order 2014", year: 2014, no: 69, versionAsAt: "as made", kind: "regulation" },
 } as const;
+
+const isRegulation = (a: ActKey) => "kind" in ACTS[a] && ACTS[a].kind === "regulation";
+
+/** "Companies Act 1993 as at 1 July 2025", or "… Order 2014 (as made)" */
+export const actVersion = (a: ActKey) => isRegulation(a) ? `${ACTS[a].name} (${ACTS[a].versionAsAt})` : `${ACTS[a].name} as at ${ACTS[a].versionAsAt}`;
 
 export type ActKey = keyof typeof ACTS;
 
@@ -44,11 +51,12 @@ export type LawRef = {
 /** official link to the section (the whole Act opens, scrolled to the section) */
 export function lawUrl(ref: LawRef) {
   const a = ACTS[ref.act];
-  return `https://www.legislation.govt.nz/act/public/${a.year}/${a.no}/en/latest/#${ref.anchor}`;
+  const path = isRegulation(ref.act) ? "secondary-legislation/pco-drafted" : "act/public";
+  return `https://www.legislation.govt.nz/${path}/${a.year}/${a.no}/en/latest/#${ref.anchor}`;
 }
 
-/** "s 8" for numbered sections; Income Tax Act sections already carry letters ("s EB 23") */
-export const sectionLabel = (ref: LawRef) => `s ${ref.section}`;
+/** "s 8" for numbered sections (Income Tax Act sections already carry letters: "s EB 23"); "cl 8" in a regulation; a schedule is just "Schedule" */
+export const sectionLabel = (ref: LawRef) => ref.section.startsWith("Schedule") ? ref.section : `${isRegulation(ref.act) ? "cl" : "s"} ${ref.section}`;
 
 export const LAW: Record<string, LawRef[]> = {
   gst: [
@@ -263,6 +271,30 @@ export const LAW: Record<string, LawRef[]> = {
 
 /** the law behind an Explore tool, keyed by the tool's slug (shown in the same "The law" box) */
 export const TOOL_LAW: Record<string, LawRef[]> = {
+  "year-end": [
+    { act: "ita", section: "DB 31", heading: "Bad debts", anchor: "DLM1513650",
+      says: "A bad debt is deductible only if it's written off as bad in the income year: so before balance date." },
+    { act: "ita", section: "EA 4", heading: "Deferred payment of employment income", anchor: "DLM1514274",
+      says: "Holiday pay, bonuses and other employment costs accrued at year end are deductible that year only if paid within 63 days (longer for shareholder-employees)." },
+    { act: "taa", section: "21B", heading: "Preparing financial statements", anchor: "DLM5966518",
+      says: "Companies must prepare financial statements meeting IRD's minimum requirements (set by Order in Council)." },
+    { act: "fso", section: "5", heading: "Small companies exempt from minimum requirements", anchor: "DLM5975817",
+      says: "A company that isn't part of a group, and whose income and expenditure are each $30,000 or less, is exempt. Kōwhai is well over that." },
+    { act: "fso", section: "8", heading: "Minimum requirements for preparing financial statements", anchor: "DLM5975821",
+      says: "A balance sheet and a profit and loss statement, on double-entry and accrual principles, with a statement of accounting policies, whether figures include GST, last year's comparative figures, and interest shown before RWT." },
+    { act: "fso", section: "Schedule", heading: "Matters that financial statements must show", anchor: "DLM5975819",
+      says: "Including a reconciliation from the accounts to taxable income, and a tax-based schedule of the fixed assets and depreciation." },
+    { act: "companies", section: "120", heading: "Annual meeting of shareholders", anchor: "DLM320614",
+      says: "An annual meeting within 6 months of balance date (the first within 18 months of registration), unless the board resolves there's nothing that needs doing at one." },
+    { act: "companies", section: "122", heading: "Resolution in lieu of meeting", anchor: "DLM320619",
+      says: "Shareholders can pass a resolution in writing, signed by enough of them, instead of holding a meeting." },
+    { act: "companies", section: "208", heading: "Obligation to prepare annual report", anchor: "DLM321105",
+      says: "An annual report is needed only from large companies, public entities, companies with 10 or more shareholders that haven't opted out, and companies that opt in." },
+    { act: "companies", section: "214", heading: "Annual return", anchor: "DLM321131",
+      says: "Every company files an annual return with the Companies Office in the month allocated to it, but not in the calendar year it was registered." },
+    { act: "taa", section: "22", heading: "Keeping of business and other records", anchor: "DLM350462",
+      says: "Businesses must keep their records for at least 7 years after the end of the income year." },
+  ],
   structures: [
     { act: "ita", section: "HG 2", heading: "Partnerships are transparent", anchor: "DLM1185059",
       says: "For income tax, partners are treated as carrying on the partnership's activities themselves: each is taxed on their share of its income." },

@@ -7,7 +7,7 @@ Dates are when the change was made. Rates and rules are for the 2026–27 NZ inc
 
 ## Proposed / not yet done
 
-- **Year-end checklist**: planned in `docs/YEAR-END-CHECKLIST.md`. Everything from just before 31 March to the next April's terminal tax, for both years, with Kōwhai's dates and figures, the law, and a link to the tool that practises each job. Includes support for an Order in Council in the law box, and two corrections (the Companies Office filing month and ACC invoice timing on the post-closing and compliance pages).
+- **ACC levies and the Companies Office fee in the books**: Kōwhai's books have neither, though a real café pays both (the year-end checklist flags them). Adding them changes every profit and tax figure from year 1 on, so it's a careful change of its own.
 
 - **IR4 2027 form (around March 2027)**: when IRD publishes it, re-check `ir4Boxes()` in `lib/engine/ir4.ts` against it (box numbers and wording), and update `IR4_SOURCE` to the new form and guide.
 
@@ -16,6 +16,14 @@ Dates are when the change was made. Rates and rules are for the 2026–27 NZ inc
 ---
 
 ## 2026-11-28
+
+### Year-end checklist
+
+- **New Explore tool, `/explore/year-end`**: every job from just before 31 March to the next April's terminal tax, for both of Kōwhai's year ends (23 items in year 1, 24 in year 2). Each item has its due date, Kōwhai's own figure from the books (closing stock, March PAYE, the GST return, terminal tax, next year's instalments, the ICA balance…), a plain-English why, the law, and a link to the tool or exercise that practises it. View it by job or as a timeline (with today marked). Ticks are saved on this device (`year-end-checklist-v1`). It has a ToolGuide, a common mistake for each stage, a note on what a small company doesn't need (no audit, no public accounts, no annual report), and a US note checked against irs.gov (Form 1120 and Form 7004; W-2s and 1099-NECs by 31 January).
+- **Law**: the law box and `npm run law` now handle secondary legislation. The Tax Administration (Financial Statements) Order 2014 is added (cl 5, cl 8 and the Schedule), with Companies Act ss 120, 122 and 208 and Income Tax Act s DB 31. All 115 sections checked unchanged.
+- **Rates**: the Companies Office annual return fee ($49.74 + GST) is in `rates.ts`, with its source.
+- **Corrections**: the post-closing step had Kōwhai's first annual return on 31 May 2027. It's now April 2027, the filing month the Companies Office assigns (Kōwhai registered 1 April 2026). It also had ACC invoicing on 1 September; employers' invoices come around July and shareholder-employees' around September. The compliance calendar is fixed to match, and the post-closing list links to the checklist.
+- Tests: 8 new (275 in all): the figures match the books, dates fall in the right window, every link is a real page, every item explains itself, and ticks survive a reload.
 
 ### Do the company tax return yourself (IR4)
 - New exercise at `/study/ir4`: Kōwhai's real IR4 for both years. It's built from IRD's IR4 2026 form and its guide, with the years moved on, because the 2027 form isn't out yet.

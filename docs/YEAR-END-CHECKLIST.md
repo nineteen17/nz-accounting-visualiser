@@ -1,6 +1,6 @@
 # Plan: the year-end checklist
 
-Status: **planned** 2026-11-28. Not built yet.
+Status: **built** 2026-11-28, at `/explore/year-end`. Decisions taken as recommended: an Explore tool, April as Kōwhai's filing month, the books left as they are (the missing ACC levies and Companies Office fee are flagged in the checklist), and ticks saved on the device. The US note was checked against irs.gov.
 
 ## The idea
 

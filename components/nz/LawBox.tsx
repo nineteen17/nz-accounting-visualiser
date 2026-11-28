@@ -1,4 +1,4 @@
-import { ACTS, LAW, LAW_CHECKED, TOOL_LAW, lawUrl, sectionLabel, type ActKey, type LawRef } from "@/lib/nz/law";
+import { ACTS, LAW, LAW_CHECKED, TOOL_LAW, actVersion, lawUrl, sectionLabel, type ActKey, type LawRef } from "@/lib/nz/law";
 
 /** "The law" on an NZ topic page: the Acts and sections behind it, with official links. */
 export function LawBox({ topic, tool }: { topic?: string; tool?: string }) {
@@ -37,7 +37,7 @@ export function LawBox({ topic, tool }: { topic?: string; tool?: string }) {
         ))}
         <p className="text-xs text-stone-500">
           Read from legislation.govt.nz on {LAW_CHECKED}:{" "}
-          {[...byAct.keys()].map((a) => `${ACTS[a].name} as at ${ACTS[a].versionAsAt}`).join("; ")}. Summaries are simplified: the Act&rsquo;s wording is what counts.
+          {[...byAct.keys()].map(actVersion).join("; ")}. Summaries are simplified: the Act&rsquo;s wording is what counts.
         </p>
       </div>
     </details>

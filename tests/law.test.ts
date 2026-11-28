@@ -20,7 +20,7 @@ describe("The law on each NZ topic (lib/nz/law.ts)", () => {
         expect(ACTS[r.act]).toBeDefined();
         expect(r.anchor).toMatch(/^(DLM|LMS)\d+$/);
         expect(r.says.length).toBeGreaterThan(20);
-        expect(lawUrl(r)).toMatch(/^https:\/\/www\.legislation\.govt\.nz\/act\/public\/\d{4}\/\d+\/en\/latest\/#(DLM|LMS)\d+$/);
+        expect(lawUrl(r)).toMatch(/^https:\/\/www\.legislation\.govt\.nz\/(act\/public|secondary-legislation\/pco-drafted)\/\d{4}\/\d+\/en\/latest\/#(DLM|LMS)\d+$/);
       }
   });
   it("no section is listed twice on one topic", () => {

@@ -20,8 +20,8 @@ const checkedText = process.env.LAW_SINCE ?? src.match(/LAW_CHECKED = "([^"]+)"/
 const checked = parseDate(checkedText);
 
 const acts = {};
-for (const m of src.matchAll(/^\s+(\w+): \{ name: "([^"]+)", year: (\d+), no: (\d+), versionAsAt: "([^"]+)" \}/gm))
-  acts[m[1]] = { name: m[2], year: m[3], no: m[4], versionAsAt: m[5] };
+for (const m of src.matchAll(/^\s+(\w+): \{ name: "([^"]+)", year: (\d+), no: (\d+), versionAsAt: "([^"]+)"(, kind: "regulation")? \}/gm))
+  acts[m[1]] = { name: m[2], year: m[3], no: m[4], versionAsAt: m[5], regulation: !!m[6] };
 
 const refs = [];
 for (const m of src.matchAll(/\{ act: "(\w+)", section: "([^"]+)", heading: "([^"]+)", anchor: "([^"]+)"/g))
@@ -38,7 +38,7 @@ console.log(`Checking ${refs.length} sections in ${Object.keys(acts).length} Act
 for (const [key, act] of Object.entries(acts)) {
   const mine = refs.filter((r) => r.act === key);
   if (!mine.length) continue;
-  const url = `https://www.legislation.govt.nz/act/public/${act.year}/${act.no}/en/latest/`;
+  const url = `https://www.legislation.govt.nz/${act.regulation ? "secondary-legislation/pco-drafted" : "act/public"}/${act.year}/${act.no}/en/latest/`;
   let html;
   try {
     // large Acts are sometimes cut off mid-download: retry until the page is complete
@@ -59,21 +59,28 @@ for (const [key, act] of Object.entries(acts)) {
     continue;
   }
 
-  const version = unhtml(html.match(/Version as at[^<]*/)?.[0] ?? "").replace("Version as at ", "");
+  // an Act says "Version as at 1 July 2025"; a regulation that's never been amended says "Latest version (as made)"
+  const version = unhtml(html.match(/Version as at[^<]*/)?.[0] ?? "").replace("Version as at ", "") || (html.match(/Latest version\s*<\/span>\s*<span[^>]*>\s*\(([^)]+)\)/)?.[1] ?? "");
   const newer = version && version !== act.versionAsAt;
-  console.log(`${newer ? "!" : "✓"} ${act.name}: version as at ${version || "?"}${newer ? ` (we checked ${act.versionAsAt}: update versionAsAt once the sections below are re-read)` : ""}`);
+  console.log(`${newer ? "!" : "✓"} ${act.name}: ${version === "as made" ? "as made (never amended)" : `version as at ${version || "?"}`}${newer ? ` (we checked ${act.versionAsAt}: update versionAsAt once the sections below are re-read)` : ""}`);
   if (newer) problems++;
 
   // the side menu lists every section in order: anchor, number, heading
   const nav = [...html.matchAll(/legislation-side-nav__link--prov"[^>]*href="#((?:DLM|LMS)\d+)"[^>]*>[\s\S]*?<div class=.col-2.>\s*([\s\S]*?)\s*<\/div>\s*<div class="col">\s*([\s\S]*?)\s*<\/div>/g)]
-    .map((m) => ({ anchor: m[1], num: unhtml(m[2]), heading: unhtml(m[3]) }));
+    .map((m) => ({ at: m.index, anchor: m[1], num: unhtml(m[2]), heading: unhtml(m[3]) }));
+  // a schedule's menu entry has one column: "Schedule Matters that financial statements must show"
+  for (const m of html.matchAll(/legislation-side-nav__link--schedule"[^>]*href="#((?:DLM|LMS)\d+)"[^>]*>[\s\S]*?<div class="col">\s*([\s\S]*?)\s*<\/div>/g)) {
+    const [, num, heading] = unhtml(m[2]).match(/^(Schedule(?: \d+\w*)?) (.*)$/) ?? [null, "Schedule", unhtml(m[2])];
+    nav.push({ at: m.index, anchor: m[1], num, heading });
+  }
+  nav.sort((a, b) => a.at - b.at);
   const navIndex = new Map(nav.map((n, i) => [n.anchor, i]));
 
   for (const r of mine) {
     const id = `${key}:${r.section}`;
     if (seen.has(id)) continue;
     seen.add(id);
-    const label = `   s ${r.section} ${r.heading}`;
+    const label = `   ${r.section.startsWith("Schedule") ? "" : act.regulation ? "cl " : "s "}${r.section} ${r.heading}`;
     const i = navIndex.get(r.anchor);
     if (i === undefined) { console.log(`${label}\n     ✗ not found: the section may have been repealed or renumbered`); problems++; continue; }
     const n = nav[i];

@@ -146,6 +146,12 @@ export const HOLIDAYS = {
   bereavementDays: "3 days (close family) / 1 day (others)",
 };
 
+/** Companies Office annual return fee, excluding GST: $21 Companies Office fee + FMA, XRB and IP levies (fees from 1 July 2022, checked 28 November 2026) */
+export const COMPANIES_OFFICE = {
+  annualReturnFee: 49.74,
+  source: "https://companies-register.companiesoffice.govt.nz/fees/",
+};
+
 export const PROVISIONAL_TAX = {
   ritThreshold: 5_000,
   standardUplift: 0.05,

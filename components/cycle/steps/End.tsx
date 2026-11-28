@@ -585,11 +585,11 @@ export function PostClosingStep() {
     { d: "2027-04-01", t: "Optional reversing entries for accruals (power, wages, accrued income), so April's actual bills aren't double-counted." },
     { d: "2027-04-07", t: `Pay accrued wages for 23 March – 5 April. The accrued wages liability (${money(-b["206"])}) is cleared.` },
     { d: "2027-04-20", t: `Pay March PAYE & deductions (${money(-b["215"])}) and March supplier invoices (${money(-b["200"])}).` },
+    { d: "2027-04-30", t: "By the end of April, Kōwhai's filing month: its first Companies Office annual return (none was due in 2026, the year it registered). Update the share register too." },
     { d: "2027-05-07", t: `File the Feb–Mar GST return (includes the bad debt and entertainment adjustments): pay ${money(p6.box15)}.` },
-    { d: "2027-05-31", t: "Companies Office annual return (in the company's registration month) and update the share register." },
     { d: "2027-07-07", t: "Aroha & Ben's personal IR3 returns, including shareholder salaries (or later via their tax agent)." },
+    { d: "2027-07-31", t: "Around July: ACC's employer levy invoice (last year's final levy on the actual wages, plus an estimate for this year). Aroha's and Ben's own levies on their salaries follow around September." },
     { d: "2027-08-28", t: `1st provisional tax instalment for the 2028 year (standard method ≈ ${money((TAX.residual * 1.05) / 3, { dp: 0 })}).` },
-    { d: "2027-09-01", t: "ACC invoices the company's work levy, based on wages and shareholder salaries." },
     { d: "2028-03-31", t: "IR4 company tax return due (with the tax agent's extension of time)." },
     { d: "2028-04-07", t: `Terminal tax for the 2027 year due: ${money(TAX.terminal)}.` },
   ];
@@ -611,6 +611,7 @@ export function PostClosingStep() {
             </li>
           ))}
         </ol>
+        <p className="text-sm text-stone-600">Every job, for both years, with the law and a link to practise each: <Link href="/explore/year-end" className="font-semibold underline">the year-end checklist</Link>.</p>
         <Callout kind="tip" title="Should the company pay a dividend?">
           The company has a lot of cash and {money(NET_PROFIT, { dp: 0 })} of retained earnings. It could pay a <Term k="dividend">dividend</Term> with <Term k="imputation-credit">imputation credits</Term> attached for the tax it has paid. Or Aroha and Ben could withdraw the credit balances in their current accounts tax-free (that income has already been taxed as salary). <Link className="underline" href="/nz/shareholders">See shareholders &amp; dividends →</Link>
         </Callout>
