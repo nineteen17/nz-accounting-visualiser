@@ -9,6 +9,7 @@ const KS = pct(KIWISAVER.employerMinimum);
 const EG = { paye: 152, ksEe: 1000 * KIWISAVER.employeeDefault, ksEr: 1000 * KIWISAVER.employerMinimum };
 import { cx } from "@/lib/ui";
 import { Callout, Quiz } from "@/components/learn/bits";
+import { QueryTabs } from "@/components/learn/QueryTabs";
 
 /* US GAAP vs NZ: the single reference page */
 
@@ -338,7 +339,7 @@ export function UsVsNz() {
             <li><strong>Tax</strong>: completely different taxes (sales tax → GST, FICA → PAYE and KiwiSaver).</li>
             <li><strong>Some reporting rules</strong>: mostly things a small café rarely meets.</li>
           </ol>
-          <p>This page is the single reference for all the differences. Each section has an impact rating, so you know what matters for a small NZ business and what you can safely skim.</p>
+          <p>This page is the single reference for all the differences, one section at a time: pick a section below. Each has an impact rating, so you know what matters for a small NZ business and what you can safely skim.</p>
         </div>
         <div className="grid gap-3 self-start">
           <div className="rounded-xl border-2 border-emerald-300 bg-emerald-50 p-4">
@@ -359,42 +360,37 @@ export function UsVsNz() {
         </div>
       </div>
 
-      <nav id="contents" className="scroll-mt-20 rounded-2xl border border-stone-200 bg-white p-5">
-        <div className="mb-3 text-sm font-semibold uppercase tracking-wider text-stone-500">On this page</div>
-        <ol className="grid gap-x-6 gap-y-1.5 sm:grid-cols-2 lg:grid-cols-3">
-          {SECTIONS.map((s, i) => (
-            <li key={s.id} className="flex items-center gap-2 text-sm">
-              <span className="num w-5 text-stone-400">{i + 1}.</span>
-              <a href={`#${s.id}`} className="flex-1 font-medium hover:underline">{s.title}</a>
-              <ImpactChip impact={s.impact} />
-            </li>
-          ))}
-          <li className="flex items-center gap-2 text-sm"><span className="num w-5 text-stone-400">{SECTIONS.length + 1}.</span><a href="#quiz" className="font-medium hover:underline">Check yourself</a></li>
-        </ol>
-      </nav>
-
-      {SECTIONS.map((s, i) => (
-        <section key={s.id} id={s.id} className="scroll-mt-20 space-y-4">
-          <div>
-            <div className="flex flex-wrap items-center gap-3">
-              <h2 className="text-2xl font-bold">{i + 1}. {s.title}</h2>
-              <ImpactChip impact={s.impact} />
-            </div>
-            <p className="mt-1 max-w-4xl text-stone-600">{s.summary}</p>
-          </div>
-          {s.custom === "terms" && <TermsTable />}
-          {s.custom === "examples" && <WorkedExamples />}
-          {s.rows && <RowsTable rows={s.rows} />}
-          <a href="#contents" className="inline-block text-xs text-stone-400 hover:underline">↑ back to contents</a>
-        </section>
-      ))}
-
-      <section id="quiz" className="scroll-mt-20">
-        <h2 className="mb-3 text-2xl font-bold">{SECTIONS.length + 1}. Check yourself</h2>
-        <div className="grid gap-4 lg:grid-cols-2">
-          {QUIZ.map((x) => <Quiz key={x.q} q={x.q} options={x.options} answer={x.answer} explain={x.explain} />)}
-        </div>
-      </section>
+      <QueryTabs param="section" label="US vs NZ sections" tabs={[
+        ...SECTIONS.map((s, i) => ({
+          id: s.id, title: s.title,
+          label: <>{i + 1}. {s.title}</>,
+          content: (
+            <section className="space-y-4">
+              <div>
+                <div className="flex flex-wrap items-center gap-3">
+                  <h2 className="text-2xl font-bold">{i + 1}. {s.title}</h2>
+                  <ImpactChip impact={s.impact} />
+                </div>
+                <p className="mt-1 max-w-4xl text-stone-600">{s.summary}</p>
+              </div>
+              {s.custom === "terms" && <TermsTable />}
+              {s.custom === "examples" && <WorkedExamples />}
+              {s.rows && <RowsTable rows={s.rows} />}
+            </section>
+          ),
+        })),
+        {
+          id: "quiz", title: "Check yourself", label: <>{SECTIONS.length + 1}. Check yourself</>,
+          content: (
+            <section>
+              <h2 className="mb-3 text-2xl font-bold">{SECTIONS.length + 1}. Check yourself</h2>
+              <div className="grid gap-4 lg:grid-cols-2">
+                {QUIZ.map((x) => <Quiz key={x.q} q={x.q} options={x.options} answer={x.answer} explain={x.explain} />)}
+              </div>
+            </section>
+          ),
+        },
+      ]} />
 
       <Callout kind="tip" title="How to keep using an American resource">
         Keep using it for the <strong>mechanics</strong>: debits, credits, adjusting entries, closing and ratios work the same everywhere. Whenever it gets to <strong>tax</strong>, <strong>owner&apos;s equity</strong>, <strong>statement names</strong> or <strong>business structures</strong>, check the matching section here.

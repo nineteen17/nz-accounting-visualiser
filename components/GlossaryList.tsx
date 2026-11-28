@@ -24,12 +24,25 @@ const LEVELS: Record<GlossaryEntry["level"], { label: string; tip: string; cls: 
   reference: { label: "Reference", tip: "Look it up when you need it", cls: "bg-stone-100 text-stone-500" },
 };
 
+/** a term's first letter, ignoring macrons (Ā → A) and grouping digits and symbols together */
+const initial = (term: string) => {
+  const c = term.normalize("NFD").replace(/\p{M}/gu, "").charAt(0).toUpperCase();
+  return /[A-Z]/.test(c) ? c : "#";
+};
+
 export function GlossaryList() {
   const [q, setQ] = useState("");
   const [cat, setCat] = useState<string>("all");
   const [level, setLevel] = useState<string>("all");
+  const [letter, setLetter] = useState<string>("");
   const { openTerm } = useOverlay();
-  const list = GLOSSARY.filter((e) => (cat === "all" || e.category === cat) && (level === "all" || e.level === level) && (!q || `${e.term} ${e.short}`.toLowerCase().includes(q.toLowerCase()))).sort((a, b) => a.term.localeCompare(b.term));
+  const matches = GLOSSARY.filter((e) => (cat === "all" || e.category === cat) && (level === "all" || e.level === level) && (!q || `${e.term} ${e.short}`.toLowerCase().includes(q.toLowerCase()))).sort((a, b) => a.term.localeCompare(b.term));
+  // browsing everything (no search, no category): one letter at a time instead of every term on one long page
+  const byLetter = !q && cat === "all";
+  // A–Z first, then "#" (terms starting with a number), so the page opens on A
+  const letters = [...new Set(matches.map((e) => initial(e.term)))].sort((a, b) => (a === "#" ? 1 : b === "#" ? -1 : a.localeCompare(b)));
+  const shownLetter = letters.includes(letter) ? letter : letters[0];
+  const list = byLetter ? matches.filter((e) => initial(e.term) === shownLetter) : matches;
   return (
     <div>
       <div className="mb-4 flex flex-wrap gap-2">
@@ -45,8 +58,16 @@ export function GlossaryList() {
         {[["all", "All levels", ""], ...Object.entries(LEVELS).map(([k, v]) => [k, v.label, v.tip])].map(([k, v, tip]) => (
           <button key={k} title={tip} onClick={() => setLevel(k)} className={cx("rounded-lg px-3 py-1", level === k ? "bg-ink text-white" : "bg-white hover:bg-stone-100")}>{v}</button>
         ))}
-        <span className="ml-2 text-stone-500">{list.length} terms</span>
+        <span className="ml-2 text-stone-500">{matches.length} terms</span>
       </div>
+      {byLetter && (
+        <div role="tablist" aria-label="Terms by first letter" className="mb-6 flex flex-wrap gap-1">
+          {letters.map((l) => (
+            <button key={l} role="tab" aria-selected={l === shownLetter} onClick={() => setLetter(l)}
+              className={cx("num h-8 min-w-8 rounded-lg px-2 text-sm font-semibold", l === shownLetter ? "bg-ink text-white" : "bg-white hover:bg-stone-100")}>{l}</button>
+          ))}
+        </div>
+      )}
       {cat === "us" && (
         <p className="mb-4 rounded-xl bg-sky-50 px-4 py-3 text-sm">
           These are terms from American (US GAAP) material. Each one points to its NZ equivalent. For every difference in one place, see{" "}

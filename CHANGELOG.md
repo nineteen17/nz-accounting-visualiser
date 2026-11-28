@@ -15,6 +15,13 @@ Dates are when the change was made. Rates and rules are for the 2026–27 NZ inc
 
 ## 2026-11-29
 
+### Long pages split into tabs
+
+The same fix as the memory aids page, on the other pages that rendered everything at once. A shared `QueryTabs` component (`components/learn/QueryTabs.tsx`) shows one section at a time, keeps the choice in the address so it can be linked to, and has previous / next links at the bottom.
+- **US GAAP vs NZ** (`/us-vs-nz`): its 15 sections and the quiz are now tabs (`?section=gst`), instead of one very long page with a contents list.
+- **The second year, with comparatives** (`/on-the-job/year-2-statements`): the seven statements and schedules (profit & loss, balance sheet, changes in equity, cash flows, tax reconciliation, imputation credits, selling an asset) are tabs (`?view=ica`). The headline figures and "What's new" stay at the top.
+- **Glossary:** browsing all 210 terms now goes one letter at a time (A–Z, then # for terms starting with a number). Searching or picking a category still shows every match.
+
 ### Memory aids: one group at a time
 
 The memory aids page listed all 18 aids on one long page. It now has a tab for each group (debits and credits, the statements, the process, NZ numbers and dates), and only the chosen group is rendered (`components/learn/MemoryAidGroups.tsx`). Each group has its own address (`?group=nz`), so links can open the right one: the "When is it due?" drill's link now opens the NZ dates group. Test added (322 in all).

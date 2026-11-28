@@ -9,6 +9,7 @@ import { KIWISAVER, MINIMUM_WAGE, PAYROLL_2026_27, PAYROLL_2027_28 as Y2R, PROVI
 import { ChangesInEquityY2, ComparativeBS, ComparativeCashFlow, ComparativePL } from "@/components/visual/Comparatives";
 import { TaxRecView } from "@/components/cycle/steps/End";
 import { Callout, UsNote } from "@/components/learn/bits";
+import { QueryTabs } from "@/components/learn/QueryTabs";
 import { Term } from "@/components/learn/Term";
 
 export const metadata = { title: "The second year, with comparatives – Kōwhai Café" };
@@ -83,26 +84,34 @@ export default function SecondYearPage() {
         </div>
       </Section>
 
+      <div id="statements" className="scroll-mt-20">
+        <QueryTabs label="Year 2 statements" tabs={[
+        { id: "pl", title: "Profit & loss", label: "Profit & loss", content: (
       <Section id="statements" title="Profit & loss" intro="Sales grew about 6% and catering income included the wedding. Wages are up with the pay rises, and there's a small gain from selling the old POS system. Note the first-ever opening stock in cost of sales.">
         <ComparativePL now={balances(Y2.BEFORE_CLOSING)} prev={balances(Y1_BEFORE)} />
       </Section>
-
+        ) },
+        { id: "balance-sheet", title: "Balance sheet", label: "Balance sheet", content: (
       <Section id="balance-sheet" title="Balance sheet" intro="Income tax payable is higher than last year: it holds BOTH last year's terminal tax (due 7 April 2028) and the part of this year's tax not yet paid. The holiday pay accrual is a new year's worth: last year's leave has been taken.">
         <ComparativeBS now={y2Bal} prev={y1Bal} />
       </Section>
-
+        ) },
+        { id: "equity", title: "Changes in equity", label: "Changes in equity", content: (
       <Section id="equity" title="Changes in equity" intro="Equity now starts from last year's closing balance. The dividend reduces retained earnings directly: it's a distribution to the owners, not an expense.">
         <ChangesInEquityY2 opening={Y2.OPENING_BALANCES} closing={y2Bal} profitAfterTax={Y2.NET_PROFIT} dividends={Y2.DIVIDEND.cash} />
       </Section>
-
+        ) },
+        { id: "cash-flow", title: "Cash flows", label: "Cash flows", content: (
       <Section id="cash-flow" title="Cash flows" intro="Investing now has an inflow (selling the old POS system) as well as an outflow (the new one). Financing shows the dividend for the first time.">
         <ComparativeCashFlow now={Y2.ALL} prev={Y1_ALL} cashNow={[cash(Y2.OPENING_BALANCES), cash(y2Bal)]} cashPrev={[0, cash(y1Bal)]} />
       </Section>
-
+        ) },
+        { id: "tax", title: "Income tax reconciliation", label: "Tax reconciliation", content: (
       <Section id="tax" title="Income tax reconciliation" intro="New lines this year: holiday pay reverses, the asset sale swaps the accounting gain for depreciation recovery, and the new POS system gets Investment Boost.">
         <TaxRecView year={2} />
       </Section>
-
+        ) },
+        { id: "ica", title: "Imputation credit account", label: "Imputation credits", content: (
       <Section id="ica" title="Imputation credit account" intro="A memorandum record, kept for IRD and not part of the ledger. Tax paid adds credits; imputation credits attached to dividends use them up. It mustn't be in debit at 31 March.">
         <div className="max-w-3xl overflow-x-auto rounded-xl border border-stone-200 bg-white">
           <table className="w-full text-sm">
@@ -132,7 +141,8 @@ export default function SecondYearPage() {
           <UsNote>A US C-corporation&apos;s profits are taxed twice: corporate tax, then the shareholder&apos;s tax on dividends. NZ&apos;s imputation system passes the company&apos;s tax to shareholders as a credit, so profits are effectively taxed once, at the shareholder&apos;s own rate. US textbooks also often record dividends in a temporary &quot;Dividends&quot; account that&apos;s closed at year end; here they go straight to retained earnings.</UsNote>
         </div>
       </Section>
-
+        ) },
+        { id: "disposal", title: "Selling an asset: accounts vs tax", label: "Selling an asset", content: (
       <Section id="disposal" title="Selling an asset: accounts vs tax">
         <div className="grid max-w-4xl gap-4 md:grid-cols-2">
           <div className="rounded-xl border border-stone-200 bg-white p-4 text-sm">
@@ -155,6 +165,9 @@ export default function SecondYearPage() {
         <p className="mt-3 max-w-3xl text-sm text-stone-600">Recovery is the lesser of (sale price − tax book value) and the depreciation claimed. A sale above the original cost would also have a capital gain, which usually isn&apos;t taxable. Source: IRD&apos;s depreciation guide (IR260).</p>
         <div className="mt-3 max-w-3xl"><UsNote>US tax also &quot;recaptures&quot; depreciation on a sale, but US rules let you depreciate in the year of sale (under the MACRS conventions). NZ allows no tax depreciation in the year an asset is sold.</UsNote></div>
       </Section>
+        ) },
+        ]} />
+      </div>
 
       <Callout kind="nz" title="Rates used in year 2">ACC earners&apos; levy {pct(Y2R.acc.rate, 2)} (max liable earnings {money(Y2R.acc.maxLiableEarnings, { dp: 0 })}) from 1 April 2027; KiwiSaver stays {pct(Y2R.kiwiSaver.employerMinimum)} until {KIWISAVER.futureRate.from}; dividend RWT {pct(RWT.dividendRate, 0)}; provisional tax standard uplift {pct(PROVISIONAL_TAX.standardUplift, 0)}. Both staff are paid above the adult minimum wage ({money(MINIMUM_WAGE.adult)} from {MINIMUM_WAGE.from}).{Y2R.toConfirm.length > 0 && <> Not yet announced for {Y2R.year} when this was written, so carried forward from {PAYROLL_2026_27.year}: {Y2R.toConfirm.join(", ")}.</>}</Callout>
     </div>
