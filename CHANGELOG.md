@@ -8,10 +8,19 @@ Dates are when the change was made. Rates and rules are for the 2026–27 NZ inc
 ## Proposed / not yet done
 
 - **2027–28 rates (on or after 1 April 2027)**. Follow README "Updating the rates" (`npm run rates` lists what to check). In short: when IRD, ACC and MBIE announce them, fill in `PAYROLL_2027_28` in `lib/nz/rates.ts` and clear its `toConfirm` list (tax brackets, IETC, student loan threshold and ESCT bands are carried forward for now); update `MINIMUM_WAGE`; then on 1 April 2027 point `CURRENT_PAYROLL` at 2027–28. Year 1's books keep the 2026–27 rates.
+- **Which structure? tool**: planned in `docs/STRUCTURES.md`. It runs Kōwhai's profit through a partnership, a company, a look-through company and (if Aroha owned it alone) a sole trader, comparing tax, ACC, losses and liability. Three decisions are needed and three facts are still to confirm (listed in the plan).
 
 ---
 
 ## 2026-11-28
+
+### Plan for the "Which structure?" tool
+- `docs/STRUCTURES.md`. Checked against:
+  - the Income Tax Act (ss DC 3B, DC 4, HB 1, HB 11, and the LTC definition in YA 1);
+  - the Partnership Law Act 2019 (ss 22 and 25);
+  - IRD's look-through company and partnership pages;
+  - ACC's Levy Guidebook 2026/27.
+- Not started.
 
 ### Pay yourself: salary, dividend or keep it in the company
 - New Explore tool `/explore/pay-yourself`. Using Kōwhai's real year 2, choose Aroha's and Ben's salaries and a dividend (always split 60/40) and see:
