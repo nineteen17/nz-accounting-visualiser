@@ -234,6 +234,10 @@ export function Study() {
             <span className="font-bold">📒 Do the year-end yourself</span>
             <span className="mt-0.5 block text-sm text-stone-600">Start from Kōwhai&apos;s real unadjusted trial balance, post every year-end adjustment, and see your profit beside the real one.</span>
           </Link>
+          <Link href="/study/gst-return" className="block rounded-2xl bg-kowhai-50 p-4 ring-1 ring-kowhai-200 hover:ring-kowhai-500">
+            <span className="font-bold">🧾 Do the GST return yourself</span>
+            <span className="mt-0.5 block text-sm text-stone-600">Sort a real two-monthly period&apos;s transactions into the GST101A, fill in the boxes, and compare your return with the one Kōwhai filed.</span>
+          </Link>
           {(Object.keys(DRILL_GROUPS) as DrillGroup[]).map((g) => (
             <section key={g}>
               <h3 className="text-lg font-bold">{DRILL_GROUPS[g].title}</h3>

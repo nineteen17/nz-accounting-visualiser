@@ -22,6 +22,7 @@ export { BudgetTool } from "./Budget";
 export { CashForecastTool } from "./CashForecast";
 export { PayYourselfTool } from "./PayYourself";
 export { StructuresTool } from "./Structures";
+export { ProvisionalTaxTool } from "./ProvisionalTax";
 
 const input = "max-w-full rounded-lg border border-stone-300 bg-white px-2 py-1.5 text-sm";
 

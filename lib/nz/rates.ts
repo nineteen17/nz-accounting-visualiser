@@ -156,7 +156,21 @@ export const PROVISIONAL_TAX = {
   uomiOverpaid: 0.0225,
   /** 31 March balance date, standard / estimation method */
   instalments: ["28 August", "15 January", "7 May"],
+  /** IRD doesn't charge or pay interest when the underpaid or overpaid tax is $100 or less (IR289) */
+  uomiDeMinimis: 100,
+  /** the GST ratio method: last year's RIT over the RIT threshold and no more than this (Income Tax Act s RC 16) */
+  ratioMaxRit: 150_000,
+  /** AIM is for turnover under $5m (IR289, April 2025) */
+  aimTurnoverLimit: 5_000_000,
   source: "https://www.ird.govt.nz/income-tax/provisional-tax",
+};
+
+/** late payment penalty: 1% the day after the due date, then 4% of the new amount 7 days later; no monthly 1% on income tax from 2017–18 (Tax Administration Act s 139B; IR289) */
+export const LATE_PAYMENT_PENALTY = {
+  initial: 0.01,
+  second: 0.04,
+  secondAfterDays: 7,
+  source: "https://www.ird.govt.nz/-/media/project/ir/home/documents/forms-and-guides/ir200---ir299/ir289/ir289.pdf",
 };
 
 export const DEPRECIATION = {

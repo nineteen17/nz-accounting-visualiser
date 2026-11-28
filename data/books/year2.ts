@@ -179,7 +179,7 @@ const provPayment = (id: string, n: number, story: string): Transaction => {
       { account: "141", debit: i.amount, why: "Tax paid in advance: an asset until it's used against this year's tax bill." },
       { account: "100", credit: i.amount, why: "Paid from the bank." },
     ],
-    deepDives: [{ href: "/nz/provisional-tax", label: "Provisional tax options" }],
+    deepDives: [{ href: "/nz/provisional-tax", label: "Provisional tax options" }, { href: "/explore/provisional-tax", label: "Plan it: compare the methods" }],
   };
 };
 

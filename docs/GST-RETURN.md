@@ -1,6 +1,6 @@
 # Plan: "Do the GST return yourself"
 
-Status: **planned, not started** (written 2026-11-28).
+Status: **built** 2026-11-28 (`/study/gst-return`). Planned the same day.
 
 ## The idea
 
@@ -54,8 +54,8 @@ Progress per period is saved on the device, like the year-end exercise, and "Mak
 
 The box rules and wording are already on `/nz/gst-return`, and the GST rules are checked in `lib/nz/law.ts`: GST Act s 8 (15%), s 14 (exempt supplies, including financial services), s 11 (zero-rating), s 20 (calculating tax payable), s 26 (bad debts). For "not a supply", wages are covered by the definition of taxable activity: it excludes "any engagement, occupation, or employment under any contract of service" (s 6(3)(b), read 28 November 2026; add it to `law.ts`).
 
-**To confirm before building**
-1. The current **GST101A box wording**, especially Box 11's "tax invoicing requirements", which may have changed to "taxable supply information" in the 2023 rules. Check against IRD's current GST101A form, and correct `/nz/gst-return` too if it differs.
+**Confirmed before building**
+1. The **GST101A box wording**, from IRD's current form (GST101A, April 2023) and the GST guide IR375 (March 2026). Box 11 now reads "Total purchases and expenses (including GST) – excluding any imported goods". The old "tax invoicing requirements" wording on `/nz/gst-return` was replaced. All the box labels now come from one place, `GST101A_BOXES` in `lib/engine/gst.ts`. GST paid to Customs on imports is claimed in Box 13 instead (IR375).
 
 ## US differences to flag
 

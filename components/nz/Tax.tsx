@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { ALL, BEFORE_CLOSING, TAX } from "@/data/books";
 import { CLOSING_STOCK, SHAREHOLDERS } from "@/data/business";
-import { GST_PERIODS, gstReturn } from "@/lib/engine/gst";
+import { GST101A_BOXES, GST_PERIODS, gstReturn } from "@/lib/engine/gst";
 import { balances, ledger } from "@/lib/engine/ledger";
 import { COMPANY_TAX_RATE, DEPRECIATION, GST, INDIVIDUAL_TAX_BRACKETS, PROVISIONAL_TAX, RATES_AS_AT, RECORD_KEEPING_YEARS, RWT, TRADING_STOCK } from "@/lib/nz/rates";
 import { BEAN_EXAMPLE, fifo, totalCost, totalQty, weightedAverage, type Purchase } from "@/lib/nz/stock";
@@ -136,17 +136,17 @@ export function GstReturnTopic() {
   const period = GST_PERIODS.find((p) => p.id === pid)!;
   const r = gstReturn(ALL, period);
   const boxes: { n: number; label: string; v: number; how: string; strong?: boolean }[] = [
-    { n: 5, label: "Total sales and income for the period (including GST and any zero-rated supplies)", v: r.box5, how: "All taxable sales incl GST. Worked back from the output GST: output GST × 23/3." },
-    { n: 6, label: "Zero-rated supplies included in Box 5", v: r.box6, how: "Kōwhai has none." },
-    { n: 7, label: "Subtract Box 6 from Box 5", v: r.box7, how: "Standard-rated sales incl GST." },
-    { n: 8, label: "Multiply Box 7 by three (3) and divide by twenty-three (23)", v: r.box8, how: "GST on sales (output tax)." },
-    { n: 9, label: "Adjustments from your calculation sheet", v: r.box9, how: "Debit adjustments: extra GST to pay, e.g. the 50% entertainment adjustment or private use." },
-    { n: 10, label: "Total GST collected on sales and income (Box 8 + Box 9)", v: r.box10, how: "", strong: true },
-    { n: 11, label: "Total purchases and expenses (including GST) for which tax invoicing requirements have been met", v: r.box11, how: "All purchases with claimable GST, incl GST." },
-    { n: 12, label: "Multiply Box 11 by three (3) and divide by twenty-three (23)", v: r.box12, how: "GST on purchases (input tax)." },
-    { n: 13, label: "Credit adjustments from your calculation sheet", v: r.box13, how: "e.g. GST on bad debts written off." },
-    { n: 14, label: "Total GST credit for purchases and expenses (Box 12 + Box 13)", v: r.box14, how: "", strong: true },
-    { n: 15, label: "Difference between Box 10 and Box 14", v: Math.abs(r.box15), how: r.box15 >= 0 ? "GST TO PAY" : "REFUND DUE", strong: true },
+    { n: 5, label: GST101A_BOXES[5], v: r.box5, how: "All taxable sales incl GST. Worked back from the output GST: output GST × 23/3." },
+    { n: 6, label: GST101A_BOXES[6], v: r.box6, how: "Kōwhai has none." },
+    { n: 7, label: GST101A_BOXES[7], v: r.box7, how: "Standard-rated sales incl GST." },
+    { n: 8, label: GST101A_BOXES[8], v: r.box8, how: "GST on sales (output tax)." },
+    { n: 9, label: GST101A_BOXES[9], v: r.box9, how: "Debit adjustments: extra GST to pay, e.g. the 50% entertainment adjustment or private use." },
+    { n: 10, label: GST101A_BOXES[10], v: r.box10, how: "", strong: true },
+    { n: 11, label: GST101A_BOXES[11], v: r.box11, how: "All purchases with claimable GST, incl GST. Imported goods are left out: the GST paid to Customs on them is claimed in Box 13 instead (IR375)." },
+    { n: 12, label: GST101A_BOXES[12], v: r.box12, how: "GST on purchases (input tax)." },
+    { n: 13, label: GST101A_BOXES[13], v: r.box13, how: "e.g. GST on bad debts written off." },
+    { n: 14, label: GST101A_BOXES[14], v: r.box14, how: "", strong: true },
+    { n: 15, label: GST101A_BOXES[15], v: Math.abs(r.box15), how: r.box15 >= 0 ? "GST TO PAY" : "REFUND DUE", strong: true },
   ];
   return (
     <div className="space-y-6">
@@ -312,6 +312,7 @@ export function ProvisionalTaxTopic() {
           </div>
         </Card>
       </div>
+      <p className="text-[16px]"><Link href="/explore/provisional-tax" className="font-semibold text-kowhai-700 underline">🗓️ Try it: plan Kōwhai&apos;s year 2 provisional tax</Link>: compare the standard, estimation and AIM methods, see when interest starts, and what a late payment costs.</p>
       <MemoryAid k="provisional-dates" link={false} />
     </div>
   );
@@ -676,6 +677,7 @@ export function ComplianceTopic() {
               </li>
             ))}
           </ul>
+          <p className="mt-3 text-sm"><Link href="/explore/provisional-tax" className="font-semibold text-kowhai-700 underline">🗓️ Plan the provisional tax instalments</Link> · <Link href="/study/gst-return" className="font-semibold text-kowhai-700 underline">🧾 Do a GST return yourself</Link></p>
           <p className="mt-3 text-xs text-stone-500">Rates and dates as at {RATES_AS_AT}.</p>
         </Card>
       </div>

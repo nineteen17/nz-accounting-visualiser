@@ -109,6 +109,7 @@ A learner who finishes the course and keeps up with Study should be able to:
   days:   ["yyyy-mm-dd", ...]      // days studied, for the streak (last 400 kept)
 }
 "study-settings-v1": { parts, levels, dir, newCount, aids, typed }
+"gst-return-v1": { [periodKey]: { sorted, of, boxes, done } }   // best result per GST period
 ```
 Bad data loads as empty. **Export / import** (Progress tab): `exportStudy` writes `{ app: "kowhai-cafe-study", exported, study, settings }` as a JSON file; `parseImport` refuses anything that isn't that (or is a different version), drops broken entries, and the settings are checked field by field before anything is replaced. `missed`, `aids` and `typed` were added without a version bump: they're new optional fields, and `loadStudy` / the settings loader fill them with defaults, so older saved progress still loads. **Any change to the shape needs a version bump plus a migration in `loadStudy`**, so learners don't lose progress.
 
@@ -161,14 +162,14 @@ See the open questions in section 5.
 | Topic | Flashcards | Drills | Gap / planned |
 |---|---|---|---|
 | GST | ✅ | ✅ GST maths, Standard / zero-rated / exempt | |
-| GST return | ✅ | ✅ GST for a period, GST period order, due dates, GST entries in E1 | |
+| GST return | ✅ | ✅ GST for a period, GST period order, due dates, GST entries in E1, Do the GST return yourself (`/study/gst-return`, all twelve real periods) | |
 | PAYE | ✅ | ✅ Payroll, pay-run entries in E1 | |
 | KiwiSaver | ✅ | ✅ Payroll (employee and employer KS, ESCT) | |
 | Holidays | ✅ | ✅ Holiday pay | |
 | Employment | ✅ | ✅ Employment basics | |
 | ACC | ✅ | ✅ ACC levies, earners' levy inside PAYE in Payroll | |
 | Income tax | ✅ | ✅ Taxable income & tax, Deductible for tax?, tax entries in E2 | |
-| Provisional tax | ✅ | ✅ Provisional tax, due dates | |
+| Provisional tax | ✅ | ✅ Provisional tax, due dates, Provisional tax: methods & interest (standard amount, interest-free or not, interest on a shortfall, late payment penalty, GST ratio) | |
 | Shareholders | ✅ | ✅ Dividends & imputation, Owners & business structures, entries in E1/E2/E4 | |
 | Depreciation | ✅ | ✅ Depreciation, Capital or revenue?, depreciation entry in E2 | |
 | Inventory | ✅ FIFO, weighted average, NRV | ✅ Cost of goods sold, stocktake entries in E2, Valuing stock (FIFO, weighted average, which gives more profit, lower of cost and NRV, low value stock rule) | |
@@ -243,6 +244,8 @@ Shown on matching flashcards, and practised as cards of their own (`a:` cards, o
 - [x] **E4** Year 2 entries: reversing last year's accruals, the POS sale and its depreciation, the dividend and its RWT, annual leave, provisional tax.
 - [x] **N9** Balance a T-account.
 - [x] **N10** Cash-basis vs accrual-basis profit for a month.
+- [x] **B6** Provisional tax: methods & interest drill, with the provisional tax planner (`data/study/provisionalTax.ts`, rules from `lib/nz/provisionalTax.ts`). 47 drills.
+- [x] **Y2** Do the GST return yourself (`/study/gst-return`, logic in `lib/study/gstReturn.ts`, periods in `data/study/gstReturn.ts`): sort a real period's transactions, fill in the GST101A from your own sorting, and compare with Kōwhai's return. Best result per period saved as `gst-return-v1`.
 - [x] **B5** Which structure? drill, with the Which structure? tool (`data/study/structures.ts`, figures from `lib/nz/structures.ts`). 46 drills.
 - [x] **B4** Salary or dividend? drill, with the pay yourself tool (`data/study/payYourself.ts`, figures from `data/books/payYourself.ts`). 45 drills.
 - [x] **N11** GST payable for a period (output − input, leaving out exempt fees and wages).
@@ -275,6 +278,7 @@ Shown on matching flashcards, and practised as cards of their own (`a:` cards, o
 - None open. Decided 2026-11-28: drills don't count towards Known; they have their own "mastered" (X3). Typed recall added as the "Type it" option for meaning → term cards (X4).
 
 ## 6. Log
+- **2026-11-28**: Provisional tax planner (Explore) and its drill (B6); Do the GST return yourself (Y2). 47 drills, 232 tests.
 - **2026-11-28**: Which structure? tool (Explore) and its drill (B5). 46 drills, 191 tests.
 - **2026-11-28**: Pay yourself tool (Explore) and its Salary or dividend? drill (B4). 45 drills, 175 tests.
 - **2026-11-28**: Cash flow forecast tool and drill (B2); inventory page made interactive, with a Valuing stock drill (B3) and IRD's stock rules corrected; Do the year-end yourself (Y1). 44 drills, 154 tests.

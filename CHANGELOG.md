@@ -8,12 +8,29 @@ Dates are when the change was made. Rates and rules are for the 2026–27 NZ inc
 ## Proposed / not yet done
 
 - **2027–28 rates (on or after 1 April 2027)**. Follow README "Updating the rates" (`npm run rates` lists what to check). In short: when IRD, ACC and MBIE announce them, fill in `PAYROLL_2027_28` in `lib/nz/rates.ts` and clear its `toConfirm` list (tax brackets, IETC, student loan threshold and ESCT bands are carried forward for now); update `MINIMUM_WAGE`; then on 1 April 2027 point `CURRENT_PAYROLL` at 2027–28. Year 1's books keep the 2026–27 rates. Also update `ACC_CAFE_LEVIES` (the café work levy and working safer levy) from ACC's 2027/28 Levy Guidebook and clear its `toConfirm`.
-- **Provisional tax planner**: planned in `docs/PROVISIONAL-TAX.md`. It compares the standard, estimation and AIM methods on Kōwhai's year 2, with interest, the $60,000 safe harbour, and why the GST ratio isn't available yet. Three decisions are needed and three facts are still to confirm.
-- **Do the GST return yourself**: planned in `docs/GST-RETURN.md`. Learners sort a period's transactions and fill in the GST101A, marked against Kōwhai's real return. Three decisions are needed and one fact (the current box wording) is still to confirm.
 
 ---
 
 ## 2026-11-28
+
+### Do the GST return yourself
+- New exercise `/study/gst-return`, built on all twelve of Kōwhai's real two-monthly GST periods (years 1 and 2). The simpler periods come first, starting with June–July 2026. The refund period (April–May 2026) and the two periods with adjustments (February–March of each year) are marked harder.
+- **1. Sort.** Each period's transactions with GST are mixed with up to eight without GST, one of each kind: a pay run, PAYE to IRD, drawings, a supplier payment, card settlements (the same amount as the month's sales), a GST payment or refund, the loan repayment, bank fees, a journal, a dividend. The learner sorts each into a sale (Box 5), a purchase (Box 11), extra GST to pay (Box 9), GST to claim back (Box 13) or not in the return. Every answer gives its reason.
+- **2. Fill in the boxes.** Boxes 5, 6, 8, 9, 11, 12, 13 and 15, and pay or refund. Each box is marked against the learner's *own* sorting, so one mis-sorted item doesn't make every box wrong.
+- **3. Compare.** The learner's return beside the one Kōwhai filed, with the differences highlighted, then the due date. The best result for each period is saved on the device.
+- Linked from the GST return page's "Make it stick" box, the Drills tab and the compliance calendar.
+- **Corrected** the GST101A box wording on `/nz/gst-return` to match IRD's current form. Box 11 is now "Total purchases and expenses (including GST) – excluding any imported goods". It used to read "for which tax invoicing requirements have been met". GST on imports is claimed in Box 13 instead (IRD's GST guide IR375).
+- "The law" box on the GST return page adds GST Act s 6 (wages aren't a taxable activity).
+
+### Provisional tax planner
+- New Explore tool `/explore/provisional-tax`, for Kōwhai's year 2 (its first as a provisional taxpayer). It compares four methods: standard (what Kōwhai used), estimation, AIM, and the GST ratio. For each it shows the instalments, the terminal tax on 7 April 2029, use-of-money interest and penalties, and how the interest is worked out, day by day.
+- Change how the year turned out (the actual RIT). Under $60,000, the standard method charges no interest. At $60,000 or more, interest runs from the last instalment. An estimate that falls short is charged interest from each instalment date.
+- You can pay the 15 January instalment late. Under $60,000 that costs no interest, but the late payment penalty still applies: 1% the next day, then 4% after a week (IRD's guide IR289).
+- AIM is approximated from the ledger: payments follow the profit to each GST period. The tool labels it as an approximation. The GST ratio is shown but refused, because the business began operating in year 1 (Income Tax Act s RC 16(2)(b)).
+- `lib/nz/rates.ts`: the $100 interest threshold, the GST ratio's $150,000 limit, AIM's $5 million turnover limit, and the late payment penalty (1% and 4%).
+- "The law" box: Income Tax Act ss RC 6, RC 7, RC 7B, RC 11 and RC 16, and Tax Administration Act ss 120KE, 120KBB and 139B.
+- New drill **Provisional tax: methods & interest** (47 drills). Linked from the Provisional tax page, the year 2 instalment entries and the compliance calendar.
+- Tests: 232 pass.
 
 ### Plans for the provisional tax planner and "Do the GST return yourself"
 - `docs/PROVISIONAL-TAX.md`, checked against:

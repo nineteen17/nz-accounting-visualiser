@@ -26,6 +26,11 @@ export function PractiseLinks({ href, part }: { href: string; part?: 1 | 2 | 3 |
             📒 Do the whole year-end yourself
           </Link>
         )}
+        {href === "/nz/gst-return" && (
+          <Link href="/study/gst-return" className="rounded-xl bg-white px-4 py-2 text-sm font-semibold ring-1 ring-stone-300 hover:ring-kowhai-500">
+            🧾 Do the GST return yourself
+          </Link>
+        )}
         {part && <Link href={`/study?part=${part}`} className="rounded-xl bg-white px-4 py-2 text-sm font-semibold ring-1 ring-stone-300 hover:ring-kowhai-500">
           🃏 Flashcards for Part {part}
         </Link>}

@@ -95,3 +95,19 @@ export function gstReturn(txns: Transaction[], period: GstPeriod): GstReturn {
     adjustments,
   };
 }
+
+/** the GST101A's box wording, exactly as IRD's form (April 2023) prints it */
+export const GST101A_BOXES: Record<number, string> = {
+  5: "Total sales and income for the period (including GST and any zero-rated supplies)",
+  6: "Zero-rated supplies included in Box 5",
+  7: "Subtract Box 6 from Box 5 and enter the difference here",
+  8: "Multiply the amount in Box 7 by three (3) and then divide by twenty-three (23)",
+  9: "Adjustments from your calculation sheet",
+  10: "Add Box 8 and Box 9. This is your total GST collected on sales and income",
+  11: "Total purchases and expenses (including GST) – excluding any imported goods",
+  12: "Multiply the amount in Box 11 by three (3) and then divide by twenty-three (23)",
+  13: "Credit adjustments from your calculation sheet",
+  14: "Add Box 12 and Box 13. This is your total GST credit for purchases and expenses",
+  15: "Print the difference between Box 10 and Box 14 here",
+};
+export const GST101A_SOURCE = "https://www.ird.govt.nz/-/media/project/ir/home/documents/forms-and-guides/gst100---gst199/gst101a/gst101a-2023.pdf";

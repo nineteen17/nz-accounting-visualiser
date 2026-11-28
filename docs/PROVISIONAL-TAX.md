@@ -1,6 +1,6 @@
 # Plan: "Provisional tax planner"
 
-Status: **planned, not started** (written 2026-11-28).
+Status: **built** 2026-11-28 (`/explore/provisional-tax`). Planned the same day.
 
 ## The question it answers
 
@@ -53,10 +53,12 @@ The NZ topic page `/nz/provisional-tax` already explains the methods and has a s
 | Interest rates 8.97% / 2.25% from 16 January 2026, daily, not compounding | IRD, Interest on overpayments and underpayments (updated 8 July 2026); already `PROVISIONAL_TAX` in `rates.ts` |
 | AIM: six payments on the GST dates for two-monthly filers; for turnover under $5m; no interest if paid as calculated | IRD guide IR289 (April 2025) |
 
-**To confirm before building**
-1. Whether a **late instalment** under the standard method with RIT under $60,000 still attracts the late payment penalty. Section 120KE makes the RIT payable "in 1 instalment on their terminal tax date" for interest purposes; check IR289 and s 139B on how this applies to penalties. Until confirmed, leave the late-payment toggle out.
-2. The **AIM turnover limit** ($5 million, per IR289) against the Act or a current IRD page.
-3. The **AIM due dates** for a 31 March balance date. IR320 lists them, but it's an older guide.
+**Confirmed before building** (IRD's provisional tax guide IR289, read 28 November 2026)
+1. A **late instalment** under the standard method with RIT under $60,000: no interest, but "late payment penalties will still be charged on late payments". IR289's example: $7,600 due 7 May gets 1% ($76) on 8 May, then 4% of $7,676 on 15 May. So the 4% applies once a payment is more than 7 days late.
+2. The **AIM turnover limit** is $5 million (IR289).
+3. **AIM pays on the GST due dates** for two-monthly filers: six payments for Kōwhai.
+
+**How the tool approximates AIM**: the profit to each GST period's end, from the year's transactions, scaled so the full year comes to the real taxable income. Real AIM software applies the tax adjustments as it goes; the tool says so.
 
 ## US differences to flag
 

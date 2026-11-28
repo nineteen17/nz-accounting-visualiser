@@ -20,6 +20,7 @@ import { CASH_FORECAST_DRILLS } from "./cashForecast";
 import { STOCK_DRILLS } from "./stock";
 import { PAY_YOURSELF_DRILLS } from "./payYourself";
 import { STRUCTURES_DRILLS } from "./structures";
+import { PROVISIONAL_TAX_DRILLS } from "./provisionalTax";
 
 export type { Drill, Question, Rng } from "./core";
 /** any drill's key */
@@ -210,7 +211,7 @@ const BASIC_DRILLS: Drill[] = [
   },
 ];
 
-export const DRILLS: Drill[] = [...ENTRY_DRILLS, ...CALC_DRILLS, ...BASIC_DRILLS, ...CLASSIFY_DRILLS, ...ORDER_DRILLS, ...GAP_DRILLS, ...BUDGET_DRILLS, ...CASH_FORECAST_DRILLS, ...STOCK_DRILLS, ...PAY_YOURSELF_DRILLS, ...STRUCTURES_DRILLS];
+export const DRILLS: Drill[] = [...ENTRY_DRILLS, ...CALC_DRILLS, ...BASIC_DRILLS, ...CLASSIFY_DRILLS, ...ORDER_DRILLS, ...GAP_DRILLS, ...BUDGET_DRILLS, ...CASH_FORECAST_DRILLS, ...STOCK_DRILLS, ...PAY_YOURSELF_DRILLS, ...STRUCTURES_DRILLS, ...PROVISIONAL_TAX_DRILLS];
 export const DRILL_MAP: Record<string, Drill> = Object.fromEntries(DRILLS.map((d) => [d.key, d]));
 
 /** glossary text without **bold** or [[link|label]] markup, for answer buttons */

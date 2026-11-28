@@ -8,6 +8,7 @@ export const EXPLORE_TOOLS = [
   { slug: "cash-forecast", title: "Cash flow forecast", icon: "🏦", blurb: "Year 2 month by month in the bank: the forecast beside what really happened, and why profit isn't cash." },
   { slug: "pay-yourself", title: "Pay yourself", icon: "💸", blurb: "Salary, dividend or keep it in the company? Choose how year 2's profit reaches Aroha and Ben, and see the tax and the legal limits." },
   { slug: "structures", title: "Which structure?", icon: "🏛️", blurb: "Partnership, company, look-through company or sole trader? Run Kōwhai's profit through each and compare the tax, ACC, losses and who's liable." },
+  { slug: "provisional-tax", title: "Provisional tax", icon: "🗓️", blurb: "Standard, estimation, AIM or the GST ratio? Plan Kōwhai's year 2 provisional tax and see the instalments, terminal tax, interest and penalties." },
   { slug: "budget", title: "Budget vs actual", icon: "🎯", blurb: "Year 2's plan beside what really happened: every variance, favourable or unfavourable, and why." },
   { slug: "break-even", title: "Break-even", icon: "☕", blurb: "How many customers does the café need each day to cover its costs?" },
 ];
