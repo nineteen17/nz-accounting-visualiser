@@ -7,6 +7,7 @@ import { PageHeader } from "@/components/learn/bits";
 import { EXPLORE_TOOLS } from "../tools";
 import { PractiseLinks } from "@/components/study/PractiseLinks";
 import { LawBox } from "@/components/nz/LawBox";
+import { ExploreGuide } from "@/components/explore/guides";
 
 const TOOLS: Record<string, () => React.ReactNode> = {
   journal: () => <X.JournalTool />,
@@ -52,6 +53,7 @@ async function Content({ params }: { params: Promise<{ tool: string }> }) {
         ))}
       </nav>
       <PageHeader eyebrow="Explore the books" title={t.title}>{t.blurb}</PageHeader>
+      <ExploreGuide tool={tool} />
       {TOOLS[tool]()}
       <LawBox tool={tool} />
       <PractiseLinks href={`/explore/${tool}`} />

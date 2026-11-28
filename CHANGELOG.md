@@ -8,11 +8,14 @@ Dates are when the change was made. Rates and rules are for the 2026–27 NZ inc
 ## Proposed / not yet done
 
 - **2027–28 rates (on or after 1 April 2027)**. Follow README "Updating the rates" (`npm run rates` lists what to check). In short: when IRD, ACC and MBIE announce them, fill in `PAYROLL_2027_28` in `lib/nz/rates.ts` and clear its `toConfirm` list (tax brackets, IETC, student loan threshold and ESCT bands are carried forward for now); update `MINIMUM_WAGE`; then on 1 April 2027 point `CURRENT_PAYROLL` at 2027–28. Year 1's books keep the 2026–27 rates. Also update `ACC_CAFE_LEVIES` (the café work levy and working safer levy) from ACC's 2027/28 Levy Guidebook and clear its `toConfirm`.
-- **Beginner guides for the older Explore tools** (journal, ledger, trial balance, statements, ratios, loan schedule, cash flow forecast, budget vs actual, break-even): add the same "New here?" `ToolGuide`.
 
 ---
 
 ## 2026-11-28
+
+### Beginner guides on every Explore tool
+- The nine older Explore tools (journal, ledger, trial balance, statements, ratios, loan, cash flow forecast, budget vs actual, break-even) now open with the same "New here? How to use this" guide. Each explains what the tool shows, how to use its controls, and how to read its table: for example, a minus sign in the ledger means a credit balance, and a matching trial balance doesn't prove every entry is right. Each guide also lists the words you'll meet, linked to the glossary.
+- The guides live in `components/explore/guides.tsx`, and the Explore page shows them above the tool. Tools that carry their own guide are left alone.
 
 ### Beginner guides on the new tools
 - New "New here? How to use this" guide (`components/learn/ToolGuide.tsx`) at the top of the pay yourself, which structure and provisional tax tools and the GST return exercise. It has four parts: what the tool shows, how to use it step by step, how to read the results, and the words you'll meet. Each word opens its glossary entry. It's open by default and folds away.
