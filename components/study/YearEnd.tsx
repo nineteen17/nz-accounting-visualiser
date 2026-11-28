@@ -195,6 +195,7 @@ function Results({ ye, answers, mine, onAgain, heading }: { ye: YearEnd; answers
         <button onClick={onAgain} className="rounded-xl bg-ink px-5 py-3 font-bold text-white hover:bg-ink/85">Do it again</button>
         <Link href="/cycle/adjustments" className="rounded-xl bg-stone-100 px-5 py-3 font-semibold hover:bg-stone-200">Read about adjustments</Link>
         <Link href="/study?drill=adjustment-entry" className="rounded-xl bg-stone-100 px-5 py-3 font-semibold hover:bg-stone-200">Drill single adjustments</Link>
+        <Link href="/study/ir4" className="rounded-xl bg-kowhai-100 px-5 py-3 font-semibold hover:bg-kowhai-200">Next: file the tax return on this profit</Link>
       </div>
     </div>
   );

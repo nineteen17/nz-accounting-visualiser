@@ -1,6 +1,6 @@
 # Plan: "Do the company tax return yourself" (IR4)
 
-Status: **planned** 2026-11-28. Not built yet.
+Status: **built** 2026-11-28 (`/study/ir4`). Planned the same day.
 
 ## The idea
 

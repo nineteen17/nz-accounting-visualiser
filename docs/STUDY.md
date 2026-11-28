@@ -245,6 +245,7 @@ Shown on matching flashcards, and practised as cards of their own (`a:` cards, o
 - [x] **E4** Year 2 entries: reversing last year's accruals, the POS sale and its depreciation, the dividend and its RWT, annual leave, provisional tax.
 - [x] **N9** Balance a T-account.
 - [x] **N10** Cash-basis vs accrual-basis profit for a month.
+- [x] **Y4** Do the company tax return yourself (`/study/ir4`, form in `lib/engine/ir4.ts`, logic in `lib/study/ir4.ts`, returns in `data/study/ir4.ts`): sort the year's items into tax adjustments, work out taxable income, fill in the IR4 and the annual imputation return (each box marked against your own earlier boxes), and the due dates. Both years. Best result per return saved (`ir4-v1`). Plan: `docs/IR4.md`.
 - [x] **Y3** Do a pay run yourself (`/study/pay-run`, logic in `lib/study/payRun.ts`, runs in `data/study/payRun.ts`): the payslips line by line (PAYE as IRD's steps), the entry, payday filing. Best result per pay run saved as `pay-run-v1`. The payroll engine now follows IRD's payroll specification.
 - [x] **B6** Provisional tax: methods & interest drill, with the provisional tax planner (`data/study/provisionalTax.ts`, rules from `lib/nz/provisionalTax.ts`). 47 drills.
 - [x] **Y2** Do the GST return yourself (`/study/gst-return`, logic in `lib/study/gstReturn.ts`, periods in `data/study/gstReturn.ts`): sort a real period's transactions, fill in the GST101A from your own sorting, and compare with Kōwhai's return. Best result per period saved as `gst-return-v1`.
@@ -280,6 +281,7 @@ Shown on matching flashcards, and practised as cards of their own (`a:` cards, o
 - None open. Decided 2026-11-28: drills don't count towards Known; they have their own "mastered" (X3). Typed recall added as the "Type it" option for meaning → term cards (X4).
 
 ## 6. Log
+- **2026-11-28**: Do the company tax return yourself (Y4), from IRD's IR4 2026 form and guide. 47 drills, 267 tests.
 - **2026-11-28**: Beginner guides (`ToolGuide`) added to all three "do it yourself" exercises: the GST return, the pay run and the year-end.
 - **2026-11-28**: Do a pay run yourself (Y3), and the payroll engine corrected to IRD's payroll specification. 47 drills, 254 tests.
 - **2026-11-28**: Provisional tax planner (Explore) and its drill (B6); Do the GST return yourself (Y2). 47 drills, 232 tests.

@@ -1,3 +1,4 @@
+import { existsSync, readdirSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { GLOSSARY, GLOSSARY_MAP } from "@/data/glossary";
 import { FOUNDATIONS, NZ_TOPICS } from "@/data/topics";
@@ -10,6 +11,8 @@ const ROUTES = new Set([
   ...NZ_TOPICS.map((t) => `/nz/${t.slug}`),
   ...CYCLE_STEPS.map((s) => `/cycle/${s.slug}`),
   ...EXPLORE_TOOLS.map((t) => `/explore/${t.slug}`),
+  // the "do it yourself" exercises: every folder under app/study with a page
+  ...readdirSync("app/study", { withFileTypes: true }).filter((d) => d.isDirectory() && existsSync(`app/study/${d.name}/page.tsx`)).map((d) => `/study/${d.name}`),
 ]);
 
 describe("glossary", () => {

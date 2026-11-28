@@ -162,6 +162,8 @@ export const PROVISIONAL_TAX = {
   ratioMaxRit: 150_000,
   /** AIM is for turnover under $5m (IR289, April 2025) */
   aimTurnoverLimit: 5_000_000,
+  /** a new business's first year: interest from the instalment dates only if RIT is this or more (IR4 guide 2026, Question 32) */
+  initialLiabilityRit: 60_000,
   source: "https://www.ird.govt.nz/income-tax/provisional-tax",
 };
 

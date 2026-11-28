@@ -31,6 +31,11 @@ export function PractiseLinks({ href, part }: { href: string; part?: 1 | 2 | 3 |
             💸 Do a pay run yourself
           </Link>
         )}
+        {["/nz/income-tax", "/nz/provisional-tax", "/nz/shareholders"].includes(href) && (
+          <Link href="/study/ir4" className="rounded-xl bg-white px-4 py-2 text-sm font-semibold ring-1 ring-stone-300 hover:ring-kowhai-500">
+            🏛️ Do the company tax return (IR4) yourself
+          </Link>
+        )}
         {href === "/nz/gst-return" && (
           <Link href="/study/gst-return" className="rounded-xl bg-white px-4 py-2 text-sm font-semibold ring-1 ring-stone-300 hover:ring-kowhai-500">
             🧾 Do the GST return yourself

@@ -7,13 +7,25 @@ Dates are when the change was made. Rates and rules are for the 2026–27 NZ inc
 
 ## Proposed / not yet done
 
-- **Do the company tax return yourself (IR4)**: planned in `docs/IR4.md`. Profit to taxable income, then the IR4's boxes and the annual imputation return for both years, marked against the filed returns. When it's built, re-check the box wording against the IR4 2027 once IRD publishes it (around March 2027).
+- **IR4 2027 form (around March 2027)**: when IRD publishes it, re-check `ir4Boxes()` in `lib/engine/ir4.ts` against it (box numbers and wording), and update `IR4_SOURCE` to the new form and guide.
 
 - **2027–28 rates (on or after 1 April 2027)**. Follow README "Updating the rates" (`npm run rates` lists what to check). In short: when IRD, ACC and MBIE announce them, fill in `PAYROLL_2027_28` in `lib/nz/rates.ts` and clear its `toConfirm` list (tax brackets, IETC, student loan threshold and ESCT bands are carried forward for now); update `MINIMUM_WAGE`; then on 1 April 2027 point `CURRENT_PAYROLL` at 2027–28. Year 1's books keep the 2026–27 rates. Also update `ACC_CAFE_LEVIES` (the café work levy and working safer levy) from ACC's 2027/28 Levy Guidebook and clear its `toConfirm`.
 
 ---
 
 ## 2026-11-28
+
+### Do the company tax return yourself (IR4)
+- New exercise at `/study/ir4`: Kōwhai's real IR4 for both years. It's built from IRD's IR4 2026 form and its guide, with the years moved on, because the 2027 form isn't out yet.
+  1. **Profit to taxable income.** Sort the year's items: add back, deduct, or no adjustment. The real adjustments are things like entertainment, holiday pay and the depreciation swap. The distractors are items from the same year that need none, such as shareholder salaries, the bad debt, loan principal, the dividend and the income tax expense. Then work out taxable income.
+  2. **Fill in the IR4.** Every box Kōwhai uses, with IRD's wording and a plain-English line: the interest and RWT (13A and 13B), net business profit (20B), taxable income, the tax calculation down to terminal tax (30A to 30L), next year's provisional tax (33B), the shareholders' salaries and current accounts (40B and 40E), and the annual imputation return (41 to 44). The questions that don't apply to Kōwhai are shown already answered. Each box is marked against your own earlier boxes.
+  3. **Dates.** When the return is due (with a tax agent), when terminal tax is due, and what the residual income tax means for provisional tax. Then your return beside Kōwhai's.
+- It opens with the "New here?" guide, and has "common mistake" callouts (accounting profit in 20B, the interest counted twice, the May instalment in 30K, which tax year the imputation return covers) and a US note on Form 1120.
+- Linked from the drills tab, the income tax, provisional tax and shareholders pages, and the end of the year-end exercise ("Next: file the tax return on this profit").
+- New glossary terms: **tax adjustment**, **annual imputation return** and **tax agent**.
+- **Corrected** the glossary's "IR4" entry. It said the return includes the IR10; in fact the IR10 *or* the financial statements go with it. Its example had Kōwhai filing in July 2027; with a tax agent its 2027 return is due by 31 March 2028.
+- Law: Tax Administration Act s 33 (returns of income), and Income Tax Act ss OB 4, OB 8 and OB 30 (what goes in and out of the imputation credit account). All checked on legislation.govt.nz.
+- The glossary test now counts the study exercises as real pages.
 
 ### Beginner guides on the pay run and year-end exercises
 - "Do a pay run yourself" and the year-end exercise now open with the "New here? How to use this" guide, like every Explore tool and the GST return exercise.
