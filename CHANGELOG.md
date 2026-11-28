@@ -15,6 +15,10 @@ Dates are when the change was made. Rates and rules are for the 2026–27 NZ inc
 
 ## 2026-11-29
 
+### Memory aids: one group at a time
+
+The memory aids page listed all 18 aids on one long page. It now has a tab for each group (debits and credits, the statements, the process, NZ numbers and dates), and only the chosen group is rendered (`components/learn/MemoryAidGroups.tsx`). Each group has its own address (`?group=nz`), so links can open the right one: the "When is it due?" drill's link now opens the NZ dates group. Test added (322 in all).
+
 ### GST on mixed use
 
 A new Explore tool, `/explore/gst-mixed-use`: how much GST can be claimed on something used partly for the business. Plan: `docs/GST-MIXED-USE.md`.

@@ -402,3 +402,14 @@ describe("drills mastered", () => {
     expect(isMastered(d, "gst")).toBe(false);
   });
 });
+
+describe("memory aids page", () => {
+  it("every group has aids, and the drill's group link names a real group", async () => {
+    const { AID_GROUPS, MEMORY_AIDS } = await import("@/data/memoryAids");
+    for (const g of Object.keys(AID_GROUPS)) expect(MEMORY_AIDS.some((a) => a.group === g), g).toBe(true);
+    for (const d of DRILLS) {
+      const m = d.learn.href.match(/^\/glossary\/memory-aids\?group=(\w+)$/);
+      if (m) expect(Object.keys(AID_GROUPS)).toContain(m[1]);
+    }
+  });
+});

@@ -132,7 +132,7 @@ const BASIC_DRILLS: Drill[] = [
   {
     key: "deadlines", group: "nz", title: "When is it due?", icon: "📅", part: 3,
     blurb: "The NZ tax calendar: GST, PAYE, payday filing, KiwiSaver, provisional and terminal tax, the IR4, the annual return.",
-    learn: { href: "/glossary/memory-aids", label: "Memory aids: NZ dates" },
+    learn: { href: "/glossary/memory-aids?group=nz", label: "Memory aids: NZ dates" },
     make(rng) {
       const kind = pick(rng, ["gst", "gst", "gst6", "paye", "payday", "kiwisaver", "provisional", "terminal", "ir4", "annual-return", "records"] as const);
       const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
