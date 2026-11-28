@@ -8,10 +8,20 @@ Dates are when the change was made. Rates and rules are for the 2026–27 NZ inc
 ## Proposed / not yet done
 
 - **2027–28 rates (on or after 1 April 2027)**. Follow README "Updating the rates" (`npm run rates` lists what to check). In short: when IRD, ACC and MBIE announce them, fill in `PAYROLL_2027_28` in `lib/nz/rates.ts` and clear its `toConfirm` list (tax brackets, IETC, student loan threshold and ESCT bands are carried forward for now); update `MINIMUM_WAGE`; then on 1 April 2027 point `CURRENT_PAYROLL` at 2027–28. Year 1's books keep the 2026–27 rates. Also update `ACC_CAFE_LEVIES` (the café work levy and working safer levy) from ACC's 2027/28 Levy Guidebook and clear its `toConfirm`.
+- **Do a pay run yourself**: planned in `docs/PAY-RUN.md`. Six real pay runs: payslips (with IRD's PAYE steps guided), the journal entry, payday filing and paying IRD. It needs a payroll engine fix first: PAYE is 1–3 cents out on 95 of 102 payslips, and Leo's ESCT rate changes from pay to pay. Three decisions are needed and two rounding rules are still to confirm.
+- **Beginner annotation pass** on the recent tools (pay yourself, which structure, provisional tax, the GST return exercise): check every term has a `<Term>` or a plain-English line, and every figure says what it is and where it comes from.
 
 ---
 
 ## 2026-11-28
+
+### Plan for "Do a pay run yourself"
+- `docs/PAY-RUN.md`, checked against IRD's Payroll Calculations & Business Rules Specification for 2026–27 (v1.0, 24 March 2026), the rules payroll software must follow.
+- It found two problems in the app's payroll engine:
+  - PAYE should be truncated twice (weekly, then per pay) from annual income with the cents dropped. The engine rounds instead, so 95 of Kōwhai's 102 payslips are 1–3 cents out.
+  - The ESCT rate should be set once a year, not worked out from each pay. Leo's rate switches between 10.5% and 17.5% from one pay to the next.
+- Fixing these changes no profit or tax. Not started.
+- New standing rule: every tool and exercise must be annotated for a beginner (terms explained, figures labelled, workings shown).
 
 ### Do the GST return yourself
 - New exercise `/study/gst-return`, built on all twelve of Kōwhai's real two-monthly GST periods (years 1 and 2). The simpler periods come first, starting with June–July 2026. The refund period (April–May 2026) and the two periods with adjustments (February–March of each year) are marked harder.
