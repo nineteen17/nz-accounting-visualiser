@@ -8,10 +8,21 @@ Dates are when the change was made. Rates and rules are for the 2026–27 NZ inc
 ## Proposed / not yet done
 
 - **2027–28 rates (on or after 1 April 2027)**. Follow README "Updating the rates" (`npm run rates` lists what to check). In short: when IRD, ACC and MBIE announce them, fill in `PAYROLL_2027_28` in `lib/nz/rates.ts` and clear its `toConfirm` list (tax brackets, IETC, student loan threshold and ESCT bands are carried forward for now); update `MINIMUM_WAGE`; then on 1 April 2027 point `CURRENT_PAYROLL` at 2027–28. Year 1's books keep the 2026–27 rates. Also update `ACC_CAFE_LEVIES` (the café work levy and working safer levy) from ACC's 2027/28 Levy Guidebook and clear its `toConfirm`.
+- **Provisional tax planner**: planned in `docs/PROVISIONAL-TAX.md`. It compares the standard, estimation and AIM methods on Kōwhai's year 2, with interest, the $60,000 safe harbour, and why the GST ratio isn't available yet. Three decisions are needed and three facts are still to confirm.
+- **Do the GST return yourself**: planned in `docs/GST-RETURN.md`. Learners sort a period's transactions and fill in the GST101A, marked against Kōwhai's real return. Three decisions are needed and one fact (the current box wording) is still to confirm.
 
 ---
 
 ## 2026-11-28
+
+### Plans for the provisional tax planner and "Do the GST return yourself"
+- `docs/PROVISIONAL-TAX.md`, checked against:
+  - Income Tax Act ss RC 6, RC 7, RC 7B, RC 11 and RC 16;
+  - Tax Administration Act ss 120KE, 120KBB and 139B;
+  - IRD's interest rates page (8.97% and 2.25%, unchanged since 16 January 2026).
+  It found that Kōwhai can't use the GST ratio method in year 2, because the business began operating in year 1 (s RC 16(2)(b)).
+- `docs/GST-RETURN.md`: an exercise built on the twelve real GST returns, checked against GST Act s 6(3)(b) (wages aren't a taxable activity).
+- Neither is started.
 
 ### Which structure? sole trader, partnership, company or LTC
 - New Explore tool `/explore/structures`. Kōwhai's year 2 profit is run through a partnership, the company it really is, a look-through company and (optionally) a sole trader, if Aroha owned it alone. For each it shows the tax now, the ACC levies, what each owner keeps, profit kept in the company and the tax still to come on it, and any loss carried forward.
