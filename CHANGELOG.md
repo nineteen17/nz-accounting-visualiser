@@ -7,7 +7,7 @@ Dates are when the change was made. Rates and rules are for the 2026–27 NZ inc
 
 ## Proposed / not yet done
 
-- **ACC levies and the Companies Office fee in the books**: Kōwhai's books have neither, though a real café pays both (the year-end checklist flags them). Adding them changes every profit and tax figure from year 1 on, so it's a careful change of its own.
+- **ACC levies and the Companies Office fee in the books**: planned in `docs/ACC-LEVIES-IN-THE-BOOKS.md`. The levies go in the way ACC really invoices a new business: accrued at year end, a July invoice with final and provisional parts, and the shareholder-employees' invoice after the IR4. Tax follows ITA s EF 3 (deductible when due and payable), so year 1's tax figures don't change. Aroha's and Ben's earners' levy goes to their current accounts. The annual return fee starts in April 2027.
 
 - **IR4 2027 form (around March 2027)**: when IRD publishes it, re-check `ir4Boxes()` in `lib/engine/ir4.ts` against it (box numbers and wording), and update `IR4_SOURCE` to the new form and guide.
 
