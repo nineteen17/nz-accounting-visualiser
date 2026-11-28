@@ -1,6 +1,6 @@
 # Plan: checking the site against NZ law
 
-Status: **Steps 0 and 1 done** (2026-11-28). The Acts are read directly from legislation.govt.nz; jurisd failed and was removed. Next: Step 2.
+Status: **Steps 0, 1 and 2 done** (2026-11-28). The Acts are read directly from legislation.govt.nz; jurisd failed and was removed. Next: Step 3 (the April routine), then the pay yourself tool.
 
 **How to read an Act (no key, no server):** fetch any section's page on legislation.govt.nz with a plain `curl -sL`. It redirects to the whole Act (the Income Tax Act 2007 is about 30 MB), with its "Version as at" date. Strip the HTML and search for the section heading, e.g. `EB 23 Valuing closing stock under $10,000`. The web-fetch tool gets "403 Forbidden" from the same site, and NZLII blocks automated access, so use curl.
 
@@ -69,7 +69,25 @@ Go through every rule the site states and check it against its section. Examples
 
 Add a test that every NZ topic has at least one law reference.
 
-To check: what limits a shareholder-employee's salary. The sections are now read and listed on the Shareholders page (GB 25, GB 27, Companies Act ss 4, 52, 135, 136), so Step 2 is to check the page's own wording against them and say which apply to Kōwhai.
+### Result (2026-11-28): done
+
+Every rule stated on the 14 NZ topic pages was checked against its section (and the schedules of the Income Tax Act for rates). `lib/nz/law.ts` now lists 85 sections.
+
+**Matched the Act** (no change needed): GST 15%, $60,000 registration (past and next 12 months), payments basis up to $2,000,000, monthly filing above $24,000,000, return due dates, time of supply; tax brackets, company 28%, trustee 39%, IETC ($520 from $24,000, abating 13c over $66,000), ESCT bands, non-declaration rate 45%; provisional tax over $5,000 RIT, instalments 28 Aug / 15 Jan / 7 May, terminal tax February (April with extension); 63-day rule for accrued holiday pay; entertainment 50%; low-value assets $1,000 or less; pooling $5,000 or less; Investment Boost 20%; RWT on interest (28% companies, 45% no IRD number, 10.5–39% individuals) and dividends (33% less credits); maximum imputation 28/72; FBT minimums ($300 a quarter, $22,500 over 4 quarters); PAYE payment by the 20th under $500,000; payday filing within 2 working days; KiwiSaver 3.5%, employer contributions from age 16; annual leave 4 weeks, holiday pay rate, 8% pay-as-you-go conditions, time and a half, alternative holidays, sick leave 10 days after 6 months, carry-over 10 to a maximum of 20, bereavement 3 / 1 days; records 6 years (wages, holidays) and 7 years (tax, GST); Matariki 10 July 2026 and 25 June 2027 (Matariki Act schedule 1).
+
+**Fixed:**
+- **GST six-monthly filing**: "under $500,000" → **$500,000 or less, on application** (GST Act s 15). Topic page, glossary, drill.
+- **Schedular payments**: "usually 10%–20%" listed next to directors' fees → rates by kind of work, e.g. **20% commercial cleaning, 33% directors' fees** (Income Tax Act schedule 4).
+- **Financial reporting**: companies with 10 or more shareholders must prepare general purpose reports **unless they opt out** (the page said "who opt in"); smaller companies must if shareholders with 5% of votes ask (Companies Act s 196).
+- **Overdrawn current account**: the law doesn't *require* interest; if the company charges less than the prescribed rate, the shortfall is taxed as a fringe benefit (s CX 10) or a dividend. Topic page, glossary, April lesson.
+- **Shareholder salary "No PAYE"**: now says why (an election available when not paid regular wages, s RD 3B), and that it counts for the year if paid by the extended return date (s EA 4(3)).
+- **KiwiSaver enrolment**: "aged 18–65, opt out between weeks 2 and 8" → 18 or over and under the NZ Super age; opt out from the 13th to the 55th day (KiwiSaver Act ss 10, 16).
+
+**Added:** a "What limits what the owners take" section on the Shareholders page: s GB 25 (Aroha is full-time so exempt; Ben, weekends and books, isn't, so his salary must be reasonable for that work), the solvency test and certificate (Companies Act ss 4, 52), directors' duties (ss 135, 136), and why s GB 27 doesn't apply.
+
+**Not confirmed in the Act:** "fines are not deductible" (Income tax page). Section DB 1 denies income tax and tax penalties; a general rule for court fines wasn't found in the Act's text, so it may rest on case law. Left as is, marked here.
+
+Previously listed to check: The sections are now read and listed on the Shareholders page (GB 25, GB 27, Companies Act ss 4, 52, 135, 136), so Step 2 is to check the page's own wording against them and say which apply to Kōwhai.
 
 ## Step 3: The April routine
 

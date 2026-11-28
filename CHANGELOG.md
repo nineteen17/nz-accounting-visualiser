@@ -8,11 +8,17 @@ Dates are when the change was made. Rates and rules are for the 2026–27 NZ inc
 ## Proposed / not yet done
 
 - **2027–28 rates (on or after 1 April 2027)**. Follow README "Updating the rates" (`npm run rates` lists what to check). In short: when IRD, ACC and MBIE announce them, fill in `PAYROLL_2027_28` in `lib/nz/rates.ts` and clear its `toConfirm` list (tax brackets, IETC, student loan threshold and ESCT bands are carried forward for now); update `MINIMUM_WAGE`; then on 1 April 2027 point `CURRENT_PAYROLL` at 2027–28. Year 1's books keep the 2026–27 rates.
-- **Check the site against NZ law**: Step 2 of `docs/LAW-LOOKUP.md` (check every rule the site states against the sections now in `lib/nz/law.ts`, starting with the Shareholders page), then Step 3 (the April routine) and the pay yourself tool.
+- **NZ law, Step 3**: add the April routine to README "Updating the rates" (download the Acts again, compare `lib/nz/law.ts` and each Act's version date). Then the **pay yourself** tool (`docs/LAW-LOOKUP.md`, end). Unconfirmed: whether court fines are non-deductible by statute or case law.
 
 ---
 
 ## 2026-11-28
+
+### Every NZ rule checked against the Acts (law plan Step 2)
+- All 14 NZ topic pages checked against their sections and the Income Tax Act's rate schedules. Most matched (rates, thresholds, due dates, leave, records); full list in `docs/LAW-LOOKUP.md`.
+- **Corrected:** GST six-monthly filing is for turnover of **$500,000 or less**, on application (not "under"); schedular payments are taxed at the rate for each kind of work (**20% cleaning, 33% directors' fees**, not "usually 10%–20%"); companies with 10+ shareholders must prepare general purpose reports **unless they opt out** (not "who opt in"); an overdrawn current account doesn't legally *require* interest, but charging less than the prescribed rate is taxed as a fringe benefit or dividend; KiwiSaver opt-out is the **13th to 55th day** after starting.
+- **Added** to the Shareholders page: what limits what the owners take (excessive salary rule s GB 25, applied to Aroha and Ben; dividend solvency test and certificate; directors' duties; why the contractor rule doesn't apply), and why a shareholder salary has no PAYE and when it must be paid (ss RD 3B, EA 4(3)).
+- `lib/nz/law.ts` now lists 85 sections (new: time of supply, KiwiSaver enrolment and opt-out, sick and bereavement leave details, the 63-day rule, shareholder PAYE, employee loans, pooling, FBT minimums).
 
 ### "The law" on every NZ topic page
 - Each of the 14 NZ topic pages ends with a collapsed **⚖️ The law** box: the sections of NZ law behind the page (71 in all, from 9 Acts), each with its heading, a plain-English summary and a link straight to the section on legislation.govt.nz. Every summary was written from the section's text, read on 28 November 2026; the box shows each Act's "version as at" date.

@@ -156,7 +156,7 @@ const BASIC_DRILLS: Drill[] = [
         return mc(rng, sep ? "28 October" : "7 May", sep ? ["28 September", "20 October", "7 November"] : ["28 April", "20 April", "31 May"],
           `A small business files **six-monthly** GST, with a period ending on **${sep ? "30 September" : "31 March"}**. When is the return due?`,
           sep
-            ? "**28 October**: the usual rule, the 28th of the month after the period ends. Six-monthly filing is allowed when turnover is under $500,000."
+            ? "**28 October**: the usual rule, the 28th of the month after the period ends. Six-monthly filing is allowed, on application, when turnover is $500,000 or less."
             : "**7 May**: periods ending in March get extra time, the same as two-monthly filers.");
       }
       if (kind === "kiwisaver") {

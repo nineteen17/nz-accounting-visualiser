@@ -611,7 +611,7 @@ export const APRIL: Transaction[] = [
       { account: "100", credit: 5_500, why: "Paid from the bank." },
     ],
     notes: [
-      "If a current account stays overdrawn (the shareholder owes the company) the company must charge interest at IRD's prescribed rate, or FBT/deemed dividend issues arise.",
+      "If a current account stays overdrawn (the shareholder owes the company) the company should charge interest at IRD's prescribed rate. If it charges less, the shortfall is taxed as a fringe benefit (for a shareholder-employee) or as a dividend.",
     ],
     deepDives: [{ href: "/nz/shareholders", label: "Shareholder salaries & current accounts" }],
   },

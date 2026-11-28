@@ -150,7 +150,7 @@ export function KiwiSaverTopic() {
   return (
     <div className="grid gap-6 lg:grid-cols-2">
       <div className="prose-learn text-[16px]">
-        <p><Term k="kiwisaver">KiwiSaver</Term> is NZ&apos;s workplace retirement savings scheme. New employees aged 18–65 are automatically enrolled and can opt out between weeks 2 and 8.</p>
+        <p><Term k="kiwisaver">KiwiSaver</Term> is NZ&apos;s workplace retirement savings scheme. New employees aged 18 or over (and under 65, the NZ Super age) are automatically enrolled, and can opt out between the 13th and 55th day after starting: roughly weeks 2 to 8 (KiwiSaver Act ss 10 and 16).</p>
         <h3>Contribution rates (from 1 April 2026)</h3>
         <ul>
           <li><strong>Employee</strong>: chooses {KIWISAVER.otherEmployeeRates.map((r) => pct(r)).join(", ")} of gross pay. The default rose from {pct(KIWISAVER.previousDefault)} to <strong>{pct(KIWISAVER.employeeDefault)}</strong> on 1 April 2026 and will be 4% from {KIWISAVER.futureRate.from}. Employees can apply for a temporary rate reduction to stay at {pct(KIWISAVER.previousDefault)}.</li>

@@ -102,7 +102,7 @@ export function GstTopic() {
           <ul>
             <li><strong>Monthly</strong>: required if turnover is over $24m; optional for anyone.</li>
             <li><strong>Two-monthly</strong> (Kōwhai): the default.</li>
-            <li><strong>Six-monthly</strong>: if turnover is under $500,000.</li>
+            <li><strong>Six-monthly</strong>: on application, if turnover is $500,000 or less (GST Act s 15).</li>
           </ul>
           <p>Returns and payments are due on the <strong>28th of the month after</strong> the period ends, except the period ending 31 March (due 7 May) and the period ending 30 November (due 15 January).</p>
         </div>
@@ -332,13 +332,22 @@ export function ShareholdersTopic() {
           <p>In a small NZ company, the owners are often also the workers. There are four ways money gets from the company to them, and each is taxed differently:</p>
           <ol>
             <li><strong>PAYE wages</strong>: like any employee. Less common for owners because the amount is fixed.</li>
-            <li><strong><Term k="shareholder-salary">Shareholder salary</Term></strong>: set (often at year end) once profit is known. It&apos;s deductible to the company, and the shareholder pays tax through their IR3 and personal provisional tax. No PAYE.</li>
+            <li><strong><Term k="shareholder-salary">Shareholder salary</Term></strong>: set (often at year end) once profit is known. It&apos;s deductible to the company, and the shareholder pays tax through their IR3 and personal provisional tax. No PAYE: because it isn&apos;t paid as regular wages, the shareholder can choose to be taxed on it through their own return instead (Income Tax Act s RD 3B). It still counts for the year it relates to if it&apos;s paid by the latest date that year&apos;s return could be filed with an extension (s EA 4(3)), instead of the usual 63 days for employees.</li>
             <li><strong><Term k="dividend">Dividends</Term></strong>: a share of after-tax profit, with <Term k="imputation-credit">imputation credits</Term>. Not deductible to the company.</li>
             <li><strong>Repaying a current account credit</strong>: if the company owes the shareholder (from salaries or loans), paying it back isn&apos;t taxed again.</li>
           </ol>
+          <h3>What limits what the owners take</h3>
+          <p>The owners largely decide their own pay, but the law sets limits:</p>
+          <ul>
+            <li><strong>Salary has to match the work</strong> (Income Tax Act s GB 25). If IRD considers a shareholder&apos;s or director&apos;s salary excessive, the excess is treated as a dividend, not salary. That doesn&apos;t apply to an adult NZ resident who works substantially full-time in the business and helps run it, as long as family ties didn&apos;t set the amount.
+              <br /><span className="text-stone-600">At Kōwhai: Aroha manages the café full-time, so her {money(SHAREHOLDERS[0].salary, { dp: 0 })} is covered. Ben works weekends and keeps the books, so he isn&apos;t full-time: his {money(SHAREHOLDERS[1].salary, { dp: 0 })} has to be reasonable for that work.</span></li>
+            <li><strong>Dividends need the solvency test</strong> (Companies Act ss 4 and 52). The directors may only pay one if they&apos;re satisfied, on reasonable grounds, that straight afterwards the company can pay its debts as they fall due and its assets are worth more than its liabilities. They must sign a certificate saying so.</li>
+            <li><strong>Directors can&apos;t strip the company</strong> (ss 135 and 136): no running the business in a way likely to cause serious loss to creditors, and no taking on obligations it can&apos;t meet. Taking out cash needed for the next GST, tax or loan payment risks both.</li>
+            <li><strong>Not an issue here: the contractor rule</strong> (s GB 27). It taxes a company&apos;s income as the owner&apos;s own when 80% or more comes from one client for their personal work. A café selling to the public isn&apos;t caught.</li>
+          </ul>
           <h3>The current account</h3>
           <p>During the year Aroha and Ben take <Term k="drawings">drawings</Term>. Those are debited to their <Term k="shareholder-current-account">current accounts</Term>. At year end, the shareholder salary is credited. The account then shows who owes whom.</p>
-          <Callout kind="warn" title="Overdrawn current accounts">If drawings exceed what the company owes the shareholder, the shareholder owes the company. IRD then requires interest at the <strong>prescribed rate</strong> on that balance, or the benefit becomes subject to FBT or is treated as a dividend. Accountants watch this closely.</Callout>
+          <Callout kind="warn" title="Overdrawn current accounts">If drawings exceed what the company owes the shareholder, the shareholder owes the company. The company should charge interest at IRD&apos;s <strong>prescribed rate</strong> on that balance. If it charges less, the shortfall is taxed: as a fringe benefit (FBT, s CX 10) when the shareholder is also an employee, otherwise as a dividend. Accountants watch this closely.</Callout>
         </div>
         <div className="space-y-4">
           {SHAREHOLDERS.map((s) => {
@@ -608,7 +617,7 @@ export function OtherTaxesTopic() {
         <p><Term k="rwt">RWT</Term> is deducted by banks from interest before it&apos;s paid. Companies default to {pct(RWT.companyDefault)}. Individuals choose 10.5%–39% based on their income. With no IRD number, the rate is {pct(RWT.noIrdNumber)}. RWT is a credit against the year&apos;s income tax. Kōwhai&apos;s {money(TAX.rwt)} reduced its tax bill.</p>
         <p>Companies also deduct RWT from <strong>dividends</strong> they pay (33% less imputation credits).</p>
         <h2>Schedular payments (withholding tax for contractors)</h2>
-        <p>Certain contractors (e.g. cleaners, promoters, some labour-only building and agricultural work, company directors&apos; fees) have tax withheld by the payer, usually at 10%–20%. The payer files it through payday filing, like PAYE. If Kōwhai hired a contract cleaner covered by the schedule, it would need to deduct withholding tax unless the cleaner had a certificate of exemption.</p>
+        <p>Certain contractors (e.g. cleaners, promoters, some labour-only building and agricultural work, company directors&apos; fees) have tax withheld by the payer, at the rate set for that kind of work in schedule 4 of the Income Tax Act: for example 20% for commercial cleaning and 33% for directors&apos; fees. The payer files it through payday filing, like PAYE. If Kōwhai hired a contract cleaner covered by the schedule, it would need to deduct withholding tax unless the cleaner had a certificate of exemption.</p>
       </div>
       <div className="prose-learn text-[16px]">
         <h2>Fringe benefit tax (FBT)</h2>
@@ -649,7 +658,7 @@ export function ComplianceTopic() {
           <h2>Financial reporting requirements</h2>
           <ul>
             <li><strong>Small companies like Kōwhai</strong> don&apos;t file financial statements publicly. They must prepare <strong>special-purpose financial statements</strong> meeting IRD&apos;s minimum requirements (Tax Administration (Financial Statements) Order 2014): a balance sheet and P&amp;L on accrual principles (with exceptions), with a reconciliation to taxable income.</li>
-            <li><strong>Large companies</strong> (much bigger thresholds by revenue or assets) and those with 10+ shareholders who opt in must prepare <strong>general-purpose financial reports</strong> under XRB standards (NZ IFRS), usually audited.</li>
+            <li><strong>Large companies</strong> (much bigger thresholds by revenue or assets) companies with 10 or more shareholders (unless the shareholders opt out), and smaller companies whose shareholders with at least 5% of the votes ask for it, must prepare <strong>general-purpose financial reports</strong> under XRB standards (NZ IFRS), usually audited.</li>
             <li><strong>Charities</strong> report under XRB&apos;s Tier 1–4 standards, with simpler rules for small charities.</li>
           </ul>
           <h2>Companies Office</h2>
