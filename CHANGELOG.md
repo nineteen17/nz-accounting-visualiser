@@ -7,6 +7,8 @@ Dates are when the change was made. Rates and rules are for the 2026–27 NZ inc
 
 ## Proposed / not yet done
 
+- **Deferred tax explainer**: planned in `docs/DEFERRED-TAX.md`. An Explore tool showing why Kōwhai's tax expense isn't 28% of its profit: the temporary differences (depreciation and Investment Boost, holiday pay, ACC levies) and the permanent one (entertainment), what deferred tax under NZ IAS 12 would add (a $989.40 liability at 31 March 2027), and why a company Kōwhai's size uses the taxes payable method instead. With a US note (ASC 740).
+
 - **IR4 2027 form (around March 2027)**: when IRD publishes it, re-check `ir4Boxes()` in `lib/engine/ir4.ts` against it (box numbers and wording), and update `IR4_SOURCE` to the new form and guide.
 
 - **2027–28 rates (on or after 1 April 2027)**. Follow README "Updating the rates" (`npm run rates` lists what to check). In short: when IRD, ACC and MBIE announce them, fill in `PAYROLL_2027_28` in `lib/nz/rates.ts` and clear its `toConfirm` list (tax brackets, IETC, student loan threshold and ESCT bands are carried forward for now); update `MINIMUM_WAGE`; then on 1 April 2027 point `CURRENT_PAYROLL` at 2027–28. Year 1's books keep the 2026–27 rates. Also update `ACC_CAFE_LEVIES` (the café work levy and working safer levy) from ACC's 2027/28 Levy Guidebook and clear its `toConfirm`.
