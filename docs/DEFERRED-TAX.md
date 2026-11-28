@@ -1,6 +1,6 @@
 # Plan: deferred tax, and why Kōwhai doesn't record it
 
-Status: **planned** 2026-11-29. Not built yet.
+Status: **built** 2026-11-29, with the recommended decisions. Checked while building: Financial Reporting Act 2013 s 45 (version as at 2 November 2026) has the $66 million assets / $33 million revenue tests, and Companies Act ss 200–201 are what make a large company prepare GAAP statements. The Financial Statements Order's Schedule asks for a reconciliation to taxable income and doesn't mention deferred tax. Year 2: a net deferred tax liability of $387.70, down $601.70, so the year 2 expense under the deferred tax method is $20,296.38 (28.1%) against the books' $20,898.08 (29.0%). The US tax-basis point is from secondary sources (the AICPA's FRF for SMEs allows the taxes payable method).
 
 ## Why
 

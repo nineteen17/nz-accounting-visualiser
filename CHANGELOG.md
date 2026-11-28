@@ -7,8 +7,6 @@ Dates are when the change was made. Rates and rules are for the 2026–27 NZ inc
 
 ## Proposed / not yet done
 
-- **Deferred tax explainer**: planned in `docs/DEFERRED-TAX.md`. An Explore tool showing why Kōwhai's tax expense isn't 28% of its profit: the temporary differences (depreciation and Investment Boost, holiday pay, ACC levies) and the permanent one (entertainment), what deferred tax under NZ IAS 12 would add (a $989.40 liability at 31 March 2027), and why a company Kōwhai's size uses the taxes payable method instead. With a US note (ASC 740).
-
 - **IR4 2027 form (around March 2027)**: when IRD publishes it, re-check `ir4Boxes()` in `lib/engine/ir4.ts` against it (box numbers and wording), and update `IR4_SOURCE` to the new form and guide.
 
 - **2027–28 rates (on or after 1 April 2027)**. Follow README "Updating the rates" (`npm run rates` lists what to check). In short: when IRD, ACC and MBIE announce them, fill in `PAYROLL_2027_28` in `lib/nz/rates.ts` and clear its `toConfirm` list (tax brackets, IETC, student loan threshold and ESCT bands are carried forward for now); update `MINIMUM_WAGE`; then on 1 April 2027 point `CURRENT_PAYROLL` at 2027–28. Year 1's books keep the 2026–27 rates. Also update `ACC_CAFE_LEVIES` (the café work levy and working safer levy) from ACC's 2027/28 Levy Guidebook and clear its `toConfirm`.
@@ -16,6 +14,17 @@ Dates are when the change was made. Rates and rules are for the 2026–27 NZ inc
 ---
 
 ## 2026-11-29
+
+### Tax: accounts vs return (deferred tax)
+
+A new Explore tool, `/explore/deferred-tax`, answers "why isn't Kōwhai's tax 28% of its profit?". Plan: `docs/DEFERRED-TAX.md`.
+- **The gap:** year 1's tax expense is $16,845.64, 26.6% of profit; year 2's is $20,898.08, 29.0%.
+- **Sort the differences:** each line of both years' tax reconciliations, tagged temporary (depreciation, Investment Boost, holiday pay, ACC levies, the gain on sale and depreciation recovery) or permanent (half of entertainment), with why.
+- **The balance sheet view:** each asset and accrual in the accounts against its tax base. Year 1: a net deferred tax liability of $989.40 ($2,403.52 on the assets, less $1,194.75 on holiday pay and $219.37 on ACC levies). Year 2: $387.70.
+- **Two methods side by side:** Kōwhai's taxes payable method against NZ IAS 12's deferred tax method ($17,835.04, 28.2%, in year 1), with the entry deferred tax would add. Kōwhai's books don't change.
+- **Why Kōwhai doesn't:** only "large" companies (Financial Reporting Act 2013 s 45: over $66 million of assets or $33 million of revenue) must follow NZ GAAP (Companies Act ss 200–201); the rest prepare accounts for IRD, and CA ANZ's framework defaults to the taxes payable method. US note: ASC 740 requires deferred tax under US GAAP.
+- A "Deferred tax: temporary or permanent?" drill; six glossary terms; the Financial Reporting Act added to the law references (120 sections checked); `LARGE_COMPANY` in `rates.ts`. Year 2's closing asset values are exported from the books.
+- Tests: 11 new (294 in all).
 
 ### ACC levies and the Companies Office fee in the books
 

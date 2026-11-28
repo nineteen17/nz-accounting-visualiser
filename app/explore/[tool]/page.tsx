@@ -21,6 +21,7 @@ const TOOLS: Record<string, () => React.ReactNode> = {
   "pay-yourself": () => <X.PayYourselfTool />,
   structures: () => <X.StructuresTool />,
   "provisional-tax": () => <X.ProvisionalTaxTool />,
+  "deferred-tax": () => <X.DeferredTaxTool />,
   "year-end": () => <X.YearEndTool />,
   "break-even": () => <X.BreakEvenTool />,
 };

@@ -784,4 +784,6 @@ export const YEAR2_FACTS = {
     shareholdersY1: ACC_Y1.shareholders, shareholderEarnersLevy: shareholderEarnersLevyY2, rate: accRateY2,
   },
   annualReturn: { date: ANNUAL_RETURN_DATE, incl: annualReturnIncl },
+  /** each asset still held at 31 March 2028: its book value and its tax value (for deferred tax) */
+  assets: ASSETS_Y2.map((x) => ({ id: x.a.id, name: x.a.name, book: x.closingBookValue, tax: x.closingTaxValue })),
 };

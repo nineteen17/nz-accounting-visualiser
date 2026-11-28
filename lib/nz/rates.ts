@@ -157,6 +157,16 @@ export const HOLIDAYS = {
   bereavementDays: "3 days (close family) / 1 day (others)",
 };
 
+/**
+ * "Large" for a NZ company (not an overseas company): Financial Reporting Act 2013 s 45, checked 29 November 2026.
+ * A large company must prepare GAAP financial statements (Companies Act ss 200–201); either test, in each of the 2 previous years.
+ */
+export const LARGE_COMPANY = {
+  totalAssets: 66_000_000,
+  totalRevenue: 33_000_000,
+  source: "https://www.legislation.govt.nz/act/public/2013/101/en/latest/#DLM5206501",
+};
+
 /** Companies Office annual return fee, excluding GST: $21 Companies Office fee + FMA, XRB and IP levies (fees from 1 July 2022, checked 28 November 2026) */
 export const COMPANIES_OFFICE = {
   annualReturnFee: 49.74,

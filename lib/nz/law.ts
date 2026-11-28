@@ -25,6 +25,7 @@ export const ACTS = {
   acc: { name: "Accident Compensation Act 2001", year: 2001, no: 49, versionAsAt: "10 July 2026" },
   companies: { name: "Companies Act 1993", year: 1993, no: 105, versionAsAt: "1 July 2025" },
   partnership: { name: "Partnership Law Act 2019", year: 2019, no: 53, versionAsAt: "2 November 2026" },
+  frep: { name: "Financial Reporting Act 2013", year: 2013, no: 101, versionAsAt: "2 November 2026" },
   // secondary legislation (an Order in Council): numbered in clauses, and never amended, so its only version is "as made"
   fso: { name: "Tax Administration (Financial Statements) Order 2014", year: 2014, no: 69, versionAsAt: "as made", kind: "regulation" },
 } as const;
@@ -275,6 +276,18 @@ export const LAW: Record<string, LawRef[]> = {
 
 /** the law behind an Explore tool, keyed by the tool's slug (shown in the same "The law" box) */
 export const TOOL_LAW: Record<string, LawRef[]> = {
+  "deferred-tax": [
+    { act: "frep", section: "45", heading: "Meaning of large", anchor: "DLM5206501",
+      says: "A NZ company is large if, in each of the 2 previous years, its assets (with its subsidiaries') were over $66 million or its revenue over $33 million." },
+    { act: "companies", section: "200", heading: "Application of preparation provisions", anchor: "DLM320893",
+      says: "GAAP financial statements are needed only from large companies, public entities, companies with 10 or more shareholders that haven't opted out, and companies that opt in." },
+    { act: "companies", section: "201", heading: "Financial statements must be prepared", anchor: "DLM320894",
+      says: "Those companies must have GAAP financial statements completed within 5 months of balance date, signed by the directors. GAAP includes deferred tax (NZ IAS 12)." },
+    { act: "taa", section: "21B", heading: "Preparing financial statements", anchor: "DLM5966518",
+      says: "Every other company prepares financial statements to IRD's minimum requirements instead: Kōwhai's case." },
+    { act: "fso", section: "Schedule", heading: "Matters that financial statements must show", anchor: "DLM5975819",
+      says: "Including a reconciliation from the accounts to taxable income. Deferred tax isn't required." },
+  ],
   "year-end": [
     { act: "ita", section: "DB 31", heading: "Bad debts", anchor: "DLM1513650",
       says: "A bad debt is deductible only if it's written off as bad in the income year: so before balance date." },
