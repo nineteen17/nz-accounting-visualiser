@@ -35,7 +35,7 @@ describe("the IR4 returns", () => {
       near(ex.ret.shareholders.reduce((s, x) => s + x.salary, 0), b["605"]);
     }
     near(Y1.ret.boxes["30L"], 13_742.08);
-    near(Y2.ret.boxes["30L"], 3_531.7);
+    near(Y2.ret.boxes["30L"], 3_318.9);
   });
 
   it("year 1's Box 33B is year 2's standard provisional tax, cents dropped", () => {

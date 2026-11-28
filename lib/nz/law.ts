@@ -9,7 +9,7 @@
 
 import { KIWISAVER } from "./rates";
 
-export const LAW_CHECKED = "28 November 2026";
+export const LAW_CHECKED = "29 November 2026";
 
 /** rates that change by law each year come from rates.ts, so an April update needs only that file */
 const pc = (x: number) => `${+(x * 100).toFixed(2)}%`;
@@ -162,6 +162,10 @@ export const LAW: Record<string, LawRef[]> = {
       says: "Employers pay levies to fund ACC's Work Account, due at least 30 days after ACC's invoice." },
     { act: "acc", section: "219", heading: "Earners to pay levies", anchor: "DLM102835",
       says: "Earners pay a levy to fund ACC's Earners' Account, at the rate set by regulations each year." },
+    { act: "acc", section: "15", heading: "Earnings as a shareholder-employee", anchor: "DLM100645",
+      says: "A shareholder-employee's earnings include salary paid without PAYE (from the company's tax return), so the work levy and earners' levy apply to it." },
+    { act: "ita", section: "EF 3", heading: "Accident compensation levies and premiums", anchor: "DLM1514780",
+      says: "An employer's deduction for an ACC levy belongs to the income year the levy becomes due and payable, not the year it's accrued." },
   ],
   "income-tax": [
     { act: "ita", section: "BC 5", heading: "Taxable income", anchor: "DLM1512344",

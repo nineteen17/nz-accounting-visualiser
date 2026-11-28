@@ -105,7 +105,9 @@ export const ACC_EARNERS_LEVY = {
 /**
  * The other ACC levies on a café's liable earnings (an employer's payroll, or a self-employed person's earnings),
  * per $1, excluding GST: ACC Levy Guidebook 2026/27, classification unit 57300 "Cafes and restaurants".
- * The work levy is the same for employers and CoverPlus self-employed. 2027–28's rates are still to confirm.
+ * The work levy is the same for employers and CoverPlus self-employed.
+ * 2027/28: the work levy is set in the Accident Compensation (Work Account Levies) Regulations 2025 (SL 2025/17), schedule 3
+ * (checked 29 November 2026). The working safer levy is carried forward until ACC's 2027/28 guidebook confirms it.
  */
 export const ACC_CAFE_LEVIES = {
   levyYear: "2026/27",
@@ -114,8 +116,17 @@ export const ACC_CAFE_LEVIES = {
   work: 0.004,
   // $0.08 per $100, collected for WorkSafe
   workingSafer: 0.0008,
-  toConfirm: ["2027/28 work levy", "2027/28 working safer levy", "minimum liable earnings for full-time self-employed"],
+  toConfirm: ["2027/28 working safer levy", "ACC's inflation adjustment to provisional levies", "minimum liable earnings for full-time self-employed"],
   source: "https://www.acc.co.nz/assets/business/Levy-Guidebook-2026-2027.pdf",
+  /** the following levy year (Kōwhai's year 2) */
+  next: {
+    levyYear: "2027/28",
+    // $0.41 per $100
+    work: 0.0041,
+    // carried forward from 2026/27
+    workingSafer: 0.0008,
+    source: "https://www.legislation.govt.nz/secondary-legislation/pco-drafted/2025/17/en/latest/",
+  },
 };
 export const KIWISAVER = {
   ...CURRENT_PAYROLL.kiwiSaver,

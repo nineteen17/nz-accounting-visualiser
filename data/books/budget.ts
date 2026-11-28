@@ -9,7 +9,7 @@
 import { balances, type Balances } from "@/lib/engine/ledger";
 import { money, pct, r2 } from "@/lib/money";
 import { assetYear, assetYearOne } from "@/lib/nz/assets";
-import { COMPANY_TAX_RATE } from "@/lib/nz/rates";
+import { ACC_CAFE_LEVIES, COMPANY_TAX_RATE } from "@/lib/nz/rates";
 import { ACCOUNTS } from "../chartOfAccounts";
 import { FIXED_ASSETS } from "../business";
 import { BEFORE_CLOSING as Y1_BEFORE } from "./index";
@@ -136,6 +136,10 @@ const SPECS: Record<string, Spec> = {
     ...same("605", "Same as last year: shareholder salaries are decided at year end."),
     why: "The directors set higher shareholder salaries at year end because the café did better.",
   },
+  "606": {
+    ...same("606", "Last year's accrued ACC levies: the same payroll at about the same rate."),
+    why: `The work levy went up from ${money(ACC_CAFE_LEVIES.work * 100)} to ${money(ACC_CAFE_LEVIES.next.work * 100)} per $100 of earnings, and the shareholder salaries rose.`,
+  },
   "610": same("610", "The lease: fixed at the same rent."),
   "611": plusInflation("611"),
   "612": same("612", "Same as last year: a fixed monthly plan."),
@@ -149,7 +153,7 @@ const SPECS: Record<string, Spec> = {
     why: "Last year only had the accountant's set-up fees. This year brought the first full bill for the annual accounts and tax returns (June). A new cost the budget missed.",
   },
   "619": same("619", "Same as last year: fixed subscriptions."),
-  "620": { ...same("620"), why: "Last year's licence fee (registering the food control plan) wasn't charged again this year." },
+  "620": { ...same("620"), why: "Last year's licence fee (registering the food control plan) wasn't charged again this year. The Companies Office annual return fee (April) was new: Kōwhai's first." },
   "621": same("621", "Same as last year: fixed monthly fees."),
   "622": { budget: round(salesBudget * feeRate), variable: true, basis: `Last year's card fees were ${pct(feeRate, 2)} of café sales; the same share of budgeted sales.` },
   "623": same("623"),

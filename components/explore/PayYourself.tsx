@@ -114,7 +114,7 @@ function OwnerCard({ o }: { o: Result["owners"][number] }) {
         <div className="flex justify-between font-bold"><span>{first} keeps</span><span className="num">{money(o.keeps)}</span></div>
         <div className="text-xs text-stone-500">Salary plus the dividend paid, less what&apos;s owed to IRD.</div>
       </div>
-      {o.salary > 0 && <p className="mt-2 text-xs text-stone-500">ACC also invoices the company {money(o.acc)} next July or August: the earners&apos;, work and working safer levies on {first}&apos;s salary ({pct(accRate(RATES), 2)}). Shareholder salaries have no PAYE, so ACC bills it instead.</p>}
+      {o.salary > 0 && <p className="mt-2 text-xs text-stone-500">ACC also invoices the company {money(o.acc)} once the IR4 declaring {first}&apos;s salary is filed: the earners&apos;, work and working safer levies ({pct(accRate(RATES), 2)}). Shareholder salaries have no PAYE, so ACC bills them instead. The work and working safer levies are the company&apos;s cost; the earners&apos; levy is {first}&apos;s own, charged to their current account.</p>}
     </Card>
   );
 }

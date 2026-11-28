@@ -54,15 +54,15 @@ The questions about non-residents, share buy-backs, overseas income and so on ar
 
 | | Year 1: 2027 return | Year 2: 2028 return |
 |---|---|---|
-| Profit before tax | $64,114.79 | $73,037.90 |
+| Profit before tax | $63,331.33 | $72,111.25 |
 | Tax adjustments | 5: entertainment, holiday pay accrued, depreciation swap (accounting out, tax in), Investment Boost | 8: adds the reversal of last year's holiday pay, the accounting gain on the old POS system out, depreciation recovery in |
 | 13A / 13B | $103.56 / $369.86 | nil (no interest income in year 2) |
-| 20B | $59,793.40 (taxable income less the interest) | $75,396.39 |
-| 29 taxable income | $60,163.26 | $75,396.39 |
-| 30A / 30B | $60,163 / $16,845.64 | $75,396 / $21,110.88 |
-| 30J RIT | $16,742.08 | $21,110.88 |
+| 20B | $59,793.40 (taxable income less the interest) | $74,636.41 |
+| 29 taxable income | $60,163.26 | $74,636.41 |
+| 30A / 30B | $60,163 / $16,845.64 | $74,636 / $20,898.08 |
+| 30J RIT | $16,742.08 | $20,898.08 |
 | 30K provisional paid | $3,000.00 (voluntary) | $17,579.18 |
-| 30L | **$13,742.08 to pay** | **$3,531.70 to pay** |
+| 30L | **$13,742.08 to pay** | **$3,318.90 to pay** |
 | 32 | Yes, with the start date | No |
 | 33A / 33B | S, $17,579 | S, $22,166 |
 | 40 | salaries $90,000 in all; current accounts CR $18,000 / $6,000 | Aroha $65,000, Ben $35,000; current accounts CR $37,400 / $14,600 |

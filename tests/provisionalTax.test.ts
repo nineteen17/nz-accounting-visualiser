@@ -8,7 +8,7 @@ describe("provisional tax: Kōwhai's real year 2", () => {
   it("the standard method reproduces the books", () => {
     expect(p.standard.instalments.map((i) => i.amount)).toEqual(BOOKS.instalments.map((i) => i.amount));
     expect(p.standard.paid).toBeCloseTo(BOOKS.total, 2);
-    expect(p.standard.terminal).toBeCloseTo(3_531.7, 2);
+    expect(p.standard.terminal).toBeCloseTo(3_318.9, 2);
   });
   it("RIT under $60,000 on the standard method: no interest", () => {
     expect(ACTUAL_RIT).toBeLessThan(PROVISIONAL_TAX.safeHarbourRit);

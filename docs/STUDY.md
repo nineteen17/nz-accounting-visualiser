@@ -216,7 +216,7 @@ Shown on matching flashcards, and practised as cards of their own (`a:` cards, o
 - [x] **N6** Taxable income and tax at 28%.
 - [x] **N7** Provisional tax: RIT, the standard method, instalments, terminal tax, the $5,000 threshold.
 - [x] **N8** Ratios from Kōwhai's real statements: current, quick, working capital, gross and net margin, debt to equity.
-- [x] **T1** Tests: the working shown includes the answer; entries balance and include the right accounts; known figures (espresso depreciation $3,360 and $7,840 book value, current ratio 2.71, gross margin 70.3% / 69.6%); net pay = gross − deductions; answer parsing; no links inside bold.
+- [x] **T1** Tests: the working shown includes the answer; entries balance and include the right accounts; known figures (espresso depreciation $3,360 and $7,840 book value, current ratio 2.68, gross margin 70.3% / 69.6%); net pay = gross − deductions; answer parsing; no links inside bold.
 
 ### Phase 1: record and calculate ✅ done (see above)
 
@@ -281,6 +281,7 @@ Shown on matching flashcards, and practised as cards of their own (`a:` cards, o
 - None open. Decided 2026-11-28: drills don't count towards Known; they have their own "mastered" (X3). Typed recall added as the "Type it" option for meaning → term cards (X4).
 
 ## 6. Log
+- **2026-11-29**: ACC levies and the Companies Office fee are now in the books. The year-end exercise gains an ACC accrual in each year (13 and 11 adjustments); the IR4 exercise gains the s EF 3 add-back (year 1) and the add-back and deduction pair (year 2). 282 tests.
 - **2026-11-28**: Do the company tax return yourself (Y4), from IRD's IR4 2026 form and guide. 47 drills, 267 tests.
 - **2026-11-28**: Beginner guides (`ToolGuide`) added to all three "do it yourself" exercises: the GST return, the pay run and the year-end.
 - **2026-11-28**: Do a pay run yourself (Y3), and the payroll engine corrected to IRD's payroll specification. 47 drills, 254 tests.

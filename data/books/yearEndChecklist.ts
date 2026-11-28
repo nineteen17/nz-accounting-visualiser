@@ -46,8 +46,6 @@ export type CheckItem = {
   /** the law or source, as a short citation */
   law?: string;
   link?: { href: string; label: string };
-  /** something a real café would have that Kōwhai's books leave out */
-  gap?: string;
 };
 
 export type Checklist = { key: "y1" | "y2"; label: string; yearEnd: string; items: CheckItem[] };
@@ -67,7 +65,7 @@ function build(key: "y1" | "y2"): Checklist {
   const gstP6 = y1 ? gstReturn(Y1.ALL, GST_PERIODS[5]) : gstReturn(Y2.LEDGER, Y2.GST_PERIODS_Y2[5]);
   const gstDue = y1 ? GST_PERIODS[5].due : Y2.GST_PERIODS_Y2[5].due;
   const badDebt = debitTo(before, "624");
-  const accruals = yearEnd.steps.map((s) => s.txn.title).filter((t) => /accrued|prepaid/i.test(t));
+  const accruals = yearEnd.steps.map((s) => s.txn.title).filter((t) => /accrued|prepaid|ACC levies/i.test(t));
   const salaries = ir4.shareholders.map((s) => `${s.name.split(" ")[0]} ${money(s.salary, { dp: 0 })}`).join(", ");
   const nextYear = y + 1;
   // next year's standard-method provisional tax: this year's RIT + 5%, in three instalments (the last takes the cents)
@@ -79,6 +77,8 @@ function build(key: "y1" | "y2"): Checklist {
     { date: `${nextYear}-05-07`, amount: r2(provTotal - third(2)) },
   ];
   const fee = COMPANIES_OFFICE.annualReturnFee;
+  const A1 = Y1.YEAR_FACTS.acc;
+  const A2 = Y2.YEAR2_FACTS.acc;
 
   const items: CheckItem[] = [
     /* ── before 31 March ── */
@@ -120,10 +120,11 @@ function build(key: "y1" | "y2"): Checklist {
       why: "Until the adjustments are made the figures aren't finished: depreciation, the stock count, accruals, salaries and tax are all still missing.",
       link: { href: "/study/year-end", label: "Do the year-end yourself" } },
     { id: "annual-return", section: "after", date: `${y}-04-30`, when: `During April ${y} (Kōwhai's filing month)`, title: "File the Companies Office annual return",
-      figure: `${money(r2(fee * (1 + GST.rate)))} (${$(fee)} plus GST).${y1 ? " Kōwhai's first: none was needed in 2026, the year it was registered." : ""}`,
+      figure: y1
+        ? `${$(Y2.YEAR2_FACTS.annualReturn.incl)} (${$(fee)} plus GST), filed and paid on ${nzDate(Y2.YEAR2_FACTS.annualReturn.date)}: Kōwhai's first, as none was needed in 2026, the year it was registered. It's in year 2's books, as licences and fees.`
+        : `${money(r2(fee * (1 + GST.rate)))} (${$(fee)} plus GST) again: the same every year.`,
       why: "It confirms the company's addresses, directors and shareholders are right. It isn't a tax return. A company that doesn't file can be removed from the register.",
-      law: "Companies Act s 214", link: { href: "/nz/compliance", label: "Compliance" },
-      gap: "The fee isn't in Kōwhai's books. A real café records it as an expense." },
+      law: "Companies Act s 214", link: { href: "/nz/compliance", label: "Compliance" } },
     { id: "paye", section: "after", date: `${y}-04-20`, when: `By 20 April ${y}`, title: "Pay March's PAYE and deductions",
       figure: `${$(-b["215"])}.`,
       why: "Tax and KiwiSaver taken from March's pays are paid to IRD by the 20th of the next month, year end or not.",
@@ -167,10 +168,15 @@ function build(key: "y1" | "y2"): Checklist {
       figure: `${$(ins.amount)} (this year's RIT + ${Math.round(PROVISIONAL_TAX.standardUplift * 100)}%, in three).`,
       why: `This year's residual income tax was over ${money(PROVISIONAL_TAX.ritThreshold, { dp: 0 })}, so the company pays next year's tax as it goes. The first instalment is due before this year's return is even filed.`,
       link: { href: "/explore/provisional-tax", label: "Plan the provisional tax" } })),
-    { id: "acc", section: "tax", date: `${y}-07-31`, when: `Around July ${y} (and September)`, title: "ACC levy invoices",
-      figure: "The employer invoice comes around July; Aroha's and Ben's own come around September, after their tax returns.",
-      why: "ACC invoices the employer once a year: last year's levy on the actual payroll, plus an estimate for this year. Shareholder-employees' levies are worked out from their salaries.",
-      gap: "ACC levies aren't in Kōwhai's books. A real café records the work levy as an expense." },
+    y1
+      ? { id: "acc", section: "tax", date: A2.invoiceDate, when: `${nzDate(A2.invoiceDate)}, paid by 20 August ${y}`, title: "ACC's first levy invoice",
+          figure: `Final 2026/27 levy ${$(A2.finalY1)} (it clears the accrual) + provisional 2027/28 levy ${$(A2.provisional)}, plus GST: ${$(r2(A2.invoiceEx + A2.invoiceGst))}. Aroha's and Ben's levies (${$(A1.shareholders)} of work levy, still accrued) come later, once the IR4 declaring their salaries is filed.`,
+          why: "ACC invoices an employer once a year, around July: the final levy for the year just ended, on the payroll IRD passed on, plus a provisional levy for this year. A new business's first invoice comes only after its first year. The levy is deductible when it's invoiced (Income Tax Act s EF 3), not when it's accrued.",
+          law: "Accident Compensation Act s 168; Income Tax Act s EF 3", link: { href: "/nz/acc", label: "ACC levies" } }
+      : { id: "acc", section: "tax", date: `${y}-07-31`, when: `Around July ${y}, and after the IR4 is filed`, title: "ACC's levy invoices",
+          figure: `The employer invoice: this year's final levy (the ${$(A2.washUp)} wash-up already accrued) plus next year's provisional levy. Then the first shareholder-employee invoice: ${$(r2(A2.shareholdersY1 + A2.shareholders))} of work levy for both years (accrued), and Aroha's and Ben's own earners' levy, which goes to their current accounts.`,
+          why: "Shareholder-employees' levies are invoiced to the company once the IR4 declaring their salaries is filed. The work levy is the company's. The earners' levy is Aroha's and Ben's own (Accident Compensation Act s 219), so the company charges it to their current accounts.",
+          law: "Accident Compensation Act ss 15, 168 and 219; Income Tax Act s EF 3", link: { href: "/nz/acc", label: "ACC levies" } },
     { id: "ir4", section: "tax", date: `${nextYear}-03-31`, when: `By 31 March ${nextYear} (with a tax agent)`, title: "File the IR4, with the annual imputation return",
       figure: `Taxable income ${$(ir4.boxes["29"])}; tax ${$(ir4.boxes["30B"])}.`,
       why: "The company's income tax return. Without a tax agent it's due 7 July; Kōwhai's accountant gets the extension of time.",

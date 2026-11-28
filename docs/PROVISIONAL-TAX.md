@@ -14,8 +14,8 @@ The NZ topic page `/nz/provisional-tax` already explains the methods and has a s
 |---|---|
 | Last year's residual income tax (RIT, the 2027 year) | $16,742.08 |
 | Method used | Standard: $16,742.08 + 5% = $17,579.18, in three instalments of $5,859.73 / $5,859.73 / $5,859.72 (28 Aug 2027, 15 Jan 2028, 7 May 2028) |
-| Actual RIT for the 2028 year | $21,110.88 |
-| Terminal tax | $3,531.70, due 7 April 2029 (Kōwhai has a tax agent, Rata & Co) |
+| Actual RIT for the 2028 year | $20,898.08 |
+| Terminal tax | $3,318.90, due 7 April 2029 (Kōwhai has a tax agent, Rata & Co) |
 | Use-of-money interest | None: RIT is under $60,000 and Kōwhai used the standard method, so interest only starts at the terminal tax date (Tax Administration Act s 120KE) |
 
 ## What the learner controls
@@ -77,7 +77,7 @@ The US equivalent is **estimated tax** (Form 1120-W for corporations), paid in f
 | Tests | `tests/provisionalTax.test.ts` |
 
 **Tests:**
-- The standard method reproduces the books: $17,579.18 in three instalments, and $3,531.70 terminal tax.
+- The standard method reproduces the books: $17,579.18 in three instalments, and $3,318.90 terminal tax.
 - RIT under $60,000 on the standard method means no interest.
 - At $60,000 or more, interest runs only from the last instalment.
 - Interest is daily and not compounded, and matches a hand calculation.

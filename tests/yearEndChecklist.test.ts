@@ -36,7 +36,7 @@ describe("the checklist's figures come from the books", () => {
     has(C2, "stocktake", b["130"]);
     has(C2, "paye", -b["215"]);
     has(C2, "gst", gstReturn(Y2.LEDGER, Y2.GST_PERIODS_Y2[5]).box15);
-    has(C2, "terminal", 3_531.7);
+    has(C2, "terminal", 3_318.9);
     has(C2, "ica", Y2.YEAR2_FACTS.icaClosing);
     has(C2, "instalment-3", Y2.PROVISIONAL.instalments[2].amount);
     expect(C1.items.some((i) => i.id === "instalment-3")).toBe(false);

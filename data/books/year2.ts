@@ -13,7 +13,7 @@ import { assetYear, assetYearOne, disposal, type FixedAsset } from "@/lib/nz/ass
 import { calcPay, ietcFor, type Employee } from "@/lib/nz/payroll";
 import { dividendShare, ownerYear } from "@/lib/nz/payYourself";
 import { taxFromItems, type TaxAssetRow, type TaxItem } from "@/lib/nz/incomeTax";
-import { MINIMUM_WAGE, PAYROLL_2027_28, COMPANY_TAX_RATE, PROVISIONAL_TAX, RWT } from "@/lib/nz/rates";
+import { ACC_CAFE_LEVIES, ACC_EARNERS_LEVY, COMPANIES_OFFICE, MINIMUM_WAGE, PAYROLL_2027_28, COMPANY_TAX_RATE, PROVISIONAL_TAX, RWT } from "@/lib/nz/rates";
 import { ACCOUNTS } from "../chartOfAccounts";
 import { BUSINESS, CUSTOMERS, EMPLOYEES, FIXED_ASSETS, SHAREHOLDERS } from "../business";
 import { ADJUSTMENTS as Y1_ADJUSTMENTS, ALL as Y1_ALL, NET_PROFIT as Y1_NET_PROFIT, TAX as Y1_TAX, YEAR_FACTS as Y1_FACTS } from "./index";
@@ -206,6 +206,25 @@ export const DISPOSAL = {
   recovered: taxDisposal.recovered,
 };
 
+/* ───────────────────────── 4½. ACC levies and the Companies Office ───────────────────────── */
+
+/**
+ * ACC invoices an employer once a year, around July: the FINAL levy for the year just ended (on the payroll IRD passed on,
+ * less any provisional levy already charged) plus a PROVISIONAL levy for the current year (estimated from last year's payroll).
+ * The shareholder-employees' levies come on a separate invoice, only after the IR4 declaring their salaries is filed:
+ * for Kōwhai's 2027 IR4 (filed by 31 March 2028), that's after this year ends.
+ * ACC adds an inflation adjustment to provisional levies; it isn't published, so none is applied here (see rates.ts toConfirm).
+ */
+const ACC_Y1 = Y1_FACTS.acc;
+const accRateY2 = ACC_CAFE_LEVIES.next.work + ACC_CAFE_LEVIES.next.workingSafer;
+const ACC_INVOICE_DATE = "2027-07-16";
+const accFinalY1 = ACC_Y1.staff; // the 2026/27 final levy: no provisional was charged in Kōwhai's first year
+const accProvisionalY2 = r2(ACC_Y1.staffEarnings * accRateY2);
+const accInvoiceEx = r2(accFinalY1 + accProvisionalY2);
+const accInvoiceGst = r2(accInvoiceEx * 0.15);
+const ANNUAL_RETURN_DATE = "2027-04-14";
+const annualReturnIncl = r2(COMPANIES_OFFICE.annualReturnFee * 1.15);
+
 /* ───────────────────────── 5. The year's one-off events ───────────────────────── */
 
 const eftposCarry = OPENING_BALANCES["110"];
@@ -358,6 +377,42 @@ const EVENTS: Transaction[] = [
   },
   provPayment("B15", 1, `The second provisional instalment: another third of ${money2(PROVISIONAL.total)}. The third is due on 7 May 2028, after year end.`),
   { id: "B16", date: "2028-01-21", title: "Harbour Law pays", kind: "routine", book: "cash-receipts", story: "Harbour Law pays INV-0007.", lines: [{ account: "100", debit: 3_910 }, { account: "120", credit: 3_910, party: CUSTOMERS.harbourLaw.name }] },
+  {
+    id: "B19",
+    date: ANNUAL_RETURN_DATE,
+    title: "File the company's first annual return",
+    kind: "featured",
+    book: "cash-payments",
+    story: `April is Kōwhai's filing month with the Companies Office, and this is its first [[annual-return]] (none was due in 2026, the year it was registered). Ben checks the company's address, directors and shareholders online, confirms they're right, and pays the fee by card: ${money2(COMPANIES_OFFICE.annualReturnFee)} + GST = ${money2(annualReturnIncl)}.\n\nIt isn't a tax return, and a small company doesn't file its accounts with it. It's just the yearly check that the public register is right.`,
+    doc: { kind: "internal", title: "Companies Office annual return: payment summary", issuer: BUSINESS.name, date: ANNUAL_RETURN_DATE, rows: [
+      { label: "Annual return fee (incl. FMA, XRB and IP levies)", value: money2(COMPANIES_OFFICE.annualReturnFee) },
+      { label: "GST", value: money2(r2(annualReturnIncl - COMPANIES_OFFICE.annualReturnFee)) },
+      { label: "Paid by card", value: money2(annualReturnIncl), strong: true },
+    ] },
+    lines: buyLines("620", annualReturnIncl, "100", { why: "A business expense, and deductible.", creditWhy: "Paid by card when filing." }),
+    deepDives: [{ href: "/nz/compliance", label: "Compliance: the annual return" }],
+  },
+  {
+    id: "B20",
+    date: ACC_INVOICE_DATE,
+    title: "ACC's first levy invoice arrives",
+    kind: "featured",
+    book: "purchases",
+    story: `Kōwhai's first ACC invoice. It has two parts:\n\n**Final levy for 2026/27**: ${pct(ACC_Y1.rate, 2)} of the ${money2(ACC_Y1.staffEarnings)} the staff earned last year (from payday filing), ${money2(accFinalY1)}. The accountant accrued exactly this at 31 March, so it clears that accrual instead of being a new expense.\n\n**Provisional levy for 2027/28**: an estimate of this year's levy, from last year's payroll at this year's rate (${pct(accRateY2, 2)}): ${money2(accProvisionalY2)}. It's this year's expense. Next July's invoice will wash it up against the actual payroll.\n\nGST is charged on top, and claimed back. The levy on Aroha's and Ben's salaries isn't here: ACC can only invoice it once the IR4 declaring their salaries is filed.`,
+    doc: { kind: "internal", title: "ACC levy invoice: summary", issuer: BUSINESS.name, date: ACC_INVOICE_DATE, rows: [
+      { label: `Final levy 2026/27 (${money2(ACC_Y1.staffEarnings)} × ${pct(ACC_Y1.rate, 2)})`, value: money2(accFinalY1) },
+      { label: `Provisional levy 2027/28 (${money2(ACC_Y1.staffEarnings)} × ${pct(accRateY2, 2)})`, value: money2(accProvisionalY2) },
+      { label: "GST", value: money2(accInvoiceGst) },
+      { label: "Total to pay", value: money2(r2(accInvoiceEx + accInvoiceGst)), strong: true },
+    ] },
+    lines: [
+      { account: "205", debit: accFinalY1, why: "Clears last year's accrual: this part was last year's expense." },
+      { account: "606", debit: accProvisionalY2, why: "This year's levy, estimated: this year's expense." },
+      { account: "210", debit: accInvoiceGst, gst: "input", memo: "GST claimable", why: "GST on the levy is claimed back from IRD." },
+      { account: "200", credit: r2(accInvoiceEx + accInvoiceGst), party: "ACC", why: "Owed to ACC until it's paid." },
+    ],
+    deepDives: [{ href: "/nz/acc", label: "ACC levies explained" }],
+  },
 ];
 
 /* ───────────────────────── 6. During the year ───────────────────────── */
@@ -524,6 +579,14 @@ const closingStock = CLOSING_STOCK_Y2.reduce((s, x) => s + x.value, 0);
 export const SALARIES = [{ ...SHAREHOLDERS[0], salary: 65_000 }, { ...SHAREHOLDERS[1], salary: 35_000 }];
 const salaryTotal = SALARIES.reduce((s, x) => s + x.salary, 0);
 
+/* ACC at year end: wash up this year's provisional levy against the actual payroll, and the shareholders' levy (not invoiced yet) */
+const accStaffEarningsY2 = r2(RUNS.reduce((s, run) => s + run.results.reduce((a, p) => a + p.gross, 0), 0));
+const accStaffY2 = r2(accStaffEarningsY2 * accRateY2);
+const accWashUp = r2(accStaffY2 - accProvisionalY2);
+const accShareholdersY2 = r2(salaryTotal * accRateY2);
+const accAccrualY2 = r2(accWashUp + accShareholdersY2);
+const shareholderEarnersLevyY2 = r2(SALARIES.reduce((s, x) => s + Math.min(x.salary, ACC_EARNERS_LEVY.maxLiableEarnings), 0) * PAYROLL_2027_28.acc.rate);
+
 const ADJ_BEFORE_TAX: Transaction[] = [
   adj({
     id: "Y2-ADJ01",
@@ -608,6 +671,23 @@ const ADJ_BEFORE_TAX: Transaction[] = [
     ],
     deepDives: [{ href: "/explore/pay-yourself", label: "Salary or dividend? Try other choices" }],
   }),
+  adj({
+    id: "Y2-ADJ-ACC",
+    title: "Accrue the rest of the year's ACC levies",
+    story: `Two ACC amounts belong to this year but haven't been invoiced:\n\n**The wash-up on the staff levy.** July's provisional levy was an estimate (${money2(accProvisionalY2)}). The staff actually earned ${money2(accStaffEarningsY2)} this year, so the real levy is ${money2(accStaffY2)}: ${accWashUp >= 0 ? `${money2(accWashUp)} more` : `${money2(-accWashUp)} less`}. Next July's final levy will charge the difference.\n\n**The levy on Aroha's and Ben's salaries**, ${pct(accRateY2, 2)} of ${money2(salaryTotal)} = ${money2(accShareholdersY2)}. Last year's ${money2(ACC_Y1.shareholders)} is still in accrued expenses too: ACC hasn't invoiced either year yet.\n\nAs last year, their own earners' levy (about ${money2(shareholderEarnersLevyY2)}) isn't the company's, so it isn't accrued.`,
+    doc: { kind: "internal", title: "ACC levies accrual working (2027/28)", issuer: BUSINESS.name, date: YE, rows: [
+      { label: `Staff levy: ${money2(accStaffEarningsY2)} × ${pct(accRateY2, 2)}`, value: money2(accStaffY2) },
+      { label: "Less provisional levy invoiced in July", value: money2(-accProvisionalY2) },
+      { label: "Wash-up to accrue", value: money2(accWashUp) },
+      { label: `Shareholder salaries ${money2(salaryTotal)} × ${pct(accRateY2, 2)}`, value: money2(accShareholdersY2) },
+      { label: "Accrued at 31 March 2028 (before GST)", value: money2(accAccrualY2), strong: true },
+    ] },
+    lines: [
+      { account: "606", debit: accAccrualY2, why: "The rest of this year's levies: this year's expense." },
+      { account: "205", credit: accAccrualY2, why: "Owed to ACC, not invoiced yet." },
+    ],
+    deepDives: [{ href: "/nz/acc", label: "ACC levies explained" }],
+  }),
 ];
 
 /* ───────────────────────── 9. Income tax ───────────────────────── */
@@ -629,6 +709,8 @@ const items: TaxItem[] = [
   { label: "Add back: 50% of entertainment", amount: r2(afterAdj["623"] * 0.5), explain: "Food and drink with a private or social element is only 50% deductible." },
   { label: "Add back: holiday pay accrued at year end", amount: holidayTarget, explain: "Accrued holiday pay is only deductible when it's paid (or if paid within 63 days of balance date). Mia takes this leave next year." },
   { label: "Less: last year's holiday pay accrual, paid out this year", amount: -openingHoliday, explain: "Last year this was added back because it hadn't been paid. Mia took the leave this year, so it's deductible now. Over the two years, the whole amount is deducted exactly once." },
+  { label: "Add back: ACC levies accrued but not yet invoiced", amount: accAccrualY2, explain: "An ACC levy is deductible in the year it becomes due and payable (Income Tax Act s EF 3). This year's wash-up and the shareholders' levy aren't invoiced until after balance date, so they're deducted later." },
+  { label: "Less: last year's ACC accrual, invoiced this year", amount: -accFinalY1, explain: "Last year the staff levy was added back because it hadn't been invoiced. ACC's July invoice made it due and payable this year, so it's deductible now. The shareholders' part from last year is still waiting for its invoice." },
   { label: "Add back: accounting depreciation", amount: accountingDepAll, explain: "The accounts' depreciation (including the 6 months on the POS system that was sold) is replaced by tax depreciation…" },
   { label: "Less: tax depreciation", amount: -taxDepAll, explain: "…on each asset's adjusted tax value. No tax depreciation is claimed on an asset in the year it's sold." },
   { label: "Less: Investment Boost on the new POS system", amount: -boostAll, explain: "20% of the cost of the new asset, deducted up front." },
@@ -696,4 +778,10 @@ export const YEAR2_FACTS = {
   terminalDue: "2029-04-07",
   icaClosing: r2(ICA.reduce((s, e) => s + e.credit - e.debit, 0)),
   firstPayDate: nzDate(YEAR2.firstPayDate),
+  acc: {
+    invoiceDate: ACC_INVOICE_DATE, finalY1: accFinalY1, provisional: accProvisionalY2, invoiceEx: accInvoiceEx, invoiceGst: accInvoiceGst,
+    staffEarnings: accStaffEarningsY2, staff: accStaffY2, washUp: accWashUp, shareholders: accShareholdersY2, accrual: accAccrualY2,
+    shareholdersY1: ACC_Y1.shareholders, shareholderEarnersLevy: shareholderEarnersLevyY2, rate: accRateY2,
+  },
+  annualReturn: { date: ANNUAL_RETURN_DATE, incl: annualReturnIncl },
 };

@@ -10,7 +10,7 @@ export interface TaxItem {
 }
 
 /** Turn accounting profit into taxable income (an IR4-style tax reconciliation) */
-export function taxComputation(input: { profitBeforeTax: number; entertainment: number; holidayPayAccrual: number; rwt: number; provisional: number }) {
+export function taxComputation(input: { profitBeforeTax: number; entertainment: number; holidayPayAccrual: number; accLevyAccrual?: number; rwt: number; provisional: number }) {
   const assets = FIXED_ASSETS.map((a) => ({ asset: a, ...assetYearOne(a) }));
   const accountingDep = r2(assets.reduce((s, a) => s + a.accounting, 0));
   const taxDep = r2(assets.reduce((s, a) => s + a.taxDep, 0));
@@ -26,6 +26,11 @@ export function taxComputation(input: { profitBeforeTax: number; entertainment: 
       amount: input.holidayPayAccrual,
       explain: "Accrued holiday pay is only deductible if it's paid within 63 days after balance date. Mia won't take her leave until later in the year, so it's deductible next year when she does.",
     },
+    ...(input.accLevyAccrual ? [{
+      label: "Add back: ACC levies accrued but not yet invoiced",
+      amount: input.accLevyAccrual,
+      explain: "An ACC levy is deductible in the year it becomes due and payable (Income Tax Act s EF 3), not when it's accrued. ACC won't invoice this year's levies until after balance date, so they're deducted next year.",
+    }] : []),
     {
       label: "Add back: accounting depreciation",
       amount: accountingDep,

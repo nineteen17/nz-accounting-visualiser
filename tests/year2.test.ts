@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ALL as Y1_ALL, TAX as Y1_TAX } from "@/data/books";
+import { ALL as Y1_ALL, TAX as Y1_TAX, YEAR_FACTS as Y1_FACTS } from "@/data/books";
 import * as Y2 from "@/data/books/year2";
 import { ACCOUNTS } from "@/data/chartOfAccounts";
 import { GLOSSARY_MAP } from "@/data/glossary";
@@ -45,7 +45,9 @@ describe("year 2: the journal", () => {
   });
   it("reversals undo last year's accruals and prepayment", () => {
     const after = balances([Y2.OPENING_ENTRY, ...Y2.ALL.filter((t) => t.id.startsWith("REV-"))]);
-    for (const code of ["125", "136", "205", "206"]) expect(cents(after[code]), code).toBe(0);
+    for (const code of ["125", "136", "206"]) expect(cents(after[code]), code).toBe(0);
+    // accrued expenses keep last year's ACC levies: they aren't reversed, ACC's invoice clears them
+    expect(cents(after["205"])).toBe(cents(-Y1_FACTS.acc.accrual));
   });
 });
 

@@ -10,6 +10,7 @@ import { BUSINESS, CLOSING_STOCK, CUSTOMERS, EMPLOYEES, FIXED_ASSETS, SHAREHOLDE
 import { APRIL } from "./april";
 import { LATER_EVENTS, LEO_HOURS, MIA_HOURS, PAY_RUNS, ROUTINE_AND_PAYROLL, YEAR1, supplierPayments } from "./year";
 import { money2 } from "./helpers";
+import { ACC_CAFE_LEVIES, ACC_EARNERS_LEVY } from "@/lib/nz/rates";
 import { closingEntries, gstSettlement } from "./generator";
 
 /* 1. Everything that happened during the year */
@@ -50,6 +51,16 @@ const dep = FIXED_ASSETS.map((a) => ({ a, ...assetYearOne(a) }));
 const depTotal = r2(dep.reduce((s, x) => s + x.accounting, 0));
 const closingStock = CLOSING_STOCK.reduce((s, x) => s + x.value, 0);
 const salaryTotal = SHAREHOLDERS.reduce((s, x) => s + x.salary, 0);
+
+/* ACC: the 2026/27 work levy and working safer levy, accrued (ACC invoices a new business only after its first year) */
+const accRate = ACC_CAFE_LEVIES.work + ACC_CAFE_LEVIES.workingSafer;
+/** the staff's liable earnings: gross pay in the pay runs dated in the year, as reported to IRD in payday filing */
+const staffEarnings = r2(PAY_RUNS.reduce((s, run) => s + run.results.reduce((a, p) => a + p.gross, 0), 0));
+const accStaff = r2(staffEarnings * accRate);
+const accShareholders = r2(salaryTotal * accRate);
+const accAccrual = r2(accStaff + accShareholders);
+/** the shareholders' own earners' levy on their salaries (GST included): theirs, not the company's (ACC Act s 219), so not accrued */
+const shareholderEarnersLevy = r2(SHAREHOLDERS.reduce((s, x) => s + Math.min(x.salary, ACC_EARNERS_LEVY.maxLiableEarnings), 0) * ACC_EARNERS_LEVY.rate);
 
 const adj = (t: Omit<Transaction, "date" | "kind" | "book">): Transaction => ({ date: YE, kind: "adjustment", book: "general", ...t });
 
@@ -178,6 +189,23 @@ const ADJ_BEFORE_TAX: Transaction[] = [
     ],
     deepDives: [{ href: "/nz/shareholders", label: "Shareholder salaries & current accounts" }],
   }),
+  adj({
+    id: "ADJ-ACC",
+    title: "Accrue the year's ACC levies",
+    story: `Every employer pays ACC's [[acc-levy|work levy]] on its payroll, and the working safer levy alongside it. ACC invoices once a year, after the year ends, from the payroll IRD passes on. Kōwhai is new, so no invoice has arrived yet. But the levies belong to this year's payroll, so the accountant accrues them: ${pct(accRate, 2)} of the staff's ${money2(staffEarnings)} of earnings, and of Aroha's and Ben's ${money2(salaryTotal)} of shareholder salaries (the work levy covers shareholder-employees too).
+
+Not included: the **earners' levy** on Aroha's and Ben's salaries (about ${money2(shareholderEarnersLevy)}). That one is their own levy, not the company's. ACC will invoice it to the company after the IR4 is filed, and it'll be charged to their current accounts.`,
+    doc: { kind: "internal", title: "ACC levies accrual working (2026/27)", issuer: BUSINESS.name, date: YE, rows: [
+      { label: `Staff earnings ${money2(staffEarnings)} × ${pct(accRate, 2)}`, value: money2(accStaff) },
+      { label: `Shareholder salaries ${money2(salaryTotal)} × ${pct(accRate, 2)}`, value: money2(accShareholders) },
+      { label: "Work levy + working safer levy accrued (before GST)", value: money2(accAccrual), strong: true },
+    ] },
+    lines: [
+      { account: "606", debit: accAccrual, why: "This year's levies on this year's payroll: an expense of this year." },
+      { account: "205", credit: accAccrual, why: "Owed to ACC, but not invoiced yet. No GST until the invoice arrives." },
+    ],
+    deepDives: [{ href: "/nz/acc", label: "ACC levies explained" }],
+  }),
 ];
 
 /* 4. Income tax (needs profit after the other adjustments) */
@@ -189,6 +217,7 @@ export const TAX = taxComputation({
   profitBeforeTax: PROFIT_BEFORE_TAX,
   entertainment: afterAdj["623"],
   holidayPayAccrual: holidayAccrual,
+  accLevyAccrual: accAccrual,
   rwt: afterAdj["140"],
   provisional: afterAdj["141"],
 });
@@ -238,6 +267,7 @@ export const YEAR_FACTS = {
   accruedGross,
   entAdj,
   salaryTotal,
+  acc: { staffEarnings, staff: accStaff, shareholders: accShareholders, accrual: accAccrual, shareholderEarnersLevy, rate: accRate },
 };
 
 export function findTxn(id: string) {

@@ -31,7 +31,6 @@ function Item({ item, ticked, onTick }: { item: CheckItem; ticked: boolean; onTi
           <div className="mt-2 space-y-2 border-t border-stone-100 pt-2 text-[15px] leading-relaxed">
             <p><strong>Why:</strong> {item.why}</p>
             {item.law && <p className="text-sm text-stone-600">⚖️ {item.law}</p>}
-            {item.gap && <p className="rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-900">📝 Not in Kōwhai&apos;s books: {item.gap}</p>}
             {item.link && (
               <Link href={item.link.href} className="inline-block rounded-lg bg-ink px-3 py-1.5 text-sm font-semibold text-white hover:bg-stone-700">
                 {item.link.label} →
@@ -71,7 +70,7 @@ export function YearEndTool() {
           <>Tap an item to see <strong>why</strong> it matters, the law behind it, and a link to the tool or exercise where you can do it yourself.</>,
           <>Tick items off as you work through them. Ticks are saved on this device only.</>,
         ]}
-        read={<>Each item shows <strong>when</strong> it&apos;s due and, after ☕, <strong>Kōwhai&apos;s own figure</strong> for that year, worked out from its books. ⚖️ is the law. 📝 marks something a real café would have that Kōwhai&apos;s books leave out.</>}
+        read={<>Each item shows <strong>when</strong> it&apos;s due and, after ☕, <strong>Kōwhai&apos;s own figure</strong> for that year, worked out from its books. ⚖️ is the law.</>}
         terms={[
           { k: "balance-date", says: "the last day of the company's financial year. Kōwhai's is 31 March, like most NZ businesses." },
           { k: "stocktake", says: "counting and valuing the stock on hand at balance date." },

@@ -73,7 +73,11 @@ export function ownerYear(input: { salary: number; dividend: ReturnType<typeof d
 }
 
 /** every ACC levy rate on a café owner's liable earnings: earners' levy, work levy and working safer levy */
-export const accRate = (rates: PayrollRates) => rates.acc.rate + ACC_CAFE_LEVIES.work + ACC_CAFE_LEVIES.workingSafer;
+export const accRate = (rates: PayrollRates) => {
+  // the café levies for the same levy year as the payroll rates ("2027–28" → the 2027/28 levies)
+  const cafe = rates.year.slice(0, 4) === ACC_CAFE_LEVIES.next.levyYear.slice(0, 4) ? ACC_CAFE_LEVIES.next : ACC_CAFE_LEVIES;
+  return rates.acc.rate + cafe.work + cafe.workingSafer;
+};
 
 /**
  * ACC levies on an owner's liable earnings (a shareholder salary without PAYE, or a self-employed share of profit),

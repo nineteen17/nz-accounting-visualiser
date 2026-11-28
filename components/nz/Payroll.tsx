@@ -4,15 +4,16 @@ import { useState } from "react";
 import Link from "next/link";
 import { PAY_RUNS } from "@/data/books/year";
 import { EMPLOYEES } from "@/data/business";
-import { ACC_EARNERS_LEVY, CURRENT_PAYROLL, ESCT_BANDS, HOLIDAYS, IETC, INDIVIDUAL_TAX_BRACKETS, KIWISAVER, MINIMUM_WAGE, STUDENT_LOAN } from "@/lib/nz/rates";
+import { ACC_CAFE_LEVIES, ACC_EARNERS_LEVY, CURRENT_PAYROLL, ESCT_BANDS, HOLIDAYS, IETC, INDIVIDUAL_TAX_BRACKETS, KIWISAVER, MINIMUM_WAGE, STUDENT_LOAN } from "@/lib/nz/rates";
 import { TAX_CODES, esctOn, esctRateFor, payeForPay, progressiveTax, studentLoanFor, type TaxCode } from "@/lib/nz/payroll";
-import { money, pct, r2 } from "@/lib/money";
+import { money, nzDate, pct, r2 } from "@/lib/money";
 import { cx } from "@/lib/ui";
 import { SourceDoc } from "@/components/documents/SourceDoc";
 import { JournalEntry } from "@/components/visual/JournalEntry";
 import { Callout, Card, UsNote } from "@/components/learn/bits";
 import { Term } from "@/components/learn/Term";
-import { DURING_YEAR } from "@/data/books";
+import { DURING_YEAR, YEAR_FACTS as Y1_FACTS } from "@/data/books";
+import { YEAR2_FACTS as Y2_FACTS } from "@/data/books/year2";
 import { MemoryAid } from "@/components/learn/MemoryAid";
 
 const Field = ({ label, children }: { label: string; children: React.ReactNode }) => (
@@ -277,12 +278,20 @@ export function AccTopic() {
       <h2>1. Earners&apos; levy: through PAYE</h2>
       <p>Funds non-work injury cover for employees. It&apos;s included in PAYE: {pct(ACC_EARNERS_LEVY.rate, 2)} of earnings (incl GST) for {CURRENT_PAYROLL.year}, up to maximum liable earnings of {money(ACC_EARNERS_LEVY.maxLiableEarnings, { dp: 0 })}. The employer just deducts it with PAYE. There&apos;s no separate entry.</p>
       <h2>2. Work levy: invoiced to the business</h2>
-      <p>Covers workplace injuries. ACC invoices the business once a year based on total payroll (and, for shareholder-employees, their shareholder salaries) and the business&apos;s <strong>levy risk classification</strong> (cafés have their own code). There&apos;s also the Working Safer levy.</p>
+      <p>Covers workplace injuries. Every employer pays it on its payroll, at the rate for its industry&apos;s <strong>levy risk classification</strong>: cafés are {ACC_CAFE_LEVIES.classificationUnit}, at {money(ACC_CAFE_LEVIES.work * 100)} per $100 of earnings for {ACC_CAFE_LEVIES.levyYear} ({money(ACC_CAFE_LEVIES.next.work * 100)} for {ACC_CAFE_LEVIES.next.levyYear}). The <strong>working safer levy</strong> ({money(ACC_CAFE_LEVIES.workingSafer * 100)} per $100, collected for WorkSafe) comes on the same invoice. Both are before GST. A shareholder-employee&apos;s salary counts as earnings too (Accident Compensation Act s 15), so the company pays the work levy on Aroha&apos;s and Ben&apos;s salaries as well.</p>
       <ul>
-        <li>The <strong>first invoice</strong> is usually provisional, based on an estimate. It&apos;s then squared up once actual earnings are known from the IR4/IR3 and payroll filing.</li>
-        <li>Self-employed people and shareholder-employees also pay an <strong>earners&apos; levy on their own income</strong> through the ACC invoice (not PAYE).</li>
+        <li><strong>Once a year, around July.</strong> ACC&apos;s invoice has a <strong>final levy</strong> for the year just ended (on the payroll IRD passed on, less any provisional levy already charged) and a <strong>provisional levy</strong> for the current year, estimated from last year&apos;s payroll. It&apos;s due at least 30 days after the invoice (s 168).</li>
+        <li><strong>A new business</strong> gets nothing in its first year. Its first invoice comes after the year ends.</li>
+        <li><strong>Shareholder-employees with no PAYE</strong> are invoiced separately, once the company&apos;s IR4 declaring their salaries is filed. That invoice also carries their own <strong>earners&apos; levy</strong>. It&apos;s theirs, not the company&apos;s (s 219), so when the company pays it, it&apos;s charged to their current accounts.</li>
       </ul>
-      <Callout kind="why" title="In the books">The ACC invoice is debited to an ACC levies expense account. The work levy is GST-inclusive and claimable. Kōwhai&apos;s first invoice will arrive in its second year, based on the first year&apos;s earnings. At year end the accountant may accrue an estimate.</Callout>
+      <Callout kind="example" title="Kōwhai's ACC levies">
+        <strong>31 March 2027:</strong> no invoice yet, but the levies belong to year 1&apos;s payroll, so the accountant accrues {money(Y1_FACTS.acc.accrual)} ({money(Y1_FACTS.acc.staff)} on the staff&apos;s earnings and {money(Y1_FACTS.acc.shareholders)} on the shareholder salaries).{" "}
+        <strong>{nzDate(Y2_FACTS.acc.invoiceDate)}:</strong> the first invoice: the final 2026/27 levy ({money(Y2_FACTS.acc.finalY1)}, which clears that part of the accrual) and a provisional 2027/28 levy ({money(Y2_FACTS.acc.provisional)}), plus GST, which is claimed back.{" "}
+        <strong>31 March 2028:</strong> the wash-up on the staff levy and the shareholders&apos; levy for year 2 are accrued ({money(Y2_FACTS.acc.accrual)}). The shareholders&apos; invoice comes after the 2027 IR4 is filed.
+      </Callout>
+      <Callout kind="rule" title="Tax: deductible when it's invoiced">
+        An ACC levy is deductible in the year it becomes <strong>due and payable</strong> (Income Tax Act s EF 3), not when it&apos;s accrued. So Kōwhai adds year 1&apos;s whole accrual back in its tax return, and deducts each part when ACC invoices it: the staff levy in year 2, the shareholders&apos; levy once their invoice comes. It&apos;s the same pattern as holiday pay. Year 1&apos;s tax doesn&apos;t change at all.
+      </Callout>
       <p>Earners&apos; levy maximum annual deduction: {money(ACC_EARNERS_LEVY.maxLiableEarnings * ACC_EARNERS_LEVY.rate)}. IETC used in PAYE: {money(IETC.annual)} a year.</p>
       <p className="text-sm text-stone-500">Individual tax brackets for reference: {INDIVIDUAL_TAX_BRACKETS.map((b) => `${pct(b.rate)} to ${b.upTo === Infinity ? "∞" : money(b.upTo, { dp: 0 })}`).join(" · ")}</p>
     </div>

@@ -12,7 +12,7 @@ From `data/books/year2.ts`, the 2028 income year:
 
 | | |
 |---|---|
-| Taxable income **before** shareholder salaries | $175,396 (taxable income $75,396 + salaries $100,000) |
+| Taxable income **before** shareholder salaries | $174,636 (taxable income $74,636 + salaries $100,000) |
 | Shareholder salaries chosen | Aroha $65,000, Ben $35,000 |
 | Company tax (28%) | $21,111 |
 | Dividend paid (fully imputed) | $20,000 cash + $7,778 imputation credits, RWT $1,389 |

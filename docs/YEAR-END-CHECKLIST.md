@@ -36,7 +36,7 @@ The learner can tick items off, saved on the device, so it works as a real check
 
 | Item | Kōwhai | Law / source |
 |---|---|---|
-| Make the year-end adjustments | the 12 (year 2: 10) adjustments | link: the year-end exercise |
+| Make the year-end adjustments | the 13 (year 2: 11) adjustments | link: the year-end exercise |
 | Pay March's PAYE and deductions by 20 April | the 215 balance | TAA s 24B (in `LAW.paye`) |
 | Pay accrued holiday pay within 63 days if it's to be deducted this year | Mia takes her leave later, so it's added back for tax | ITA s EA 4 |
 | File the Companies Office annual return in the company's filing month, $49.74 + GST | first one due April 2027 (none needed in 2026, the year it was registered) | Companies Act s 214; Companies Office |
@@ -60,7 +60,7 @@ The learner can tick items off, saved on the device, so it works as a real check
 |---|---|---|
 | File the IR4, with the annual imputation return, by 31 March 2028 (with a tax agent) | taxable income $60,163.26 | link: the IR4 exercise |
 | Aroha's and Ben's own IR3s, including their shareholder salaries (no PAYE was taken off), by the same date | from the pay yourself engine | link: pay yourself |
-| Pay terminal tax by 7 April 2028 | $13,742.08 (year 2: $3,531.70 by 7 April 2029) | link: the IR4 exercise |
+| Pay terminal tax by 7 April 2028 | $13,742.08 (year 2: $3,318.90 by 7 April 2029) | link: the IR4 exercise |
 | Next year's provisional tax: 28 August, 15 January, 7 May | $5,859.73, $5,859.73, $5,859.72 (from year 2) | link: the provisional tax planner |
 | ACC: the employer levy invoice arrives around July (last year's final levy plus this year's estimate); the shareholder-employees' levies come after their IR3s, around September | – | ACC |
 

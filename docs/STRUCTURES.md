@@ -14,7 +14,7 @@ Kōwhai's year 2 (the 2028 income year), from the books:
 
 | | |
 |---|---|
-| Taxable income before any pay to the owners | $175,396 |
+| Taxable income before any pay to the owners | $174,636 |
 | Shares | Aroha 60%, Ben 40% |
 | Other income | Ben's IT salary, $90,000 (an assumed figure, already in `data/business.ts`) |
 | The company's actual choice | Salaries $65,000 and $35,000; a $20,000 dividend; the rest kept in the company |

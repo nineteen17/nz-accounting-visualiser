@@ -1,6 +1,6 @@
 # Plan: ACC levies and the Companies Office fee in the books
 
-Status: **planned** 2026-11-28. Not built yet.
+Status: **built** 2026-11-29. Decisions taken as recommended, with two changes: the expense account is **606** (next to the other employment costs), and the 2027/28 work levy was found in the regulations ($0.41 per $100, SL 2025/17 schedule 3). Settled while building: the July invoice is due at least 30 days after it's issued (Accident Compensation Act s 168), and IRD's guides confirm the shareholders' earners' levy is invoiced to the company but is theirs, so it goes to their current accounts.
 
 ## Why
 

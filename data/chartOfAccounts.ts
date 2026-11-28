@@ -138,6 +138,8 @@ export const ACCOUNTS: Account[] = [
     "Annual leave earned by staff during the year (accrued at year end).", { group: "Employment costs" }),
   acc("605", "Shareholder salaries", "expense", "operating-expense", "none", "shareholders",
     "Salaries allocated to working shareholders at year end. No PAYE – they pay their own tax.", { group: "Employment costs" }),
+  acc("606", "ACC levies", "expense", "operating-expense", "standard", "suppliers",
+    "ACC's work levy and the working safer levy on the café's payroll and the shareholder salaries. Invoiced by ACC once a year, so the year's levy is accrued at year end.", { group: "Employment costs" }),
   acc("610", "Rent", "expense", "operating-expense", "standard", "suppliers", "Rent for the café premises.", { group: "Premises" }),
   acc("611", "Power & gas", "expense", "operating-expense", "standard", "suppliers", "Electricity and gas.", { group: "Premises" }),
   acc("612", "Internet & phone", "expense", "operating-expense", "standard", "suppliers", "Broadband and mobile.", { group: "Administration" }),

@@ -132,8 +132,8 @@ describe("drills", () => {
     // espresso machine: $16,000 at 30% DV → $4,800 then $3,360; book value $7,840 after two years
     expect(found("depreciation", /espresso[\s\S]*year 2\*\*/)).toBe(3360);
     expect(found("depreciation", /espresso[\s\S]*\*\*book value\*\* at 31 March 2028/)).toBe(7840);
-    // 31 March 2027: current ratio 2.71, gross margin 70.3%; year 2 gross margin 69.6%
-    expect(found("ratios", /year 1\)[\s\S]*current ratio/)).toBeCloseTo(2.71, 2);
+    // 31 March 2027: current ratio 2.68 (accrued ACC levies included), gross margin 70.3%; year 2 gross margin 69.6%
+    expect(found("ratios", /year 1\)[\s\S]*current ratio/)).toBeCloseTo(2.68, 2);
     expect(found("ratios", /year 1\)[\s\S]*gross margin/)).toBeCloseTo(70.3, 1);
     expect(found("ratios", /year 2\)[\s\S]*gross margin/)).toBeCloseTo(69.6, 1);
   });

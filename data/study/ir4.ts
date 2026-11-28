@@ -19,6 +19,10 @@ import type { AdjItem, DateQ, Ir4Exercise } from "@/lib/study/ir4";
  */
 const NEUTRAL: [RegExp, string, string?][] = [
   [/entertainment/i, "Entertainment: the half that's only 50% deductible"],
+  [/last year's ACC accrual/i, "Last year's accrued ACC levy, invoiced by ACC this year",
+    "Last year this levy was accrued in the accounts but couldn't be deducted: an ACC levy is deductible in the year it becomes due and payable (Income Tax Act s EF 3). ACC's July invoice made it due this year, so it's deducted now."],
+  [/ACC levies accrued/i, "ACC levies accrued at 31 March, not yet invoiced",
+    "The accounts include ACC levies for this year that ACC hasn't invoiced yet. An ACC levy is deductible only in the year it becomes due and payable (Income Tax Act s EF 3), so this year's accrual waits until the invoice comes."],
   [/last year's holiday pay/i, "Last year's holiday pay accrual, taken as leave this year"],
   [/holiday pay/i, "Holiday pay accrued at 31 March, not paid within 63 days"],
   [/accounting depreciation/i, "Depreciation in the accounts",

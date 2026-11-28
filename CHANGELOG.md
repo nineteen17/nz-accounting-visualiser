@@ -7,13 +7,24 @@ Dates are when the change was made. Rates and rules are for the 2026–27 NZ inc
 
 ## Proposed / not yet done
 
-- **ACC levies and the Companies Office fee in the books**: planned in `docs/ACC-LEVIES-IN-THE-BOOKS.md`. The levies go in the way ACC really invoices a new business: accrued at year end, a July invoice with final and provisional parts, and the shareholder-employees' invoice after the IR4. Tax follows ITA s EF 3 (deductible when due and payable), so year 1's tax figures don't change. Aroha's and Ben's earners' levy goes to their current accounts. The annual return fee starts in April 2027.
-
 - **IR4 2027 form (around March 2027)**: when IRD publishes it, re-check `ir4Boxes()` in `lib/engine/ir4.ts` against it (box numbers and wording), and update `IR4_SOURCE` to the new form and guide.
 
 - **2027–28 rates (on or after 1 April 2027)**. Follow README "Updating the rates" (`npm run rates` lists what to check). In short: when IRD, ACC and MBIE announce them, fill in `PAYROLL_2027_28` in `lib/nz/rates.ts` and clear its `toConfirm` list (tax brackets, IETC, student loan threshold and ESCT bands are carried forward for now); update `MINIMUM_WAGE`; then on 1 April 2027 point `CURRENT_PAYROLL` at 2027–28. Year 1's books keep the 2026–27 rates. Also update `ACC_CAFE_LEVIES` (the café work levy and working safer levy) from ACC's 2027/28 Levy Guidebook and clear its `toConfirm`.
 
 ---
+
+## 2026-11-29
+
+### ACC levies and the Companies Office fee in the books
+
+Kōwhai's books now have the ACC levies and the Companies Office fee a real café pays, done the way ACC actually invoices a new company. Plan: `docs/ACC-LEVIES-IN-THE-BOOKS.md`.
+- **Year 1:** no invoice (a new business is first invoiced after its first year), so a new year-end adjustment (`ADJ-ACC`) accrues the 2026/27 work and working safer levies: $351.46 on the staff's earnings and $432.00 on the shareholder salaries, $783.46 in all, to a new account **606 ACC levies**. Under Income Tax Act s EF 3 a levy is deductible when it's due and payable, so the whole accrual is added back: year 1's taxable income, tax and terminal tax ($13,742.08) don't change, nor do year 2's provisional instalments. Profit before tax is now $63,331.33.
+- **Year 2:** the first annual return on 14 April 2027 ($57.20, GST claimed). ACC's first invoice on 16 July 2027 (final 2026/27 levy $351.46, clearing the accrual, plus a provisional 2027/28 levy of $358.78, plus GST), paid 20 August. At year end (`Y2-ADJ-ACC`) the staff wash-up and the shareholders' 2027/28 levy are accrued ($518.13). The tax reconciliation gains an add-back and a deduction, like holiday pay. Year 2's taxable income is now $74,636.41, tax $20,898.08 and terminal tax $3,318.90.
+- **Aroha's and Ben's own earners' levy** is never a company expense (Accident Compensation Act s 219): it'll be charged to their current accounts when ACC invoices it, after the IR4.
+- **Rates:** the 2027/28 café work levy, $0.41 per $100, from the Accident Compensation (Work Account Levies) Regulations 2025, schedule 3. Pay yourself and Which structure? now use the levy rates for the year they model.
+- **Pages:** the ACC page's work levy section is rewritten (it wrongly said a first invoice is usually provisional) with Kōwhai's own timeline and the s EF 3 rule. The year-end checklist's "not in Kōwhai's books" notes are replaced by the real figures. The budget has an ACC line; the licences variance mentions the annual return. Glossary: *ACC work levy* expanded; new *provisional and final levies* and *liable earnings*. Law: ACC Act s 15 and Income Tax Act s EF 3.
+- **Exercises:** the year-end exercise has one more adjustment in each year; the IR4 exercise has the new tax items, with neutral titles.
+- Tests: 7 new (282 in all). Figures quoted in the docs updated.
 
 ## 2026-11-28
 
